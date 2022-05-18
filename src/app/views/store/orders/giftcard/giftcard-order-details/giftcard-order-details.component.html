@@ -1,0 +1,431 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-md-8">
+        <h1>#{{ details.order_number }}</h1>
+        <ul>
+          <li style="padding: 0px;">Gift coupon details</li>
+        </ul>
+      </div>
+      <div class="col-md-4 mt-sm-15" align="right">
+        <button type="button" class="btn btn-wide btn-outline-secondary" routerLink="/orders/gift-coupon">Back</button>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="row">
+
+    <div class="col-lg-9">
+
+      <!-- customer details -->
+      <div class="order-section">
+        <p class="sec-desc pb-2">Customer Details</p>
+        <div class="col-md-12 list-item p-0">
+          <div class="card mb-4 d-flex flex-row">
+            <div class="flex-grow-1 pl-2 d-flex">
+              <div *ngIf="details?.order_by=='user'"
+                class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                <p class="w-30 w-sm-100 m-b-0">{{details.customerDetails[0].name}}</p>
+                <p class="w-30 w-sm-100 m-b-0">{{details.customerDetails[0].email}}</p>
+                <p *ngIf="details.customerDetails[0].mobile" class="w-30 w-sm-100 m-b-0">
+                  {{details.customerDetails[0].mobile}}</p>
+                <p *ngIf="!details.customerDetails[0].mobile" class="w-30 w-sm-100 m-b-0">NA</p>
+              </div>
+              <div *ngIf="details?.order_by=='admin'"
+                class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                <p class="w-30 w-sm-100 m-b-0">{{details.from_name}}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- recipient details -->
+      <div class="order-section">
+        <p class="sec-desc pb-2">Recipient Details</p>
+        <div class="col-md-12 list-item p-0">
+          <div class="card mb-4 d-flex flex-row">
+            <div class="flex-grow-1 pl-2 d-flex">
+              <div
+                class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                <p class="w-30 w-sm-100 m-b-0">{{details.to_name}}</p>
+                <p class="w-30 w-sm-100 m-b-0">{{details.to_email}}</p>
+                <p class="w-30 w-sm-100 m-b-0">{{details.created_on | date: "dd MMM y hh:mm a"}}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- payment details -->
+      <div *ngIf="details?.payment_details" class="order-section">
+        <div class="pb-2">
+          <p class="sec-desc" style="display: inline-block;">Payment Details</p>
+          <i style="float:right;" (click)="onEdit(paymentDetailsModal);" class="material-icons edit-icon">edit</i>
+        </div>
+        <div class="col-md-12 list-item p-0">
+          <div class="card mb-4 d-flex flex-row">
+            <div class="flex-grow-1 pl-2 d-flex">
+              <div
+                class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                <p class="w-30 w-sm-100 m-b-0">{{details?.payment_details?.name}}</p>
+                <p class="w-30 w-sm-100 m-b-0">{{details?.payment_details?.payment_id}}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- order note -->
+      <div class="order-section">
+        <div class="pb-2">
+          <p class="sec-desc" style="display: inline-block;">Note</p>
+          <i style="float:right;" (click)="onEdit(orderNoteModal);" class="material-icons edit-icon">edit</i>
+        </div>
+        <div class="col-md-12 list-item p-0">
+          <div class="card mb-4 d-flex flex-row">
+            <div class="flex-grow-1 pl-2 d-flex">
+              <div
+                class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                <p *ngIf="details?.order_note" class="w-30 w-sm-100 m-b-0"
+                  [innerHTML]="transformHtml(details.order_note)"></p>
+                <p *ngIf="!details?.order_note" class="w-30 w-sm-100 m-b-0">NA</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- withdrawal details -->
+      <div *ngIf="details.order_list?.length" class="order-section">
+        <p class="sec-desc mb-2" style="display: inline-block;">Withdrawal Details</p>
+        <div class="col-md-12 list-item p-0">
+          <div *ngFor="let x of details.order_list;" class="card mb-4 d-flex flex-row">
+            <div class="flex-grow-1 pl-2 d-flex">
+              <div
+                class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                <p class="w-30 w-sm-100 m-b-0">#{{x.order_number}}</p>
+                <p class="w-30 w-sm-100 m-b-0">{{x.created_on | date: "dd MMM y hh:mm a"}}</p>
+                <p class="w-30 w-sm-100 m-b-0">{{x.redeemed_amount | currency:commonService.store_currency?.country_code}}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 z-i-0">
+      <!-- gift card details -->
+      <div class="summary-section mtb-10">
+        <div class="order-summary-header">
+          <p>{{details.code}}</p>
+        </div>
+        <div class="card order-summary-details mb-2">
+          <div class="row mtb-20">
+            <div class="col-6">
+              <div class="box-card card-head">
+                <p>Value</p>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="box-card">
+                <p class="pull-right text-danger text-right">{{details.price | currency: commonService.store_currency?.country_code}}
+                </p>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="box-card card-head">
+                <p>Redeemed</p>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="box-card">
+                <p class="pull-right text-right">{{details.redeemed_amount | currency: commonService.store_currency?.country_code}}
+                </p>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="box-card card-head">
+                <p>Balance</p>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="box-card">
+                <p class="pull-right text-right">{{details.balance | currency: commonService.store_currency?.country_code}}</p>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="box-card card-head">
+                <p>Validity</p>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="box-card">
+                <p class="pull-right text-right">{{details.expiry_on | date: "dd MMM y"}}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- invoice -->
+        <button type="button" (click)="onViewInvoice(invoiceModal);" class="btn btn-primary w-100 mtb-10">View
+          Invoice</button>
+
+        <!-- Resend mail -->
+        <button type="button"
+          (click)="btnLoader=false; mailForm={ email: details.to_email }; modalService.open(resendMailModal);"
+          class="btn blue-outline-btn w-100 mtb-10">
+         <span class="blue-outline-txt">Resend Email</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- update payment details -->
+<ng-template #paymentDetailsModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Update Payment Details</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdate({_id: details._id, payment_details: editForm.payment_details });"
+    ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12 form-group mb-3">
+            <label>Payment Type</label>
+            <input type="text" name="name" class="form-control" [(ngModel)]="editForm.payment_details.name"
+              #name="ngModel" required />
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>Payment ID</label>
+            <input type="text" name="payment_id" class="form-control" [(ngModel)]="editForm.payment_details.payment_id"
+              #payment_id="ngModel" required />
+          </div>
+        </div>
+      </div>
+      <div *ngIf="editForm.errorMsg">
+        <p class="text-danger">{{ editForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+        (click)="modal.dismiss('cancel');">
+       <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- update order note -->
+<ng-template #orderNoteModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Update Note</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdate({ _id: details._id, order_note: editForm.order_note });"
+    ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12 form-group mb-3">
+            <label>Note</label>
+            <textarea class="form-control" rows="5" aria-label="With textarea" name="order_note"
+              [(ngModel)]="editForm.order_note" #order_note="ngModel" required></textarea>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="editForm.errorMsg">
+        <p class="text-danger">{{ editForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+        (click)="modal.dismiss('cancel');">
+       <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- Resend mail -->
+<ng-template #resendMailModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Resend email to customer</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="sendMail();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12 form-group mb-3">
+            <label>Send To</label>
+            <input type="text" name="email" class="form-control" [(ngModel)]="mailForm.email" #email="ngModel"
+              required />
+          </div>
+        </div>
+      </div>
+      <div *ngIf="mailForm.errorMsg">
+        <p class="text-danger">{{ mailForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+        (click)="modal.dismiss('cancel');">
+       <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" [disabled]="btnLoader" [ladda]="btnLoader"
+        class="btn btn-wide btn-primary ladda-button">Confirm</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- invoice -->
+<ng-template #invoiceModal let-modal>
+
+  <div class="main-header-div">
+    <div class="m-header"></div>
+    <p class="m-1 m-close-btn"><a (click)="modal.dismiss('Cross click');">CLOSE</a></p>
+  </div>
+  <div class="modal-body modal-scroll slim-scroll m-3">
+    <kendo-pdf-export #invoicePdf paperSize="A4" margin="1cm" class="row">
+      <div class="row">
+        <div class="col-md-12" align="center">
+          <h5><u>INVOICE</u></h5>
+        </div>
+        <div class="col-md-6">
+          <tr>
+            <td><p>Order ID</p></td>
+            <td><p>: #{{invoice_details.order_number}}</p></td>
+          </tr>
+        </div>
+        <div *ngIf="invoice_details.invoice_number" class="col-md-6">
+          <div class="invoice-no mr-3">
+            <tr>
+              <td><p>Invoice No</p></td>
+              <td><p>: {{invoice_details.invoice_number}}</p></td>
+            </tr>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <tr>
+            <td><p>Order Date</p></td>
+            <td><p>: {{invoice_details.created_on | date: "dd MMM y"}}</p></td>
+          </tr>
+        </div>
+      </div>
+      <div class="row">
+        <!-- Created By -->
+        <div class="col-md-6 flex">
+          <div class="card w-100 h-100 mt-2 mb-2">
+            <div class="w-100 flex gray-bg m-info-head invoice-address">
+              <h4>Created By</h4>
+            </div>
+            <div class="w-100 p-10">
+              <p>{{invoice_details?.from_name}}</p>
+              <p *ngIf="invoice_details?.order_by=='user'">{{invoice_details?.customerDetails[0]?.email}}</p>
+              <p *ngIf="invoice_details?.order_by=='admin'">{{commonService.store_details?.email}}</p>
+            </div>
+          </div>
+        </div>
+        <!-- Sent To -->
+        <div class="col-md-6 flex">
+          <div class="card w-100 h-100 mt-2 mb-2">
+            <div class="w-100 flex gray-bg m-info-head invoice-address">
+              <h4>Sent To</h4>
+            </div>
+            <div class="w-100 p-10">
+              <p>{{invoice_details?.to_name}}</p>
+              <p>{{invoice_details?.to_email}}</p>
+              <p>{{invoice_details?.message}}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Payment Method -->
+      <div class="row">
+        <div *ngIf="invoice_details?.payment_details" class="col-md-12 mt-3">
+          <div class="mt-3">
+            <h4>Payment Method: {{invoice_details.payment_details?.name}}</h4>
+          </div>
+        </div>
+      </div>
+
+       <!-- item section -->
+      <div class="row mt-3">
+        <div class="col-md-12">
+          <table class="w-100 invoice-details">
+            <tr>
+              <td class="p-10 gray-bg invoice-font-size-head py-4" align="left" style="width: 40%;">Item</td>
+              <td class="p-10 gray-bg invoice-font-size-head py-4" align="left" style="width: 20%;">SKU</td>
+              <td class="p-10 gray-bg invoice-font-size-head py-4" align="right" style="width: 20%;">Qty.</td>
+              <td class="p-10 gray-bg invoice-font-size-head py-4" align="right" style="width: 20%;">Subtotal</td>
+            </tr>
+
+            <tr class="invoice-border">
+              <td class="p-10" align="left" style="width: 40%;">
+                <p>Gift Card {{invoice_details.price}}</p>
+              </td>
+              <td class="p-10" align="left" style="width: 20%;">
+                <p>N/A</p>
+              </td>
+              <td class="p-10" align="right" style="width: 20%;">
+                <p>1</p>
+              </td>
+              <td class="p-10" align="right" style="width: 20%;">
+                <p
+                  [innerHTML]="commonService.PRICE_FORMAT(invoice_details?.currency_type, invoice_details?.price)">
+              </p>
+              </td>
+            </tr>
+
+            <tr class="invoice-total">
+              <td colspan="3" align="right" style="width: 80%;">
+                <p>Subtotal</p>
+              </td>
+              <td align="right" class="p-10" style="width: 20%;">
+                <p
+                  [innerHTML]="commonService.PRICE_FORMAT(invoice_details?.currency_type, invoice_details?.price)">
+                </p>
+              </td>
+            </tr>
+            <tr class="invoice-total invoice-border-top grand-total invoice-border">
+              <td colspan="3" align="right" style="width: 80%;">
+                <h5 class="m-0">Grand Total</h5>
+              </td>
+              <td align="right" class="p-10" style="width: 20%;">
+                <h5 class="m-0" [innerHTML]="commonService.PRICE_FORMAT(invoice_details?.currency_type, invoice_details?.price)"></h5>
+              </td>
+            </tr>
+            
+          </table>
+        </div>
+
+         <div class="col-md-12 mt-1">
+          <p class="mt-2 mb-0" align="left"><b>Note:</b> The above prices are in <b>{{ invoice_details?.currency_type?.country_code }}</b></p>
+        </div>
+
+        <div class="col-md-12">
+          <div class="invoice-footer-details mt-2 mb-2">
+            <p class="invoice-store-name">{{commonService.store_details?.name}}</p>
+            <p *ngIf="commonService.store_details?.gst_no" class="invoice-gst-no">{{commonService.store_details?.gst_no}}</p>
+          </div>
+        </div>
+
+        <div class="col-md-12">
+          <p class="mt-2 mb-0" align="center">This is a computer generated invoice that does not require a signature.</p>
+        </div>
+
+      </div>
+    </kendo-pdf-export>
+  </div>
+  <div class="modal-footer">
+    <button kendo-button class="btn btn-wide btn-primary" (click)="invoicePdf.saveAs('invoice.pdf')">Save as pdf</button>
+  </div>
+</ng-template>

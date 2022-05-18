@@ -1,0 +1,156 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb">
+    <h1><a routerLink="/product-extras/archive">Archive</a> > {{ params.archive_name }}</h1>
+    <ul>
+      <li>Edit products in this collection</li>
+    </ul>
+  </div>
+
+  <div class="separator-breadcrumb border-top"></div>
+  <div class="top-filter-sec">
+    <div *ngIf="list?.length" class="row mb-4">
+      <div class="col-md-6">
+        <button *ngIf="commonService.master_token" type="button" (click)="exportAsXLSX();"
+          class="btn btn-primary m-0 ladda-button" [disabled]="exportLoader" [ladda]="exportLoader">Export</button>
+      </div>
+      <!-- search box -->
+      <div class="col-md-6 mt-sm-15" align="right">
+        <div class="form-group">
+          <input type="text" name="search_bar" placeholder="Search" class="form-control" [(ngModel)]="search_bar" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATA LIST -->
+  <div class="list-horizontal">
+
+    <div class="data-list-card-wrapper">
+      <div class="data-list-card-inner">
+        <div class="row m-0">
+
+          <div
+          *ngFor="let x of list | orderAsc:'rank' | fieldSearch:'name':search_bar | paginate: { itemsPerPage: pageSize, currentPage: page }; let i = index;"
+          class="list-item data-list-card col-md-12" [@animate]="{value:'*',params:{delay: (i*100)+'ms', y:'50px'}}">
+    
+          <div class="d-flex flex-row">
+            <div class="list-thumb d-flex mtb-20">
+              <img [src]="imgBaseUrl+x.image_list[0].image" alt="">
+            </div>
+            <div class="flex-grow-1 pl-2 d-flex mtb-20">
+              <div
+                class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                <p class="w-30 w-sm-100 m-b-0">{{x.name}}</p>
+                <p class="m-0 text-muted text-small w-15 w-sm-100">{{ x?.discounted_price |
+                  currency:commonService.store_currency?.country_code }}</p>
+                <!-- <div class="btn-group float-right">
+                  <div class="btn-group" ngbDropdown role="group" aria-label="Select all" placement="right">
+                    <button class="btn btn-wide btn-outline-secondary" ngbDropdownToggle>Edit</button>
+                    <div class="dropdown-menu" ngbDropdownMenu>
+                      <button class="dropdown-item" routerLink="/product/modify/{{x._id}}/0/1">Details</button>
+                      <button class="dropdown-item" routerLink="/product/modify/{{x._id}}/0/2">Images</button>
+                    </div>
+                  </div>
+                </div> -->
+                <p class="m-0 text-muted text-small w-15 w-sm-100 d-lg-block item-actions">
+                  <!-- <button routerLink="/products/modify/{{x._id}}/2061/2" class="btn btn-wide btn-outline-success mr-3">Edit Images</button> -->
+                  <button
+                    (click)="selectedProduct=x; archiveForm={ archive_status: false, archive_id: x.archive_id }; modalService.open(archiveModal, { centered: true });"
+                    class="btn btn-wide blue-outline-btn w-md-100 mr-3">
+                    <span class="blue-outline-txt">Move</span>
+                  </button>
+                  <button (click)="deleteForm=x; modalService.open(deleteModal, { centered: true });"
+                    class="btn btn-wide orng-outline-btn w-md-100">
+                    <span class="orng-outline-txt">Remove</span>
+                  </button>
+                </p>
+              </div>
+            </div>
+          </div>
+    
+        </div>
+
+        </div>
+      </div>
+    </div>
+
+   
+    <!-- PAGINATION CONTROL -->
+    <div class="row" *ngIf="list?.length">
+      <div class="col-md-12 mt-3">
+        <pagination-controls (pageChange)="page=$event; commonService.pageTop(0);" autoHide="true" responsive="true"
+          maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+      </div>
+    </div>
+    
+  </div>
+
+  <div *ngIf="!list?.length" class="row">
+    <div class="col-md-12 d-flex flex-column align-items-center justify-content-center no-rec-found-wrapper">
+      <img class="no-rec-found" src="assets/images/no_records_found.png" alt="no-records">
+      <p align="center">No data to display. Archive products and add them to this collection.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Archive Modal -->
+<ng-template #archiveModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Move Product</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onInterchange();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12 form-group mb-3">
+            <label class="radio radio-primary">
+              <input type="radio" name="archiveId" [checked]="archiveForm.archive_id==selectedProduct.archive_id"
+                (change)="archiveForm={ archive_status:false, archive_id:selectedProduct.archive_id };">
+              <span>Unarchive</span><span class="checkmark"></span>
+            </label>
+          </div>
+          <div *ngFor="let x of archive_list | orderAsc:'rank'; let i=index;" class="col-md-12 form-group mb-3">
+            <label class="radio radio-primary">
+              <input type="radio" name="archiveId" [checked]="archiveForm.archive_id==x._id"
+                (change)="archiveForm={ archive_status:true, archive_id:x._id };">
+              <span>{{x.name}}</span><span class="checkmark"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="archiveForm.errorMsg">
+        <p class="text-danger">{{ archiveForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide blue-outline-btn"
+        (click)="modal.dismiss('Cross click');">
+        <span class="blue-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- Delete Modal -->
+<ng-template #deleteModal let-modal>
+  <div class="modal-body">
+    <p><strong>Are you sure you want to delete <span class="txt-grdint-highlight">"{{deleteForm.name}}"</span>
+        product?</strong></p>
+    <div *ngIf="deleteForm.errorMsg">
+      <p class="text-danger">{{ deleteForm.errorMsg }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('cancel')">
+      <span class="black-outline-txt">No</span>
+    </button>
+    <button type="button" class="btn btn-wide orng-outline-btn" (click)="onDelete();">
+      <span class="orng-outline-txt">Yes</span>
+    </button>
+  </div>
+</ng-template>

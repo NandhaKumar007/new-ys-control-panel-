@@ -1,0 +1,236 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-md-12">
+        <h1>Branches</h1>
+        <ul>
+          <li>Add and Manage your branch locations</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+  <div class="top-filter-sec">
+    <div class="row mb-4">
+      <div class="col-6">
+        <button *ngIf="!list?.length || commonService.ys_features.indexOf('multi_branches')!=-1" type="button"
+          class="btn btn-primary"
+          (click)="locForm={ rank: maxRank+1, form_type: 'add' }; modalService.open(locationModal);">Add New</button>
+      </div>
+      <!-- search box -->
+      <div class="col-md-6 mt-sm-15">
+        <div class="form-group">
+          <input type="text" name="search_bar" placeholder="Search" class="form-control" [(ngModel)]="search_bar" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="list?.length" class="list-horizontal">
+
+    <div class="data-list-card-wrapper">
+      <div class="data-list-card-inner">
+        <div class="row m-0">
+
+          <div
+          *ngFor="let x of list | orderAsc:'rank' | gridSearch: { name: search_bar } | paginate: { itemsPerPage: pageSize, currentPage: page }; let i=index;"
+          class="col-md-12 list-item data-list-card p-0" [ngClass]="x.pickup_location ? 'has-find-band':'' " [@animate]="{value:'*',params:{delay: (i*100)+'ms', y:'50px'}}">
+          <div class="d-flex flex-row">
+            <div *ngIf="x.pickup_location" class="find-band"></div>
+            <div class="flex-grow-1 d-flex">
+              <div
+                class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                <p class="w-20 w-md-100 m-b-0">{{x.name}}</p>
+                <p class="w-20 w-md-100 m-b-0">{{x.contact_person}}</p>
+                <p class="w-30 w-md-100 m-b-0">{{x.mobile}}</p>
+                <p class="m-0 text-muted text-small w-15 w-md-100 d-lg-block item-actions">
+                  <button class="btn btn-wide black-outline-btn w-md-100 mr-3" (click)="onEdit(x, locationModal);">
+                    <span class="black-outline-txt">Edit</span>
+                  </button>
+                  <button *ngIf="x.status=='active'" class="btn btn-wide orng-outline-btn w-md-100 mr-3"
+                    (click)="x.new_status='inactive'; locForm=x; modalService.open(statusModal, { centered: true });">
+                    <span class="orng-outline-txt">Disable</span>
+                  </button>
+                  <button *ngIf="x.status!='active'" class="btn btn-wide blue-outline-btn w-md-100 mr-3"
+                    (click)="x.new_status='active'; locForm=x; modalService.open(statusModal, { centered: true });">
+                    <span class="blue-outline-txt">Enable</span>
+                  </button>
+                  <button class="btn btn-wide orng-outline-btn w-md-100"
+                    (click)="deleteForm=x; modalService.open(deleteModal, { centered: true });">
+                    <span class="orng-outline-txt">Remove</span>
+                  </button>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div>
+      </div>
+    </div>
+  
+
+    <!-- PAGINATION CONTROL -->
+    <div class="row">
+      <div class="col-md-12 mt-3">
+        <pagination-controls (pageChange)="page=$event; commonService.pageTop(0);" autoHide="true" responsive="true"
+          maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+      </div>
+    </div>
+    
+
+  </div>
+
+  <div *ngIf="!list?.length" class="row">
+    <div class="col-md-12 d-flex flex-column align-items-center justify-content-center no-rec-found-wrapper">
+      <img class="no-rec-found" src="assets/images/no_records_found.png" alt="no-records">
+      <p align="center">No data to display.</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- LOCATION MODAL -->
+<ng-template #locationModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{ locForm.form_type=='add'? 'Add New': 'Update' }}</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onSubmit();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div *ngIf="commonService.ys_features.indexOf('store_pickup')!=-1" class="col-md-12 mb-3">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="pickup_location"
+                [(ngModel)]="locForm.pickup_location" #pickup_location="ngModel">
+              <span>Mark as pickup location</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div class="col-md-6 form-group mb-3">
+            <label>Branch Name</label>
+            <input type="text" name="name" class="form-control" [(ngModel)]="locForm.name" #name="ngModel" required />
+          </div>
+          <div class="col-md-6 form-group mb-3">
+            <label>Rank</label>
+            <input *ngIf="locForm.form_type=='add'" type="number" name="rank" class="form-control"
+              [(ngModel)]="locForm.rank" #rank="ngModel" min="1" max="{{maxRank+1}}" appNumberOnly required />
+            <input *ngIf="locForm.form_type!='add'" type="number" name="rank" class="form-control"
+              [(ngModel)]="locForm.rank" #rank="ngModel" min="1" max="{{maxRank}}" appNumberOnly required />
+          </div>
+          <div class="col-md-6 form-group mb-3">
+            <label>Contact Person Name</label>
+            <input type="text" name="contact_person" class="form-control" [(ngModel)]="locForm.contact_person"
+              #contact_person="ngModel" required />
+          </div>
+          <div class="col-md-6 form-group mb-3">
+            <label>Contact No</label>
+            <input type="text" name="mobile" class="form-control" [(ngModel)]="locForm.mobile" #mobile="ngModel"
+              required />
+          </div>
+          <div class="col-md-6 form-group mb-3">
+            <label>Country</label>
+            <select name="country" class="form-control" (change)="locForm.state=null; onCountryChange(locForm.country);"
+              [(ngModel)]="locForm.country" required>
+              <option *ngFor="let x of commonService.country_list | orderAsc: 'name';" [value]="x.name">{{x.name}}
+              </option>
+            </select>
+          </div>
+          <div class="col-md-6 form-group mb-3">
+            <label>State</label>
+            <input *ngIf="!state_list?.length" type="text" name="state" class="form-control" [(ngModel)]="locForm.state"
+              #state="ngModel" required />
+            <select *ngIf="state_list?.length" class="form-control" name="state" [(ngModel)]="locForm.state">
+              <option *ngFor="let x of state_list | orderAsc: 'name';" [ngValue]="x.name">{{x.name}}</option>
+            </select>
+          </div>
+          <div class="col-md-6 form-group mb-3">
+            <label>City</label>
+            <input type="text" name="city" class="form-control" [(ngModel)]="locForm.city" #city="ngModel" />
+          </div>
+          <div class="col-md-6 form-group mb-3">
+            <label>Pincode</label>
+            <input type="text" name="pincode" class="form-control" [(ngModel)]="locForm.pincode" #pincode="ngModel" />
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>Complete Address</label>
+            <textarea name="completeAddress" [(ngModel)]="locForm.address" #completeAddress="ngModel"
+              class="form-control" required></textarea>
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>Landmark</label>
+            <input type="text" name="landmark" class="form-control" [(ngModel)]="locForm.landmark"
+              #landmark="ngModel" />
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>Location Map URL</label>
+            <input type="text" name="location_url" class="form-control" [(ngModel)]="locForm.location_url"
+              #location_url="ngModel" required />
+          </div>
+          <ng-container *ngIf="commonService.store_details?.type=='restaurant_based'">
+            <div class="col-md-6 form-group mb-3">
+              <label>Latitude</label>
+              <input type="text" name="latitude" class="form-control" [(ngModel)]="locForm.lat" #latitude="ngModel"
+                appNumberOnly required />
+            </div>
+            <div class="col-md-6 form-group mb-3">
+              <label>Longitude</label>
+              <input type="text" name="longitude" class="form-control" [(ngModel)]="locForm.lng" #longitude="ngModel"
+                appNumberOnly required />
+            </div>
+          </ng-container>
+        </div>
+      </div>
+      <div *ngIf="locForm.errorMsg">
+        <p class="text-danger">{{ locForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+        (click)="modal.dismiss('Cross click')">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">{{ locForm.form_type=='add'? 'Add': 'Update' }}</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- STATUS MODAL -->
+<ng-template #statusModal let-modal>
+  <div class="modal-body">
+    <p><strong>Are you sure you want to {{ (locForm.status=='active')? 'Disable': 'Enable' }} the <span
+          class="txt-grdint-highlight">"{{locForm.name}}"</span> location?</strong></p>
+    <div *ngIf="locForm.errorMsg">
+      <p class="text-danger">{{ locForm.errorMsg }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+      (click)="modal.dismiss('Cross click');">
+      <span class="black-outline-txt">No</span>
+    </button>
+    <button type="button" (click)="onUpdateStatus();" class="btn btn-wide btn-primary">Yes</button>
+  </div>
+</ng-template>
+
+<!-- DELETE MODAL -->
+<ng-template #deleteModal let-modal>
+  <div class="modal-body">
+    <p><strong>Are you sure you want to permanently delete the <span
+          class="txt-grdint-highlight">"{{deleteForm.name}}"</span> location?</strong></p>
+    <div *ngIf="deleteForm.errorMsg">
+      <p class="text-danger">{{ deleteForm.errorMsg }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('cancel')">
+      <span class="black-outline-txt">Cancel</span>
+    </button>
+    <button type="button" class="btn btn-wide orng-outline-btn" (click)="onDelete();">
+      <span class="orng-outline-txt">Yes</span>
+    </button>
+  </div>
+</ng-template>

@@ -1,0 +1,126 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb">
+    <h1>Catalog Banners</h1>
+    <ul>
+      <li>Edit the appearance of your catalogs</li>
+    </ul>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="top-filter-sec">
+    <div *ngIf="commonService.catalog_list?.length" class="row mb-4">
+      <div class="col-md-6"></div>
+      <div class="col-md-6">
+        <div class="form-group">
+          <input type="text" name="search_bar" placeholder="Search" class="form-control" [(ngModel)]="search_bar" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATA LIST -->
+  <div *ngIf="commonService.catalog_list?.length" class="list-horizontal">
+
+    <div class="data-list-card-wrapper">
+      <div class="data-list-card-inner">
+        <div class="row m-0">
+
+          <!-- SINGLE LIST ITEM -->
+          <div
+            *ngFor="let x of commonService.catalog_list | fieldSearch:'name':search_bar | paginate: { itemsPerPage: pageSize, currentPage: page }; let i=index;"
+            class="col-md-12 list-item data-list-card" [@animate]="{value:'*',params:{delay: (i*100)+'ms', y:'50px'}}">
+
+            <div class="d-flex flex-row">
+              <div *ngIf="x.image" class="list-thumb d-flex">
+                <img [src]="imgBaseUrl+x.image" alt="">
+              </div>
+              <div class="flex-grow-1 pl-2 d-flex">
+                <div
+                  class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                  <p class="w-30 w-sm-100 m-b-0">{{x.name}}</p>
+                  <p class="m-0 text-muted text-small w-15 w-sm-100 d-lg-block item-actions">
+                    <button class="btn btn-wide black-outline-btn w-md-100 mr-3"
+                      (click)="modalTitle=x.name; modalType=x.type; onEditSection(x, bannerModal);">
+                      <span class="black-outline-txt">Edit</span>
+                    </button>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGINATION CONTROL -->
+    <div class="row">
+      <div class="col-md-12 mt-3">
+        <pagination-controls (pageChange)="page=$event; commonService.pageTop(0);" autoHide="true" responsive="true"
+          maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+      </div>
+    </div>
+    
+
+  </div>
+
+  <div *ngIf="!commonService.catalog_list?.length" class="row">
+    <div class="col-md-12 d-flex flex-column align-items-center justify-content-center no-rec-found-wrapper">
+      <img class="no-rec-found" src="assets/images/no_records_found.png" alt="no-records">
+      <p align="center">No data to display. Create catalogs for your store.</p>
+    </div>
+  </div>
+</div>
+
+<!-- BANNER MODAL -->
+<ng-template #bannerModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Update Banner</h4>
+    <p>{{ modalTitle }}</p>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdate()" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12 mb-3" align="center">
+            <p>1440 x 150 pixels @72ppi</p>
+            <div *ngIf="bannerForm.image">
+              <span (click)="bannerForm.img_change=true; bannerForm.image=null;"
+                class="material-icons item-close float-right" aria-hidden="true">close</span>
+              <!-- <p class="x-close" style="float: right;" (click)="bannerForm.img_change=true; bannerForm.image=null;">X</p> -->
+              <img *ngIf="bannerForm.img_change" [src]="bannerForm.image" height="100px;" width="auto;">
+              <img *ngIf="!bannerForm.img_change" [src]="imgBaseUrl+bannerForm.image" height="100px;" width="auto;">
+            </div>
+            <div *ngIf="!bannerForm.image">
+              <label>
+                <div>
+                  <i class="material-icons add-img">add_photo_alternate</i>
+                  <p>Click to upload image</p>
+                </div>
+                <input type="file" name="image" style="display: none;" (change)="fileChangeListener($event)"
+                  accept="image/jpeg, image/png" />
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="bannerForm.errorMsg">
+        <p class="text-danger">{{ bannerForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+        (click)="modal.dismiss('Cross click')">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary ladda-button m-1" [disabled]="btnLoader"
+        [ladda]="btnLoader">Update</button>
+    </div>
+  </form>
+</ng-template>

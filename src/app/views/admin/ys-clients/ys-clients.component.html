@@ -1,0 +1,460 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-md-12 p-0">
+        <div class="row">
+          <div class="col-md-8 d-flex justify-content-end align-items-start flex-column">
+            <h1>Clients</h1>
+            <ul>
+              <li>View and manage your clients</li>
+            </ul>
+          </div>
+          <div class="col-md-4 mt-2 d-flex align-items-end justify-content-end mt-sm-15">
+            <button type="button" (click)="exportAsXLSX();" class="btn btn-primary ladda-button mr-3" [disabled]="exportLoader" [ladda]="exportLoader">Export</button>
+            <button type="button" (click)="pwdForm={}; modalService.open(notifyModal);" class="btn btn-primary mr-3">Send Notification</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="row mb-4">
+    <div class="col-md-3 col-6">
+      <div class="form-group">
+        <select name="list_type" class="form-control select-arrow" [(ngModel)]="filterForm.list_type" (change)="ngOnInit();">
+          <option value="active">Active Users</option>
+          <option value="inactive">Deactivated Users</option>
+          <option value="all">All Users</option>
+          <option value="unused">Unused Users</option>
+          <option value="trial">Trial Users</option>
+          <option value="trial_expires_in">Trial Expires in</option>
+          <option value="trial_expired">Trial Expired Users</option>
+          <option value="subscribed">Subscribed Users</option>
+          <option value="subscription_expired">Subscription Expired Users</option>
+          <option value="free_plan">Free Plan Users</option>
+          <option value="paid_plan">Paid Plan Users</option>
+          <ng-container *ngFor="let x of commonService.admin_packages | orderAsc: 'rank';">
+            <option *ngIf="x._id!=configData.free_package_id" [value]="'pid_'+x._id">{{x.name}} Plan</option>
+          </ng-container>
+          <option value="logo">Logo Pending</option>
+          <option value="products">Product Pending</option>
+          <option value="payments">Payment Pending</option>
+          <option value="shipping">Shipping Pending</option>
+        </select>
+      </div>
+    </div>
+    <div *ngIf="filterForm.list_type=='trial_expires_in' || filterForm.list_type=='unused'" class="col-md-3 col-6">
+      <div class="form-group">
+        <select name="day_type" class="form-control select-arrow" [(ngModel)]="filterForm.day_type" (change)="ngOnInit();">
+          <option value="eq">Equal to</option>
+          <option value="lt">{{ (filterForm.list_type=='trial_expires_in')? 'Lesser': 'More' }} than</option>
+          <option value="lte">{{ (filterForm.list_type=='trial_expires_in')? 'Lesser': 'More' }} than equal to</option>
+        </select>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <!-- Trial Expires In -->
+      <div *ngIf="filterForm.list_type=='trial_expires_in'" class="form-group">
+        <select name="expiry_day" class="form-control select-arrow" [(ngModel)]="filterForm.expiry_day" (change)="ngOnInit();">
+          <option value="15">15 Days</option>
+          <option value="14">14 Days</option>
+          <option value="13">13 Days</option>
+          <option value="12">12 Days</option>
+          <option value="11">11 Days</option>
+          <option value="10">10 Days</option>
+          <option value="9">9 Days</option>
+          <option value="8">8 Days</option>
+          <option value="7">7 Days</option>
+          <option value="6">6 Days</option>
+          <option value="5">5 Days</option>
+          <option value="4">4 Days</option>
+          <option value="3">3 Days</option>
+          <option value="2">2 Days</option>
+          <option value="1">1 Day</option>
+          <option value="0">Today</option>
+        </select>
+      </div>
+      <!-- Inactive Users -->
+      <div *ngIf="filterForm.list_type=='unused'" class="form-group">
+        <select name="inactive_day" class="form-control select-arrow" [(ngModel)]="filterForm.inactive_day" (change)="ngOnInit();">
+          <option value="3">3 Days</option>
+          <option value="4">4 Days</option>
+          <option value="5">5 Days</option>
+          <option value="6">6 Days</option>
+          <option value="7">7 Days</option>
+          <option value="8">8 Days</option>
+          <option value="9">9 Days</option>
+          <option value="10">10 Days</option>
+        </select>
+      </div>
+    </div>
+    <!-- search box -->
+    <div class="col-6" [ngClass]="(filterForm.list_type=='trial_expires_in' || filterForm.list_type=='unused')? 'col-md-3': 'col-md-6'">
+      <div class="form-group">
+        <input type="text" name="search_bar" placeholder="Search" class="form-control" [(ngModel)]="search_bar" />
+      </div>
+    </div>
+  </div>
+
+  <!-- DATA LIST -->
+  <div class="list-horizontal">
+
+    <div class="data-list-card-wrapper">
+      <div class="data-list-card-inner">
+        <div class="row m-0">
+
+          <div
+          *ngFor="let x of list | orderDesc:'created_on' | gridSearch: { _id: search_bar, name: search_bar, email: search_bar } | paginate: { itemsPerPage: pageSize, currentPage: page }; let i = index;"
+          class="list-item data-list-card col-md-12 p-0" [@animate]="{value:'*',params:{delay: (i*100)+'ms', y:'50px'}}">
+    
+          <div class="d-flex flex-row">
+            <div *ngIf="x.signup_from=='app'" class="ribbon-band blue-band">Signup from App</div>
+            <div *ngIf="x.package_category=='pro' && x.package_service" class="ribbon-band yellow-band">
+              {{x.package_service}}
+            </div>
+            <div class="list-thumb d-flex align-items-center ml-3 mtb-10">
+              <img class="client-logo" [src]="imgBaseUrl+'uploads/'+x._id+'/social_logo.jpg?v='+verNum" alt="">
+            </div>
+            <div class="flex-grow-1 pl-3 d-flex mtb-10">
+              <div
+                class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                <!-- OTHER DATA -->
+                <p class="m-0 w-15 w-sm-100 m-b-0">{{ x.name }}<br>{{ x.email }}<br>{{ x._id }}<br>{{x.country}} ({{x.company_details?.state}})</p>
+                <p class="m-0 w-15 w-sm-100 m-b-0">{{ (x.package_details?.billing_status)? x.package_name: 'Trial' }}</p>
+                <p class="m-0 w-15 w-sm-100 m-b-0">{{x.account_expiry | date: "dd MMM y"}}</p>
+                <div class="m-0 text-muted text-small w-15 w-sm-100 d-lg-flex align-items-center item-actions">
+                  <!-- <a>
+                    <i class="material-icons edit-icon mr-3">open_in_new</i>
+                  </a> -->
+                  <a href={{x.base_url}} target="_blank">
+                    <i class="material-icons edit-icon mr-3">language</i>
+                  </a>
+                  <div class="product-btn-group btn-group w-md-100 mr-3 c-m-md-0">
+                    <div class="btn-group w-md-100" ngbDropdown role="group" aria-label="Select all" placement="left">
+                      <button class="btn btn-wide btn-outline-secondary w-md-100" ngbDropdownToggle>Action</button>
+                      <div class="dropdown-menu" ngbDropdownMenu>
+                        <button routerLink="/admin/clients/update/{{x._id}}" class="dropdown-item">Edit</button>
+                        <button (click)="settingForm=x; modalService.open(settingModal);"
+                          class="dropdown-item">Setting</button>
+                        <button (click)="pwdForm=x; modalService.open(pwdModal);" class="dropdown-item">Change
+                          Password</button>
+                        <button (click)="sendWhatsapp(x);" class="dropdown-item">Whatsapp</button>
+                        <button *ngIf="x.app_token" (click)="pwdForm={ store_email: x.email, store_id: x._id }; modalService.open(notifyModal);" class="dropdown-item">Send Notification</button>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- <button *ngIf="commonService.host_name=='localhost' && x.account_type=='client'"
+                    class="btn btn-wide btn-outline-secondary w-md-100 mr-3"
+                    (click)="openBuildInfoModal(x, buildInfoModal);">
+                    Build Info
+                  </button> -->
+                  <button (click)="deleteForm=x; modalService.open(statusModal, { centered: true });"
+                    class="btn btn-wide w-md-100"
+                    [ngClass]="(x.status=='active')? 'btn-outline-danger': 'btn-outline-success mr-3'">
+                    {{ (x.status=='active')? 'Disable': 'Enable' }}
+                  </button>
+                  <button *ngIf="commonService.host_name=='localhost' && x.status!='active'"
+                    class="btn orng-outline-btn w-md-100"
+                    (click)="deleteForm=x; modalService.open(deleteModal, { centered: true });">
+                    <span class="orng-outline-txt">Remove</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+    
+        </div>
+
+        </div>
+      </div>
+    </div>
+
+   
+    <!-- PAGINATION CONTROL -->
+    <div class="row">
+      <div class="col-md-12 mt-3" *ngIf="list?.length">
+        <pagination-controls (pageChange)="page=$event; commonService.pageTop(0);" autoHide="true" responsive="true"
+          maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+      </div>
+    </div>
+    
+  </div>
+
+  <div *ngIf="!list?.length" class="row">
+    <div class="col-md-12">
+      <p align="center">No data to display.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Change Pwd -->
+<ng-template #pwdModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Change Password - {{pwdForm.name}}</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdatePwd();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12 form-group mb-3">
+            <label>New Password</label>
+            <input type="text" name="new_pwd" class="form-control" [(ngModel)]="pwdForm.new_pwd" #new_pwd="ngModel"
+              required />
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>Confirm New Password</label>
+            <input type="text" name="confirm_new_pwd" class="form-control" [(ngModel)]="pwdForm.confirm_new_pwd"
+              #confirm_new_pwd="ngModel" required />
+          </div>
+        </div>
+      </div>
+      <div *ngIf="pwdForm.errorMsg">
+        <p class="text-danger">{{ pwdForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+        (click)="modal.dismiss('Cross click');">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" [disabled]="pwdForm.new_pwd!=pwdForm.confirm_new_pwd"
+        class="btn btn-wide btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- Send Notification -->
+<ng-template #notifyModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Send Notification{{(pwdForm.store_email)? ' - '+pwdForm.store_email: ''}}</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onSendNotification();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12 form-group mb-3">
+            <label>Title</label>
+            <input type="text" name="title" class="form-control" [(ngModel)]="pwdForm.title" required />
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>Body</label>
+            <textarea name="body" [(ngModel)]="pwdForm.body" class="form-control" required></textarea>
+          </div>
+          <div class="col-md-12">
+            <div *ngIf="pwdForm.image" align="center">
+              <span (click)="pwdForm.img_change=null; pwdForm.image=null" class="material-icons item-close float-right" aria-hidden="true">close</span>
+              <img [src]="pwdForm.image" height="100px;" width="auto;">
+            </div>
+            <div *ngIf="!pwdForm.image" align="center">
+              <label>
+                <div>
+                  <i class="material-icons add-img">add_photo_alternate</i>
+                  <p>Click to upload image</p>
+                </div>
+                <input type="file" name="image" style="display: none;" (change)="fileChangeListener($event);" accept="image/jpeg, image/png" />
+              </label>
+            </div>
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>Redirect To https://yourstore.io/login{{pwdForm.redirect}}</label>
+            <input type="text" name="redirect" class="form-control" [(ngModel)]="pwdForm.redirect" />
+          </div>
+        </div>
+      </div>
+      <div *ngIf="pwdForm.errorMsg">
+        <p class="text-danger">{{ pwdForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary ladda-button m-1" [disabled]="pwdForm.submit" [ladda]="pwdForm.submit">
+        Send
+      </button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- Build Info Pwd -->
+<ng-template #buildInfoModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Build Information</h4>
+  </div>
+  <div class="modal-body">
+    <div class="row">
+      <div class="col-md-12 mb-2">
+        <p><b>Store Name:</b> {{buildForm.name}}</p>
+      </div>
+      <div class="col-md-12 mb-2">
+        <p><b>Domain:</b> {{buildForm.website}}</p>
+      </div>
+      <ng-container *ngIf="buildForm.build_details">
+        <div class="col-md-6 mb-2">
+          <p><b>PORT:</b> {{ (buildForm.build_details?.port_number)? buildForm.build_details.port_number: 'NA' }}</p>
+        </div>
+        <div class="col-md-6 mb-2">
+          <p><b>Build Number:</b> {{ (buildForm.build_details?.build_number)? buildForm.build_details.build_number: 'NA'
+            }}</p>
+        </div>
+        <div class="col-md-6 mb-2">
+          <p><b>Build Status:</b> {{buildForm.build_details?.build_status}}</p>
+        </div>
+        <div class="col-md-6 mb-2">
+          <p><b>SSL Status:</b> {{buildForm.build_details?.ssl_status}}</p>
+        </div>
+      </ng-container>
+      <!-- btn section -->
+      <div class="col-md-6 mb-2"
+        *ngIf="!buildForm.build_details?.port_number && !buildForm.build_details?.build_number">
+        <button type="button" (click)="manualDeploy();" class="btn btn-wide btn-primary ladda-button m-1"
+          [disabled]="buildForm.submit" [ladda]="buildForm.submit">
+          Deploy {{buildForm.website}}
+        </button>
+      </div>
+      <div class="col-md-6 mb-2"
+        *ngIf="buildForm.build_details?.port_number && buildForm.build_details?.build_number && buildForm.build_details?.build_status!='success'">
+        <button type="button" (click)="checkBuildStatus();" class="btn btn-wide btn-primary ladda-button m-1"
+          [disabled]="buildForm.submit" [ladda]="buildForm.submit">
+          Check Build Status
+        </button>
+      </div>
+    </div>
+    <div *ngIf="buildForm.errorMsg">
+      <p class="text-danger">{{ buildForm.errorMsg }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+      (click)="modal.dismiss('Cross click');">
+      <span class="black-outline-txt">Close</span>
+    </button>
+  </div>
+</ng-template>
+
+<!-- Status -->
+<ng-template #statusModal let-modal>
+  <div class="modal-body">
+    <p><strong>Are you sure you want to {{ (deleteForm.status=='active')? 'disable': 'enable' }} the <span
+          class="text-danger">"{{deleteForm.name}}"</span>?</strong></p>
+    <div *ngIf="deleteForm.errorMsg">
+      <p class="text-danger">{{ deleteForm.errorMsg }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide btn-outline-secondary"
+      (click)="modal.dismiss('Cross click');">No</button>
+    <button type="button" (click)="onUpdateStatus();" class="btn btn-primary">Yes</button>
+  </div>
+</ng-template>
+
+<!-- Delete -->
+<ng-template #deleteModal let-modal>
+  <div class="modal-body" style="background-color: #FA8072;">
+    <p>
+      <strong>Are you sure you want to remove
+        <span style="color: #fff;">"{{deleteForm.name}}"</span> permanently?</strong>
+    </p>
+    <div *ngIf="deleteForm.errorMsg">
+      <p class="text-danger">{{ deleteForm.errorMsg }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+      (click)="modal.dismiss('Cross click');">
+      <span class="black-outline-txt">No</span>
+    </button>
+    <button type="button" (click)="onDelete();" class="btn btn-wide orng-outline-btn">
+      <span class="orng-outline-txt">Yes</span>
+    </button>
+  </div>
+</ng-template>
+
+<!-- Setting -->
+<ng-template #settingModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Setting - {{settingForm.name}}</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdateSetting();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="form-group mb-3 col-md-4">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="band_status"
+                [(ngModel)]="settingForm.additional_features.band_status" #band_status="ngModel">
+              <span>Enable YS Band</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div class="form-group mb-3 col-md-4">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="menu_image"
+                [(ngModel)]="settingForm.additional_features.menu_image" #menu_image="ngModel">
+              <span>Menu with image</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <!-- <div class="form-group mb-3 col-md-4">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="addon_image" [(ngModel)]="settingForm.additional_features.addon_image" #addon_image="ngModel">
+              <span>Addon with image</span>
+              <span class="checkmark"></span>
+            </label>
+          </div> -->
+          <div class="form-group mb-3 col-md-4">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="custom_model"
+                [(ngModel)]="settingForm.additional_features.custom_model" #custom_model="ngModel">
+              <span>Save custom model</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div class="form-group mb-3 col-md-6">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="measurements_condition"
+                [(ngModel)]="settingForm.additional_features.measurements_condition" #measurements_condition="ngModel">
+              <span>Measurement with condition</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div class="col-md-12 mb-3 border-top"></div>
+          <div class="col-md-12 form-group mb-3">
+            <label>Product image resolution</label>
+            <input type="text" name="cropper_resolution" class="form-control"
+              [(ngModel)]="settingForm.additional_features.cropper_resolution" #cropper_resolution="ngModel" required />
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>Gift card validty in months</label>
+            <input type="text" name="gc_validity_in_month" class="form-control"
+              [(ngModel)]="settingForm.additional_features.gc_validity_in_month" #gc_validity_in_month="ngModel"
+              required />
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>Gift card type</label>
+            <select name="giftcard_type" class="form-control select-arrow"
+              [(ngModel)]="settingForm.additional_features.giftcard_type" required>
+              <option value="onetime">One Time</option>
+              <option value="wallet">Wallet</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="settingForm.errorMsg">
+        <p class="text-danger">{{ settingForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+        (click)="modal.dismiss('Cross click');">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>

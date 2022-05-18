@@ -1,0 +1,51 @@
+footer {
+  width: 100%;
+  float: left;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+.yourstore-band {
+  .yourstore-inner {
+    a {
+      background-color: #efefef;
+      border-radius: 12px;
+      padding: 5px 15px;
+    }
+  }
+  .yourstore-logo {
+    width: 90px;
+    height: auto;
+    margin-left: 10px;
+  }
+  .band-txt {
+    font-weight: 300;
+    color: #000;
+    font-size: 0.875rem;
+    line-height: 1.65;
+    text-align: left;
+    padding: 5px;
+    letter-spacing: 0.05em;
+  }
+}
+
+@media only screen and (max-width: 767px) {
+  .justify-content-sm-center {
+    justify-content: center !important;
+  }
+  .yourstore-logo {
+    width: 80px !important;
+  }
+  .band-txt {
+    font-size: 0.75rem !important;
+  }
+}
+
+@media only screen and (max-width: 320px) {
+  footer {
+    position: relative !important;
+    .yourstore-band {
+      padding: 0 !important;
+    }
+  }
+}

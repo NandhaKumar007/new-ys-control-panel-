@@ -1,0 +1,607 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-8">
+        <h1>#{{ order_details.quot_number }}</h1>
+        <ul>
+          <li>View and manage your quotation</li>
+        </ul>
+      </div>
+      <div class="col-4" align="right">
+        <button type="button" class="btn btn-wide btn-outline-secondary" (click)="commonService.goBack();">Back</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="row">
+
+    <div class="col-lg-9">
+      <!-- customer details -->
+      <div class="order-section mtb-10">
+        <p class="sec-desc">Customer Details</p>
+        <div class="col-md-12 list-item p-0 mtb-10">
+          <div class="card o-hidden mb-4 d-flex flex-row">
+            <div class="flex-grow-1 pl-2 d-flex">
+              <div class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                <p class="w-30 w-sm-100 m-b-0">{{ order_details.customerDetails[0]?.name }}</p>
+                <p class="w-30 w-sm-100 m-b-0">{{ order_details.customerDetails[0]?.email }}</p>
+                <p *ngIf="order_details.customerDetails[0]?.mobile" class="w-30 w-sm-100 m-b-0">
+                  {{order_details.customerDetails[0].mobile}}</p>
+                <p *ngIf="!order_details.customerDetails[0]?.mobile" class="w-30 w-sm-100 m-b-0">NA</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- product details -->
+      <div class="order-section">
+        <div class="pb-2">
+          <p class="sec-desc" style="display: inline-block;">Product Details</p>
+          <i *ngIf="params?.type!='confirmed' && params?.type!='cancelled'" style="float:right;" (click)="onEdit('product', productModal);" class="material-icons edit-icon">edit</i>
+        </div>
+        <div class="col-md-12 list-item p-0">
+          <div *ngFor="let x of order_details.item_list; let i=index;" class="card o-hidden mb-4 d-flex flex-row">
+            <div class="list-thumb d-flex mtb-20">
+              <img [src]="imgBaseUrl+x.image" alt="">
+            </div>
+            <div class="flex-grow-1 pl-2 d-flex mtb-20">
+              <div class="card-body row">
+                <div class="col-md-7 d-flex justify-content-center flex-column">
+                  <span>
+                    {{x.name}}
+                  </span>
+                  <ng-container *ngIf="x.variant_status">
+                    <ng-container *ngFor="let y of x.variant_types;">
+                      <span class="w-100">
+                        <b>{{y.name}}: </b>{{y.value}}</span>
+                    </ng-container>
+                  </ng-container>
+
+                  <div *ngIf="x.addon_status && x.selected_addon">
+                    <b>Addon</b><br>
+                    <span class="w-100">{{x.selected_addon?.name}}</span>
+                  </div>
+                </div>
+
+                <div class="col-md-2 flex-center">{{x.quantity}} {{x.unit? x.unit: 'Qty'}}</div>
+                <div *ngIf="x.unit=='Pcs'" class="col-md-2 flex-center">{{ (x.revised_final_price*x.quantity) | currency: commonService.store_currency?.country_code}}</div>
+                <div *ngIf="x.unit!='Pcs'" class="col-md-2 flex-center">{{ ((x.revised_final_price*x.quantity)+x.revised_addon_price) | currency: commonService.store_currency?.country_code}}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- order note -->
+      <div *ngIf="commonService.ys_features.indexOf('order_note')!=-1" class="order-section">
+        <div class="pb-2">
+          <p class="sec-desc" style="display: inline-block;">Note</p>
+          <i style="float:right;" (click)="onEdit('note', orderNoteModal);" class="material-icons edit-icon">edit</i>
+        </div>
+        <div class="col-md-12 list-item p-0">
+          <div class="card o-hidden mb-4 d-flex flex-row">
+            <div class="flex-grow-1 pl-2 d-flex">
+              <div class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                <p *ngIf="order_details?.note" class="w-30 w-sm-100 m-b-0" [innerHTML]="transformHtml(order_details.note)"></p>
+                <p *ngIf="!order_details?.note" class="w-30 w-sm-100 m-b-0">NA</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- company address -->
+      <div class="order-section">
+        <div class="row">
+          <div class="col-md-6 d-flex">
+            <div class="summary-section mtb-10">
+              <div class="order-summary-header pb-2">
+                <p class="sec-desc" style="display: inline-block;">Address</p>
+                <i *ngIf="params?.type!='confirmed' && params?.type!='cancelled'" style="float:right;" (click)="addressType='shipping'; onEdit('address', addressModal);" class="material-icons edit-icon">edit</i>
+              </div>
+              <div class="card order-summary-details h-100">
+                <div class="row mtb-20">
+                  <div class="col-6">
+                    <div class="box-card card-head">
+                      <p>Name</p>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="box-card">
+                      <p class="pull-right text-right">{{order_details.company_address?.name}}</p>
+                    </div>
+                  </div>
+                  <!-- <div class="col-6">
+                    <div class="box-card card-head">
+                      <p>Designation</p>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="box-card">
+                      <p class="pull-right text-right">{{order_details.company_address?.designation}}</p>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="box-card card-head">
+                      <p>Employee Strength</p>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="box-card">
+                      <p class="pull-right text-right">{{order_details.company_address?.employees_count}}</p>
+                    </div>
+                  </div> -->
+                  <div class="col-6">
+                    <div class="box-card card-head">
+                      <p>Mobile No</p>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="box-card">
+                      <p class="pull-right text-right">{{order_details.company_address?.dial_code}} {{order_details.company_address?.mobile}}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="box-card card-head">
+                      <p>Country</p>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="box-card">
+                      <p class="pull-right text-right">{{order_details.company_address?.country}}</p>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="box-card card-head">
+                      <p>State</p>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="box-card">
+                      <p class="pull-right text-right">{{order_details.company_address?.state}}</p>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="box-card card-head">
+                      <p>City</p>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="box-card">
+                      <p class="pull-right text-right">{{order_details.company_address?.city}}</p>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="box-card card-head">
+                      <p>Pincode</p>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="box-card">
+                      <p class="pull-right text-right">{{order_details.company_address?.pincode}}</p>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="box-card card-head">
+                      <p>Address</p>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="box-card">
+                      <p class="pull-right text-right" align="end">{{order_details.company_address?.address}}</p>
+                    </div>
+                  </div>
+                  <ng-container *ngIf="order_details?.company_address?.landmark">
+                    <div class="col-6">
+                      <div class="box-card card-head">
+                        <p>Landmark</p>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="box-card">
+                        <p class="pull-right text-right">{{order_details.company_address?.landmark}}</p>
+                      </div>
+                    </div>
+                  </ng-container>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3">
+      <!-- quotation summary -->
+      <div class="summary-section mtb-10">
+        <div class="order-summary-header">
+          <p class="sec-desc">Quotation Summary</p>
+        </div>
+        <div class="card order-summary-details mtb-10">
+          <div class="row mtb-10">
+            <div class="col-6">
+              <div class="box-card card-head">
+                <p>Sub Total</p>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="box-card">
+                <p class="pull-right text-right">{{order_details.sub_total | currency: commonService.store_currency?.country_code}}</p>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="box-card card-head">
+                <p>Shipping Cost</p>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="box-card">
+                <p class="pull-right text-right">{{order_details.shipping_cost | currency: commonService.store_currency?.country_code}}</p>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="box-card card-head">
+                <p>Grand Total</p>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="box-card">
+                <p class="pull-right text-right">{{order_details.final_price | currency: commonService.store_currency?.country_code}}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- order status -->
+      <div class="order-summary-header">
+        <p class="sec-desc">Quotation Status</p>
+      </div>
+      <div class="card order-summary-details mtb-10">
+        <div class="row mtb-10">
+          <ng-container *ngIf="order_details?.created_on">
+            <div class="col-5">
+              <div class="box-card card-head">
+                <p>Placed on</p>
+              </div>
+            </div>
+            <div class="col-7">
+              <div class="box-card">
+                <p class="pull-right text-right">{{ order_details.created_on | date: "dd MMM y hh:mm a" }}</p>
+              </div>
+            </div>
+            <div class="col-5">
+              <div class="box-card card-head">
+                <p>Processed on</p>
+              </div>
+            </div>
+            <div class="col-7">
+              <div class="box-card">
+                <p class="pull-right text-right">{{ order_details.modified_on | date: "dd MMM y hh:mm a" }}</p>
+              </div>
+            </div>
+            <ng-container *ngIf="params?.type=='confirmed' || params?.type=='cancelled'">
+              <div class="col-5">
+                <div class="box-card card-head">
+                  <p>{{ (params?.type=='confirmed')? 'Confirmed': 'Cancelled' }} on</p>
+                </div>
+              </div>
+              <div class="col-7">
+                <div class="box-card">
+                  <p *ngIf="params?.type=='confirmed'" class="pull-right text-right">{{ order_details.confirmed_on | date: "dd MMM y hh:mm a" }}</p>
+                  <p *ngIf="params?.type=='cancelled'" class="pull-right text-right">{{ order_details.cancelled_on | date: "dd MMM y hh:mm a" }}</p>
+                </div>
+              </div>
+            </ng-container>
+          </ng-container>
+
+          <div *ngIf="params?.type!='confirmed' && params?.type!='cancelled'" class="col-md-12">
+            <button type="button" (click)="quotForm = { _id: order_details._id, email: order_details.customerDetails[0]?.email }; modalService.open(sendQuotationModal);"
+            class="btn btn-primary ladda-button w-100">Send Revised Quotation</button>
+          </div>
+        </div>
+      </div>
+      <!-- # order status -->
+
+      <ng-container *ngIf="params?.type!='confirmed' && params?.type!='cancelled'">
+        <button type="button" (click)="errorMsg=null; btnLoader=false; modalService.open(confirmModal, { centered: true });" class="btn btn-success w-100 mtb-10">Finalize Quotation</button>
+        <button type="button" (click)="errorMsg=null; btnLoader=false; modalService.open(cancelModal, { centered: true });" class="btn btn-info w-100 mtb-10">Cancel Quotation</button>
+      </ng-container>
+
+      <ng-container *ngIf="params?.type=='confirmed'">
+        <button *ngIf="!order_details.order_id" (click)="orderForm={}; modalService.open(createOrderModal);"
+        type="button" class="btn btn-success w-100 mtb-10">Create Order</button>
+        <button *ngIf="order_details.order_id" routerLink="/orders/product/view/all/{{order_details.order_id}}"
+        type="button" class="btn btn-success w-100 mtb-10">View Order</button>
+      </ng-container>
+
+    </div>
+  </div>
+</div>
+
+<!-- update product -->
+<ng-template #productModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Update Product Details</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdateProduct();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="col-md-6 form-group mb-3">
+        <label>Shipping Cost</label>
+        <input type="text" name="shipping_cost" [(ngModel)]="editForm.shipping_cost" #shipping_cost="ngModel" class="form-control" appNumberOnly required />
+      </div>
+      <div class="col-md-12 list-item p-0">
+        <div *ngFor="let x of editForm.item_list; let i=index;" class="card o-hidden mb-4 d-flex flex-row">
+          <div class="list-thumb d-flex mtb-20">
+            <img [src]="imgBaseUrl+x.image" alt="">
+          </div>
+          <div class="flex-grow-1 pl-2 d-flex mtb-20">
+            <div class="card-body row">
+              <div class="col-md-4 d-flex justify-content-center flex-column">
+                <span>{{x.name}}</span>
+                <ng-container *ngIf="x.variant_status">
+                  <ng-container *ngFor="let y of x.variant_types;">
+                    <span class="w-100"><b>{{y.name}}: </b>{{y.value}}</span>
+                  </ng-container>
+                </ng-container>
+                <div *ngIf="x.addon_status && x.selected_addon">
+                  <b>Addon</b><br>
+                  <span class="w-100">{{x.selected_addon?.name}}</span>
+                </div>
+              </div>
+              <div class="col-md-2 flex-center">{{x.quantity}} {{x.unit}}</div>
+              <div *ngIf="x.unit=='Pcs'" class="col-md-2 flex-center">{{ (x.final_price*x.quantity) | currency: commonService.store_currency?.country_code}}</div>
+              <div *ngIf="x.unit!='Pcs'" class="col-md-2 flex-center">{{ ((x.final_price*x.quantity)+x.addon_price) | currency: commonService.store_currency?.country_code}}</div>
+              <div class="col-md-4 flex-center">
+                <div class="row">
+                  <div class="col-md-12 form-group mb-3">
+                    <label>Discounted Price</label>
+                    <input type="text" name="revised_final_price{{i}}" [(ngModel)]="x.revised_final_price" #revised_final_price="ngModel" class="form-control" appNumberOnly required />
+                  </div>
+                  <div *ngIf="x.unit!='Pcs' && x.revised_addon_price>0" class="col-md-12 form-group mb-3">
+                    <label>Addon Price</label>
+                    <input type="text" name="revised_addon_price{{i}}" [(ngModel)]="x.revised_addon_price" #revised_addon_price="ngModel" class="form-control" appNumberOnly required />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="editForm.errorMsg">
+          <p class="text-danger">{{ editForm.errorMsg }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide btn-outline-secondary" (click)="modal.dismiss('cancel');">Cancel</button>
+      <button type="submit" class="btn btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- update order note -->
+<ng-template #orderNoteModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Update Note</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdate({_id: order_details._id, note: editForm.note });" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12 form-group mb-3">
+            <label>Order Note</label>
+            <textarea class="form-control" rows="5" aria-label="With textarea" name="note" [(ngModel)]="editForm.note" #note="ngModel"
+              required></textarea>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="editForm.errorMsg">
+        <p class="text-danger">{{ editForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide btn-outline-secondary" (click)="modal.dismiss('cancel');">Cancel</button>
+      <button type="submit" class="btn btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- update address -->
+<ng-template #addressModal let-modal>
+  <div class="modal-header">
+    <h4 *ngIf="addressType=='shipping'" class="modal-title" id="modal-basic-title">Update Shipping Address</h4>
+    <h4 *ngIf="addressType=='billing'" class="modal-title" id="modal-basic-title">Update Billing Address</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdateAddress();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-6 form-group mb-3">
+            <label>Name</label>
+            <input type="text" name="name" [(ngModel)]="addressForm.name" #name="ngModel" class="form-control" required />
+          </div>
+          <!-- <div class="col-md-6 form-group mb-3">
+            <label>Designation</label>
+            <input type="text" name="designation" [(ngModel)]="addressForm.designation" #designation="ngModel" class="form-control" required />
+          </div>
+          <div class="col-md-6 form-group mb-3">
+            <label>Company Employee Strength</label>
+            <input type="text" name="employees_count" [(ngModel)]="addressForm.employees_count" #employees_count="ngModel" class="form-control" required />
+          </div> -->
+          <div class="col-md-6 form-group mb-3">
+            <label>Country</label>
+            <select name="country" [(ngModel)]="addressForm.country" (change)="addressForm.state=null; onCountryChange(addressForm.country);"
+              class="form-control select-arrow" required>
+              <option *ngFor="let x of country_list | orderAsc: 'name';" [ngValue]="x.name">{{x.name}}</option>
+            </select>
+          </div>
+          <!-- if state list exist -->
+          <div *ngIf="state_list?.length" class="col-md-6 form-group mb-3">
+            <label>State</label>
+            <select name="state" [(ngModel)]="addressForm.state" class="form-control select-arrow" required>
+              <option *ngFor="let x of state_list | orderAsc: 'name';" [ngValue]="x.name">{{x.name}}</option>
+            </select>
+          </div>
+          <!-- if not state list exist -->
+          <div *ngIf="!state_list?.length" class="col-md-6 form-group mb-3">
+            <label>State</label>
+            <input type="text" name="state" [(ngModel)]="addressForm.state" #state="ngModel" class="form-control" required />
+          </div>
+          <div class="col-md-6 form-group mb-3">
+            <div class="modal-input">
+              <div class="input-group mobile-no">
+                <div class="dial-code input-group-prepend d-flex flex-column">
+                  <label>Dial Code</label>
+                  <select name="dial_code" [(ngModel)]="addressForm.dial_code" #dial_code="ngModel" class="form-control" required>
+                    <option *ngFor="let x of country_list | orderAsc: 'name';" [ngValue]="x.dial_code">{{x.dial_code}} ({{x.code}})
+                    </option>
+                  </select>
+                </div>
+                <div class="enter-no d-flex flex-column">
+                  <label>Mobile</label>
+                  <input type="text" name="mobile" [(ngModel)]="addressForm.mobile" #mobile="ngModel" class="form-control" required />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 form-group mb-3">
+            <label>City</label>
+            <input type="text" name="city" [(ngModel)]="addressForm.city" #city="ngModel" class="form-control" required />
+          </div>
+          <div class="col-md-6 form-group mb-3">
+            <label>Pincode</label>
+            <input type="text" name="pincode" [(ngModel)]="addressForm.pincode" #pincode="ngModel" class="form-control" [readonly]="addressType=='shipping' && order_details?.cp_orders?.length"
+              required />
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>Complete Address</label>
+            <textarea class="form-control" rows="3" aria-label="With textarea" name="address" [(ngModel)]="addressForm.address" #address="ngModel"
+              required></textarea>
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>Landmark</label>
+            <input type="text" name="landmark" [(ngModel)]="addressForm.landmark" #landmark="ngModel" class="form-control" />
+          </div>
+        </div>
+      </div>
+      <div *ngIf="addressForm.errorMsg">
+        <p class="text-danger">{{ addressForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide btn-outline-secondary" (click)="modal.dismiss('cancel');">Cancel</button>
+      <button type="submit" class="btn btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- send quotation -->
+<ng-template #sendQuotationModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Send Revised Quotation</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onSendQuotation(quotForm);" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12 form-group mb-3">
+            <label>Email</label>
+            <input type="email" name="email" [(ngModel)]="quotForm.email" #email="ngModel" class="form-control" required />
+          </div>
+        </div>
+      </div>
+      <div *ngIf="quotForm.errorMsg">
+        <p class="text-danger">{{ quotForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide btn-outline-secondary" (click)="modal.dismiss('cancel');">Cancel</button>
+      <button type="submit" class="btn btn-wide btn-primary ladda-button" [disabled]="quotForm.submit"
+      [ladda]="quotForm.submit">Send</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- Confirm Quotation -->
+<ng-template #confirmModal let-modal>
+  <div class="modal-body">
+    <p>
+      <strong>Are you sure you want to finalize the
+        <span class="text-danger">"#{{order_details.quot_number}}"</span> quotation?</strong>
+    </p>
+    <div *ngIf="errorMsg">
+      <p class="text-danger">{{ errorMsg }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide btn-outline-secondary" (click)="modal.dismiss('cancel')">No</button>
+    <button type="button" (click)="onConfirmOrder();" class="btn btn-primary ladda-button" [disabled]="btnLoader" [ladda]="btnLoader">Yes</button>
+  </div>
+</ng-template>
+
+<!-- Cancel Quotation -->
+<ng-template #cancelModal let-modal>
+  <div class="modal-body">
+    <p>
+      <strong>Are you sure you want to cancel the
+        <span class="text-danger">"#{{order_details.quot_number}}"</span> quotation?</strong>
+    </p>
+    <div *ngIf="errorMsg">
+      <p class="text-danger">{{ errorMsg }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide btn-outline-secondary" (click)="modal.dismiss('cancel')">No</button>
+    <button type="button" (click)="onCancelOrder();" class="btn btn-primary ladda-button" [disabled]="btnLoader" [ladda]="btnLoader">Yes</button>
+  </div>
+</ng-template>
+
+<!-- create order -->
+<ng-template #createOrderModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Create Order</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onCreateOrder();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12 form-group mb-3">
+            <label>Shipping Name</label>
+            <input type="text" name="shipping_name" [(ngModel)]="orderForm.shipping_name" class="form-control" required />
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>Delivery Time</label>
+            <select name="delivery_time" class="form-control" [(ngModel)]="orderForm.delivery_time" required>
+              <option value="Same day">Same day</option>
+              <option value="Next day">Next day</option>
+              <option value="1 to 2 days">1 to 2 days</option>
+              <option value="2 to 5 days">2 to 5 days</option>
+              <option value="More than 5 days">More than 5 days</option>
+            </select>
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>Payment Method</label>
+            <select name="payment_type" class="form-control" [(ngModel)]="orderForm.payment_type" required>
+              <option *ngFor="let x of commonService.payment_list | orderAsc: 'rank';" [ngValue]="x.name">{{x.name}}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="orderForm.errorMsg">
+        <p class="text-danger">{{ orderForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide btn-outline-secondary" (click)="modal.dismiss('cancel');">Cancel</button>
+      <button type="submit" class="btn btn-wide btn-primary ladda-button" [disabled]="orderForm.submit"
+      [ladda]="orderForm.submit">Submit</button>
+    </div>
+  </form>
+</ng-template>

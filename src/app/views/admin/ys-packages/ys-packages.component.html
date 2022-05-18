@@ -1,0 +1,201 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb">
+    <h1>Packages</h1>
+    <ul>
+      <li>Manage and edit subscription types here</li>
+    </ul>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <button type="button" class="btn btn-primary" (click)="onAddModal(packageModal);">Add Package</button>
+    </div>
+    <!-- search box -->
+    <div *ngIf="list?.length" class="col-md-6">
+      <div class="form-group">
+        <input type="text" name="search_bar" placeholder="Search" class="form-control" [(ngModel)]="search_bar" />
+      </div>
+    </div>
+  </div>
+
+  <!-- DATA LIST -->
+  <div *ngIf="list?.length" class="list-horizontal">
+
+
+    <div class="data-list-card-wrapper">
+      <div class="data-list-card-inner">
+        <div class="row m-0">
+
+          <!-- SINGLE LIST ITEM -->
+          <div
+            *ngFor="let x of list | orderAsc: 'rank' | fieldSearch:'name':search_bar | paginate: { itemsPerPage: pageSize, currentPage: page }; let i=index;"
+            class="col-md-12 list-item data-list-card" [@animate]="{value:'*',params:{delay: (i*100)+'ms', y:'50px'}}">
+
+            <div class="d-flex flex-row">
+              <div class="flex-grow-1 d-flex">
+                <div
+                  class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                  <!-- OTHER DATA -->
+                  <p class="m-0 w-20 w-sm-100 m-b-0">{{ x.name }}<br>{{ x._id }}</p>
+                  <p class="m-0 text-muted text-small w-20 w-sm-100">
+                    {{ (x.currency_types.INR.live + x.currency_types.INR.amount) | currency:'INR':'symbol':'1.0' }} / Month
+                  </p>
+                  <p class="m-0 text-muted text-small w-20 w-sm-100">{{ x.currency_types.INR.transaction_fees }}%
+                    Transaction
+                  </p>
+                  <p class="m-0 text-muted text-small w-sm-100 d-lg-block item-actions">
+                    <button class="btn btn-wide btn-outline-secondary w-md-100 mr-3"
+                      (click)="onEdit(x, packageModal);">Edit</button>
+                    <button class="btn btn-outline-danger w-md-100"
+                      (click)="deleteForm = x; modalService.open(deleteModal, { centered: true });">Remove</button>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGINATION CONTROL -->
+    <div class="col-md-12 mt-3">
+      <pagination-controls (pageChange)="page=$event; commonService.pageTop(0);" autoHide="true" responsive="true"
+        maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+    </div>
+
+  </div>
+
+  <div *ngIf="!list?.length" class="row">
+    <div class="col-md-12">
+      <p align="center">No data to display.</p>
+    </div>
+  </div>
+</div>
+
+<!-- PACKAGE MODAL -->
+<ng-template #packageModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{ (formType=='add')? 'Add': 'Update' }} Package</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onSubmit();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-3 form-group mb-3">
+            <label>Category</label>
+            <select name="category" class="form-control" [(ngModel)]="packageForm.category" #category="ngModel" required>
+              <option *ngFor="let x of commonService.package_categories;" value="{{x.name}}">{{x.display}}</option>
+            </select>
+          </div>
+          <div class="col-md-3 form-group mb-3">
+            <label>Service Type</label>
+            <select name="service" class="form-control" [(ngModel)]="packageForm.service" #service="ngModel" required>
+              <option *ngFor="let x of commonService.ys_services;" value="{{x.name}}">{{x.display}}</option>
+            </select>
+          </div>
+          <div class="col-md-3 form-group mb-3">
+            <label>Name</label>
+            <input type="text" name="name" class="form-control" [(ngModel)]="packageForm.name" #name="ngModel" [disabled]="formType!='add'" required />
+          </div>
+          <div class="col-md-3 form-group mb-3">
+            <label>Diplay Text</label>
+            <input type="text" name="disp_name" class="form-control" [(ngModel)]="packageForm.disp_name" #disp_name="ngModel" required />
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>Description</label>
+            <textarea name="description" [(ngModel)]="packageForm.description" #description="ngModel" class="form-control" required></textarea>
+          </div>
+          <ng-container *ngFor="let x of currency_list; let i=index;">
+            <div class="col-md-12">
+              <div class="card p-3 mb-3">
+                <div class="row">
+                  <div class="col-md-12">
+                    <span class="primary-color"><b>{{x.base}}</b></span>
+                  </div>
+                  <div class="col-md-2 form-group mb-3">
+                    <label>Live Fees</label>
+                    <input type="text" name="live{{i}}" class="form-control" [(ngModel)]="x.live" #live="ngModel" appNumberOnly required />
+                  </div>
+                  <div class="col-md-2 form-group mb-3">
+                    <label>Selling Platform Fees</label>
+                    <input type="text" name="selling_cost{{i}}" class="form-control" [(ngModel)]="x.selling_amount" #selling_amount="ngModel" appNumberOnly required />
+                  </div>
+                  <div class="col-md-2 form-group mb-3">
+                    <label>Discounted Platform Fees</label>
+                    <input type="text" name="cost{{i}}" class="form-control" [(ngModel)]="x.amount" #amount="ngModel" appNumberOnly required />
+                  </div>
+                  <div class="col-md-3 form-group mb-3">
+                    <label>Transaction rate(%)</label>
+                    <input type="text" name="rate{{i}}" class="form-control" [(ngModel)]="x.transaction_fees"
+                      #transaction_fees="ngModel" appNumberOnly required />
+                  </div>
+                  <div class="col-md-3 form-group mb-3">
+                    <label>Transaction free (sales limit)</label>
+                    <input type="text" name="limit{{i}}" class="form-control" [(ngModel)]="x.transaction_limit"
+                      #transaction_limit="ngModel" appNumberOnly required />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+          <!-- <div *ngIf="formType!='add'" class="col-md-12 form-group mb-3">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="trial_status" [(ngModel)]="packageForm.trial_status"
+                #trial_status="ngModel">
+              <span>Allow paid features for trial</span>
+              <span class="checkmark"></span>
+            </label>
+          </div> -->
+          <!-- <div *ngIf="packageForm.trial_status" class="col-md-6 form-group mb-3 ml-3">
+            <label>Trail upto in days</label>
+            <input type="text" name="trial_upto_in_days" class="form-control"
+              [(ngModel)]="packageForm.trial_upto_in_days" #trial_upto_in_days="ngModel" required />
+          </div> -->
+        </div>
+        <!-- <div class="row ml-2" *ngIf="packageForm.trial_status">
+          <ng-container *ngFor="let x of packageForm.new_feature_list; let i=index;">
+            <div class="col-md-4 form-group mb-3">
+              <label class="checkbox checkbox-primary">
+                <input class="form-check-input" type="checkbox" name="feature_selected{{i}}" [(ngModel)]="x.selected"
+                  #feature_selected="ngModel">
+                <span>{{x.name}}</span>
+                <span class="checkmark"></span>
+              </label>
+            </div>
+          </ng-container>
+        </div> -->
+      </div>
+      <div *ngIf="packageForm.errorMsg">
+        <p class="text-danger">{{ packageForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide btn-outline-secondary"
+        (click)="modal.dismiss('Cross click');">Cancel</button>
+      <button type="submit" class="btn btn-primary">{{ (formType=='add')? 'Add': 'Update' }}</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- DELETE MODAL -->
+<ng-template #deleteModal let-modal>
+  <div class="modal-body">
+    <p><strong>Are you sure you want to remove <span class="text-danger">"{{deleteForm.name}}"</span> package?</strong>
+    </p>
+    <div *ngIf="deleteForm.errorMsg">
+      <p class="text-danger">{{ deleteForm.errorMsg }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide btn-outline-secondary"
+      (click)="modal.dismiss('Cross click');">No</button>
+    <button type="button" (click)="onDelete();" class="btn btn-primary">Yes</button>
+  </div>
+</ng-template>

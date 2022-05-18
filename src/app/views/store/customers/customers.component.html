@@ -1,0 +1,313 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-md-9">
+        <h1>Signed Up Users</h1>
+        <ul>
+          <li>View and manage your signed up users</li>
+        </ul>
+      </div>
+      <div class="col-md-3 d-flex align-items-center justify-content-end mt-sm-15">
+        <button *ngIf="commonService.store_details.login_type=='admin'" type="button" (click)="exportAsXLSX();"
+          class="btn btn-primary ladda-button mr-2" [disabled]="exportLoader || commonService.store_details?.package_details?.package_id==configData.free_package_id" [ladda]="exportLoader">Export</button>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="top-filter-sec">
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <button type="button" [disabled]="commonService.store_details?.package_details?.package_id==configData.free_package_id" (click)="addCustomerModal(customerModal);" class="btn btn-primary ladda-button mr-2">Add New Customer</button>
+      </div>
+      <!-- search box -->
+      <div class="col-md-6 mt-sm-15">
+        <form autocomplete="off" (ngSubmit)="ngOnInit();" ngNativeValidate>
+          <div class="form-group">
+            <input type="text" name="search_bar" placeholder="Search" class="form-control" [(ngModel)]="filterForm.search" />
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="list?.length" class="list-horizontal">
+
+    <div class="data-list-card-wrapper">
+      <div class="data-list-card-inner">
+        <div class="row m-0">
+
+          <div *ngFor="let x of list; let i=index;"
+            class="col-md-12 list-item data-list-card" [@animate]="{value:'*',params:{delay: (i*100)+'ms', y:'50px'}}">
+            <div class="d-flex flex-row">
+              <div class="flex-grow-1 pl-2 d-flex">
+                <div
+                  class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                  <p class="w-30 w-sm-100 m-b-0">{{x.name}}</p>
+                  <p class="w-30 w-sm-100 m-b-0">{{(x.unique_id)? x.unique_id : 'NA'}}</p>
+                  <p class="w-30 w-sm-100 m-b-0">{{x.email}}</p>
+                  <p class="w-30 w-sm-100 m-b-0">{{ (x.dial_code && x.mobile)? x.dial_code+' '+x.mobile: 'NA' }}</p>
+                  <p class="m-0 text-muted text-small w-15 w-sm-100 d-lg-block item-actions order-md-2">
+                    <a class="btn btn-wide black-outline-btn w-md-100 mr-3" (click)="catchPageData();" routerLink="/customers/{{x._id}}">
+                      <span class="black-outline-txt">View</span>
+                    </a>
+                  </p>
+                  <div class="product-btn-group text-muted text-small w-15 w-sm-100 d-lg-block item-actions mr-3 c-m-md-0">
+                    <div class="btn-group w-md-100">
+                      <!-- orders -->
+                      <div
+                        *ngIf="commonService.store_details?.type=='order_based' || commonService.store_details?.type=='restaurant_based'"
+                        class="btn-group w-md-100" ngbDropdown role="group" aria-label="Select all" placement="left">
+                        <button class="btn btn-wide btn-primary w-md-100" ngbDropdownToggle>View Orders</button>
+                        <div class="dropdown-menu" ngbDropdownMenu>
+                          <button class="dropdown-item" (click)="goOrdersPage(x, 'live')">Live</button>
+                          <button class="dropdown-item" (click)="goOrdersPage(x, 'delivered')">Completed</button>
+                          <button class="dropdown-item" (click)="goOrdersPage(x, 'cancelled')">Cancelled</button>
+                        </div>
+                      </div>
+                      <!-- quotations -->
+                      <div *ngIf="commonService.store_details?.type=='quot_based'" class="btn-group w-md-100"
+                        ngbDropdown role="group" aria-label="Select all" placement="left">
+                        <button class="btn btn-wide btn-primary w-md-100" ngbDropdownToggle>View Quotations</button>
+                        <div class="dropdown-menu" ngbDropdownMenu>
+                          <button class="dropdown-item" (click)="goQuotPage(x, 'live')">Live</button>
+                          <button class="dropdown-item" (click)="goQuotPage(x, 'confirmed')">Confirmed</button>
+                          <button class="dropdown-item" (click)="goQuotPage(x, 'cancelled')">Cancelled</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
+    <!-- PAGINATION CONTROL -->
+    <div *ngIf="list.length" class="row mt-4">
+      <div class="col-md-12 product-pagination-wrapper">
+        <ul role="navigation" class="ngx-pagination responsive product-pagination" aria-label="Pagination">
+          <li class="pagination-previous mr-3">
+            <a (click)="(page>1)? onChangePage('prev'): ''" [ngClass]="(page>1)? 'cursor': 'disabled'" aria-label="page">
+              <span class="cursor show-for-sr"></span>
+            </a>
+          </li>
+          <li class="current">
+            <span>{{page}}</span>
+          </li>
+          <li class="pagination-next ml-3">
+            <a (click)="(page<totalPages)? onChangePage('next'): ''" [ngClass]="(page<totalPages)? 'cursor': 'disabled'" aria-label="page">
+              <span class="cursor show-for-sr"></span>
+            </a>
+          </li>
+        </ul>
+        <div class="page-count-pagination">
+          <b class="mr-2">Go to</b>
+          <select name="select_page" style="width: 70px; display: inline;" class="form-control select-arrow" [(ngModel)]="page" (change)="commonService.pageTop(0); onLoadData();">
+            <option [ngValue]="i+1" *ngFor="let num of pagesList; let i=index;">{{i+1}}</option>
+          </select>
+          <b class="ml-2">page</b>
+        </div>
+      </div>
+    </div>
+    
+
+  </div>
+
+  <div *ngIf="!list?.length" class="row">
+    <div class="col-md-12 d-flex flex-column align-items-center justify-content-center no-rec-found-wrapper">
+      <img class="no-rec-found" src="assets/images/no_records_found.png" alt="no-records">
+      <p align="center">No data to display.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ADD CUSTOMER -->
+<ng-template #customerModal let-modal>
+  <!-- header -->
+    <div class="modal-header pb-0">
+    <div>
+      <h4 class="modal-title" id="modal-basic-title">Add New Customer</h4>
+      <p>Fill in the details of the customer</p>
+    </div>
+    <div class="d-flex">
+      <i class="material-icons" id="closeModal" (click)="modal.dismiss('Cross click');">close</i>
+    </div>
+  </div>
+  <!-- step 1 -->
+  <form *ngIf="customerForm.step==1" autocomplete="off" (ngSubmit)="customerForm.step=2;" ngNativeValidate>
+    <div class="modal-body">
+      <div class="row">
+        <div class="col-md-6 form-group mb-3">
+          <div class="card p-3">
+            <label>Name</label>
+            <input type="text" name="name" [(ngModel)]="customerForm.name" #name="ngModel" class="form-control"
+              required />
+          </div>
+        </div>
+        <div class="col-md-6 form-group mb-3">
+          <div class="card p-3">
+            <label>Email</label>
+            <input type="email" name="email" [(ngModel)]="customerForm.email" #email="ngModel" class="form-control"
+              required />
+          </div>
+        </div>
+        <div class="col-md-6 form-group mb-3">
+          <div class="card p-3">
+            <div class="input-group">
+              <div class="input-group-prepend flex-column w-40 w-sm-100 mr-3 c-sm-m-0 c-sm-mb-3">
+                <label>Dial Code</label>
+                <select name="dial_code" class="form-control" [(ngModel)]="customerForm.dial_code" #dial_code="ngModel" required>
+                  <option *ngFor="let x of commonService.country_list | orderAsc: 'dial_code';" [ngValue]="x.dial_code">{{x.dial_code}}</option>
+                </select>
+              </div>
+              <div class="flex-column w-55 w-sm-100">
+                <label>Mobile</label>
+                <input type="text" name="mobile" [(ngModel)]="customerForm.mobile" #mobile="ngModel" class="form-control" appNumberOnly required />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="submit" class="btn btn-wide btn-primary">Next</button>
+    </div>
+  </form>
+  <!-- step 2 -->
+  <form *ngIf="customerForm.step==2" autocomplete="off" (ngSubmit)="onAddCustomer();" ngNativeValidate>
+    <div class="modal-body lg-modal-body slim-scroll">
+      <div class="card p-3 mb-4">
+        <div class="row">
+          <div class="col-md-8 offset-md-2">
+            <div class="row address-radio-div">
+              <div class="col-4 d-flex justify-content-center">
+                <label class="radio radio-primary mt-2 mb-2">
+                  <input type="radio" [(ngModel)]="customerForm.address_form.type" value="home" name="address_type"
+                    required>
+                  Home <span class="checkmark"></span>
+                </label>
+              </div>
+              <div class="col-4 d-flex justify-content-center">
+                <label class="radio radio-primary mt-2 mb-2">
+                  <input type="radio" [(ngModel)]="customerForm.address_form.type" value="office" name="address_type"
+                    required>
+                  Office <span class="checkmark"></span>
+                </label>
+              </div>
+              <div class="col-4 d-flex justify-content-center">
+                <label class="radio radio-primary mt-2 mb-2">
+                  <input type="radio" [(ngModel)]="customerForm.address_form.type" value="other" name="address_type"
+                    required>
+                  Other <span class="checkmark"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div *ngIf="customerForm.address_form.type=='other'" class="col-lg-6 form-group mb-3">
+          <div class="card p-3">
+            <label>Address Title</label>
+            <input type="text" name="other_place" [(ngModel)]="customerForm.address_form.other_place"
+              #other_place="ngModel" class="form-control" required />
+          </div>
+        </div>
+        <div class="col-lg-6 form-group mb-3">
+          <div class="card p-3">
+            <label>Full Name</label>
+            <input type="text" name="full_name" [(ngModel)]="customerForm.address_form.name" #name="ngModel"
+              class="form-control" required />
+          </div>
+        </div>
+        <div class="col-lg-6 form-group mb-3">
+          <div class="card p-3">
+            <label>Country</label>
+            <select name="country" class="form-control"
+              (change)="customerForm.address_form.state=null; onCountryChange(customerForm.address_form.country);"
+              [(ngModel)]="customerForm.address_form.country" required>
+              <option *ngFor="let x of commonService.country_list | orderAsc: 'dial_code';" [value]="x.name">{{x.name}}
+              </option>
+            </select>
+          </div>
+        </div>
+        <div class="col-lg-6 form-group mb-3">
+          <div class="card p-3">
+            <div class="input-group">
+              <div class="input-group-prepend flex-column w-40 w-sm-100 mr-3 c-sm-m-0 c-sm-mb-3">
+                <label>Dial Code</label>
+                <select name="dial_code" class="form-control" [(ngModel)]="customerForm.address_form.dial_code"
+                  #dial_code="ngModel" required>
+                  <option *ngFor="let x of commonService.country_list | orderAsc: 'name';" [ngValue]="x.dial_code">
+                    {{x.dial_code}}</option>
+                </select>
+              </div>
+              <div class="flex-column w-55 w-sm-100">
+                <label>Mobile</label>
+                <input type="text" name="mobile" [(ngModel)]="customerForm.address_form.mobile" #mobile="ngModel"
+                  class="form-control" appNumberOnly required />
+              </div>
+            </div>
+          </div>
+        </div>
+        <ng-container *ngFor="let field of address_fields; let j=index;">
+          <ng-container *ngIf="field.keyword=='state'">
+            <!-- if state list exist -->
+            <div *ngIf="state_list?.length" class="col-lg-6 form-group mb-3">
+              <div class="card p-3">
+                <p>{{field.label}}:</p>
+                <select class="form-control" name="field{{j}}" [(ngModel)]="field.value" required>
+                  <option *ngFor="let x of state_list | orderAsc: 'name';" [ngValue]="x.name">{{x.name}}</option>
+                </select>
+              </div>
+            </div>
+            <!-- if not state list exist -->
+            <div *ngIf="!state_list?.length" class="col-lg-6 form-group mb-3">
+              <div class="card p-3">
+                <p>{{field.label}}:</p>
+                <input class="form-control" type="text" name="field{{j}}" [(ngModel)]="field.value" required>
+              </div>
+            </div>
+          </ng-container>
+          <div *ngIf="field.keyword!='state'" class="col-lg-6 form-group mb-3">
+            <div class="card p-3">
+              <p>{{field.label}}:</p>
+              <input class="form-control" type="text" name="field{{j}}" [(ngModel)]="field.value" required>
+            </div>
+          </div>
+        </ng-container>
+        <div class="col-lg-6 form-group mb-3">
+          <div class="card p-3">
+            <label>Complete Address</label>
+            <textarea name="completeAddress" [(ngModel)]="customerForm.address_form.address" #completeAddress="ngModel"
+              class="form-control" required></textarea>
+          </div>
+        </div>
+        <div class="col-lg-6 d-flex form-group mb-3">
+          <div class="card w-100 p-3">
+            <label>Landmark</label>
+            <input type="text" name="landmark" [(ngModel)]="customerForm.address_form.landmark" #landmark="ngModel"
+              class="form-control" />
+          </div>
+        </div>
+      </div>
+      <div class="mt-3" *ngIf="customerForm.error_msg" align="center">
+        <p class="text-danger m-0">{{customerForm.error_msg}}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-wide black-outline-btn" type="button" (click)="customerForm.step=1;">Back</button>
+      <button type="submit" class="btn btn-wide btn-primary ladda-button m-1" [disabled]="customerForm.submit"
+        [ladda]="customerForm.submit">Add</button>
+    </div>
+  </form>
+</ng-template>

@@ -1,0 +1,638 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-md-8">
+        <h1>Vendors</h1>
+        <ul>
+          <li>View and manage your vendors</li>
+        </ul>
+      </div>
+      <div class="col-md-4 d-flex align-items-center justify-content-end mt-sm-15">
+        <button type="button" (click)="onOpencmsnModal(commissionModal);" class="btn btn-primary mr-3">Commission Setting</button>
+        <button (click)="onAddModal(vendorModal);" type="button" class="btn btn-primary">Add New Vendor</button>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+  <div class="top-filter-sec">
+    <div class="row mb-4">
+      <div class="col-md-3 col-6">
+        <div class="form-group">
+          <select name="list_type" class="form-control select-arrow" [(ngModel)]="list_type" (change)="onTypeChange(list_type);">
+            <option value="all">All</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="new">New</option>
+            <option value="declined">Declined</option>
+          </select>
+        </div>
+      </div>
+      <div class="col-md-3 col-6"></div>
+      <!-- search box -->
+      <div class="col-md-6 mt-sm-15">
+        <div class="form-group">
+          <input type="text" name="search_bar" placeholder="Search" class="form-control" [(ngModel)]="search_bar" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- DATA LIST -->
+  <div *ngIf="list?.length" class="list-horizontal">
+
+    <div class="data-list-card-wrapper">
+      <div class="data-list-card-inner">
+        <div class="row m-0">
+
+          <!-- SINGLE LIST ITEM -->
+          <div *ngFor="let x of list | fieldSearch:'email':search_bar | paginate: { itemsPerPage: pageSize, currentPage: page }; let i=index;"
+            class="col-md-12 list-item data-list-card" [@animate]="{value:'*',params:{delay: (i*100)+'ms', y:'50px'}}">
+
+            <div class="d-flex flex-row">
+              <div *ngIf="x.image" class="list-thumb d-flex align-items-center">
+                <img [src]="imgBaseUrl+x.image" alt="">
+              </div>
+              <div class="flex-grow-1 pl-2 d-flex">
+                <div class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                  <p class="w-30 w-sm-100 m-b-0">{{x.company_details?.name}}<br>{{x.company_details?.brand}}</p>
+                  <p class="w-30 w-sm-100 m-0">{{x.email}}</p>
+                  <p class="w-30 w-sm-100 m-b-0">
+                    <span *ngIf="x.password && x.status=='active'" class="badge badge-warning badge-green">Active</span>
+                    <span *ngIf="x.password && x.status=='inactive'" class="badge badge-primary badge-red">Inactive</span>
+                    <span *ngIf="!x.password && x.status=='inactive'" class="badge badge-primary badge-blue">New</span>
+                    <span *ngIf="x.status=='declined'" class="badge badge-primary badge-red">Declined</span>
+                  </p>
+                  <!-- <p class="m-0 text-muted text-small w-15 w-sm-100 d-lg-block item-actions"> -->
+                    <div class="col-md-4 d-flex align-items-center justify-content-end">
+                      <div class="text-muted text-small w-15 w-sm-100 d-lg-block item-actions">
+                        <div class="product-btn-group btn-group w-md-100 ml-3 mr-3 c-m-md-0">
+                          <div class="btn-group w-md-100" ngbDropdown role="group" aria-label="Select all"
+                            placement="left">
+                            <button class="btn btn-wide black-outline-btn w-md-100" ngbDropdownToggle>
+                              <span class="black-outline-txt">Edit</span>
+                            </button>
+                            <div class="dropdown-menu" ngbDropdownMenu>
+                              <button class="dropdown-item" (click)="onEdit(x, 'edit_details', vendorModal);">Details</button>
+                              <ng-container *ngIf="x.password && x.status!='declined'">
+                                <button class="dropdown-item" (click)="vendorForm={ _id: x._id, email: x.email, image: x.image }; modalService.open(bannerModal);">Banner</button>
+                                <button class="dropdown-item" (click)="pwdForm={_id: x._id, email: x.email}; modalService.open(changePwdModal);">Password</button>
+                                <button class="dropdown-item" (click)="onEdit(x, 'edit_permissions', permissionModal);">Permissions</button>
+                              </ng-container>
+                            </div>
+                          </div>
+                        </div>
+                        <button *ngIf="x.password && x.status!='declined'" (click)="deleteForm=x; deleteForm.exist_status=x.status; modalService.open(statusModal, { centered: true });" class="btn btn-wide mr-3 w-md-100"
+                        [ngClass]="(x.status=='active')? 'btn-outline-danger': 'btn-outline-success mr-3'">{{ (x.status=='active')? 'Disable': 'Enable' }}</button>
+                        <button *ngIf="!x.password" (click)="deleteForm=x; modalService.open(activationModal, { centered: true });" class="btn gray-btn mr-3 w-md-100">
+                          <span class="gray-btn-txt">Approve/Reject</span>
+                        </button>
+                        <button class="btn orng-outline-btn w-md-100" (click)="deleteForm=x; modalService.open(deleteModal, { centered: true });">
+                          <span class="orng-outline-txt">Remove</span>
+                        </button>
+                      </div>
+                    </div>
+                  <!-- </p> -->
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGINATION CONTROL -->
+    <div class="col-md-12 mt-3">
+      <pagination-controls (pageChange)="page=$event; commonService.pageTop(0);" autoHide="true" responsive="true"
+        maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+    </div>
+
+  </div>
+
+  <div *ngIf="!list?.length" class="row">
+    <div class="col-md-12 d-flex flex-column align-items-center justify-content-center no-rec-found-wrapper">
+      <img class="no-rec-found" src="assets/images/no_records_found.png" alt="no-records">
+      <p align="center">No data to display.</p>
+    </div>
+  </div>
+</div>
+
+<!-- VENDOR MODAL -->
+<ng-template #vendorModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{(vendorForm.form_type=='add')? 'Add New Vendor': vendorForm.email}}</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onSubmit();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label>Contact Person Name</label>
+            <input type="text" name="contact_person" class="form-control" [(ngModel)]="vendorForm.contact_person" required />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>Mobile</label>
+            <input type="text" name="mobile" class="form-control" [(ngModel)]="vendorForm.mobile" required />
+          </div>
+          <ng-container *ngIf="vendorForm.form_type!='add'">
+            <div class="col-md-6 mb-3">
+              <label>Page URL - {{commonService.store_details?.base_url}}/vendor/{{vendorForm?.page_url}}</label>
+              <input type="text" name="page_url" class="form-control" [(ngModel)]="vendorForm.page_url" appNoSplChar required />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label>Ad Credit</label>
+              <input type="tel" name="wallet_balance" class="form-control" [(ngModel)]="vendorForm.wallet_balance" appNumberOnly required />
+            </div>
+          </ng-container>
+        </div>
+        <!-- login details -->
+        <ng-container *ngIf="vendorForm.form_type=='add'">
+          <div class="col-md-12">
+            <h6>LOGIN DETAILS</h6>
+          </div>
+          <div class="card">
+            <div class="row card-body">
+              <div class="col-md-6">
+                <label>Email</label>
+                <input type="text" name="email" class="form-control" [(ngModel)]="vendorForm.email" required />
+              </div>
+              <div class="col-md-6">
+                <label>Password</label>
+                <input type="text" name="password" class="form-control" [(ngModel)]="vendorForm.password" required />
+              </div>
+            </div>
+          </div>
+        </ng-container>
+        <!-- store details -->
+        <div class="col-md-12" [ngClass]="(vendorForm.form_type=='add')? 'mt-3': ''">
+          <h6>STORE DETAILS</h6>
+        </div>
+        <div class="card">
+          <div class="row card-body">
+            <div class="col-md-6 mb-3">
+              <label>Business Name</label>
+              <input type="text" name="company_name" class="form-control" [(ngModel)]="vendorForm.company_details.name" required />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label>Brand Name</label>
+              <input type="text" name="brand_name" class="form-control" [(ngModel)]="vendorForm.company_details.brand" required />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label>Instagram Page URL</label>
+              <input type="text" name="instagram" class="form-control" [(ngModel)]="vendorForm.company_details.instagram" />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label>Website URL (if available)</label>
+              <input type="text" name="website" class="form-control" [(ngModel)]="vendorForm.company_details.website" />
+            </div>
+            <ng-container *ngIf="commonService.store_details?.country=='India'">
+              <div class="col-md-6 mb-3">
+                <label>GST No</label>
+                <input type="text" name="gst_no" class="form-control" [(ngModel)]="vendorForm.company_details.gst_no" />
+              </div>
+              <div class="col-md-6 mb-3">
+                <label>PAN No</label>
+                <input type="text" name="pan_no" class="form-control" [(ngModel)]="vendorForm.company_details.pan_no" />
+              </div>
+            </ng-container>
+            <div *ngIf="commonService.store_details?.country!='India'" class="col-md-6 mb-3">
+              <label>TIN No</label>
+              <input type="text" name="tin_no" class="form-control" [(ngModel)]="vendorForm.company_details.tin_no" />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label>Shipping Preferences</label>
+              <select name="shipping_type" class="form-control select-arrow" [(ngModel)]="vendorForm.company_details.shipping_type" [disabled]="vendorForm.status=='active'">
+                <option value="">-- Select --</option>
+                <option value="free">Willing to provide free shipping on all orders</option>
+                <option value="free_above">Willing to provide free shipping on orders above ₹499</option>
+                <option value="paid">Will collect shipping charges on all orders</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label>Are all the products made in {{commonService.store_details?.country}}?</label>
+              <select name="made_in_home_country" class="form-control select-arrow" [(ngModel)]="vendorForm.company_details.made_in_home_country">
+                <option value="">-- Select --</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <!-- registered address -->
+        <div class="col-md-12 mt-3">
+          <h6>REGISTERED ADDRESS</h6>
+        </div>
+        <div class="card">
+          <div class="row card-body">
+            <div class="col-md-6 mb-3">
+              <label>Country</label>
+              <input type="text" name="r_country" class="form-control" [(ngModel)]="vendorForm.registered_address.country" readonly required />
+            </div>
+            <ng-container *ngFor="let field of reg_address_fields; let j=index;">
+              <ng-container *ngIf="field.keyword=='state'">
+                <!-- if state list exist -->
+                <div *ngIf="state_list?.length" class="col-md-6 mb-3">
+                  <label>{{field.label}}</label>
+                  <select class="form-control" name="r_field{{j}}" [(ngModel)]="field.value" required>
+                    <option *ngFor="let x of state_list | orderAsc: 'name';" [ngValue]="x.name">{{x.name}}</option>
+                  </select>
+                </div>
+                <!-- if not state list exist -->
+                <div *ngIf="!state_list?.length" class="col-md-6 mb-3">
+                  <label>{{field.label}}</label>
+                  <input class="form-control" type="text" name="r_field{{j}}" [(ngModel)]="field.value" required>
+                </div>
+              </ng-container>
+              <div *ngIf="field.keyword!='state'" class="col-md-6 mb-3">
+                <label>{{field.label}}</label>
+                <input class="form-control" type="text" name="r_field{{j}}" [(ngModel)]="field.value" required>
+              </div>
+            </ng-container>
+            <div class="col-md-12 mb-3">
+              <label>Complete Address</label>
+              <textarea name="r_address" [(ngModel)]="vendorForm.registered_address.address" class="form-control" required></textarea>
+            </div>
+          </div>
+        </div>
+        <!-- pickup address -->
+        <div class="col-md-12 mt-3">
+          <h6>PICKUP ADDRESS</h6>
+        </div>
+        <div class="card">
+          <div class="row card-body">
+            <div class="col-md-6 mb-3">
+              <label>Country</label>
+              <input type="text" name="p_country" class="form-control" [(ngModel)]="vendorForm.pickup_address.country" readonly required />
+            </div>
+            <ng-container *ngFor="let field of pick_address_fields; let j=index;">
+              <ng-container *ngIf="field.keyword=='state'">
+                <!-- if state list exist -->
+                <div *ngIf="state_list?.length" class="col-md-6 mb-3">
+                  <label>{{field.label}}</label>
+                  <select class="form-control" name="p_field{{j}}" [(ngModel)]="field.value" required>
+                    <option *ngFor="let x of state_list | orderAsc: 'name';" [ngValue]="x.name">{{x.name}}</option>
+                  </select>
+                </div>
+                <!-- if not state list exist -->
+                <div *ngIf="!state_list?.length" class="col-md-6 mb-3">
+                  <label>{{field.label}}</label>
+                  <input class="form-control" type="text" name="p_field{{j}}" [(ngModel)]="field.value" required>
+                </div>
+              </ng-container>
+              <div *ngIf="field.keyword!='state'" class="col-md-6 mb-3">
+                <label>{{field.label}}</label>
+                <input class="form-control" type="text" name="p_field{{j}}" [(ngModel)]="field.value" required>
+              </div>
+            </ng-container>
+            <div class="col-md-12 mb-3">
+              <label>Complete Address</label>
+              <textarea name="p_address" [(ngModel)]="vendorForm.pickup_address.address" class="form-control" required></textarea>
+            </div>
+          </div>
+        </div>
+        <!-- bank details -->
+        <div class="col-md-12 mt-3">
+          <h6>BANK DETAILS</h6>
+        </div>
+        <div class="card">
+          <div class="row card-body">
+            <div class="col-md-6 mb-3">
+              <label>Beneficiary Name</label>
+              <input type="text" name="beneficiary_name" class="form-control"
+                [(ngModel)]="vendorForm.bank_details.beneficiary" required />
+            </div>
+            <div class="col-md-6 mb-3"></div>
+            <div class="col-md-6 mb-3">
+              <label>Bank Name</label>
+              <input type="text" name="bank_name" class="form-control" [(ngModel)]="vendorForm.bank_details.name"
+                required />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label>Branch</label>
+              <input type="text" name="branch" class="form-control" [(ngModel)]="vendorForm.bank_details.branch"
+                required />
+            </div>
+            <div class="col-md-6">
+              <label>IFSC Code</label>
+              <input type="text" name="ifsc_code" class="form-control" [(ngModel)]="vendorForm.bank_details.ifsc_code"
+                required />
+            </div>
+            <div class="col-md-6">
+              <label>Account No</label>
+              <input type="text" name="acc_no" class="form-control" [(ngModel)]="vendorForm.bank_details.acc_no"
+                required />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="vendorForm.errorMsg">
+        <p class="text-danger">{{ vendorForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+        (click)="modal.dismiss('Cross click');">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary ladda-button m-1" [disabled]="vendorForm.submit"
+        [ladda]="vendorForm.submit">{{(vendorForm.form_type=='add')? 'Add': 'Update'}}</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- CHANGE PASSWORD -->
+<ng-template #changePwdModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{pwdForm.email}}</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdatePwd();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12 form-group mb-3">
+            <label>New Password</label>
+            <input type="text" name="new_pwd" class="form-control" [(ngModel)]="pwdForm.new_pwd"
+              (input)="pwdForm.errorMsg=null;" #new_pwd="ngModel" required />
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>Confirm New Password</label>
+            <input type="text" name="confirm_pwd" class="form-control" [(ngModel)]="pwdForm.confirm_pwd"
+              (input)="pwdForm.errorMsg=null;" #confirm_pwd="ngModel" required />
+          </div>
+        </div>
+      </div>
+      <div *ngIf="pwdForm.errorMsg">
+        <p class="text-danger">{{ pwdForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+        (click)="modal.dismiss('Cross click');">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" [disabled]="pwdForm.confirm_pwd && pwdForm.new_pwd!=pwdForm.confirm_pwd"
+        class="btn btn-wide btn-primary">Submit</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- EDIT PERMISSIONS -->
+<ng-template #permissionModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{vendorForm.email}}</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onSubmit();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <ng-container *ngFor="let x of permissionList; let i=index;">
+            <div class="col-md-12 mb-3">
+              <span class="primary-color">
+                <b>{{x.title}}</b>
+              </span>
+            </div>
+            <ng-container *ngFor="let y of x.sub_list; let j=index;">
+              <div class="col-md-6 col-lg-4 form-group mt-1 mb-1">
+                <label class="checkbox checkbox-success">
+                  <input class="form-check-input" type="checkbox" name="selected{{i+1}}{{j+1}}" [(ngModel)]="y.selected">
+                  <span>{{y.name}}</span>
+                  <span class="checkmark"></span>
+                </label>
+              </div>
+              <div *ngIf="y.options?.length && y.selected" class="col-md-12 mb-3">
+                <div class="row">
+                  <div *ngFor="let z of y.options; let k=index;" class="col-md-6 col-lg-4 form-group">
+                    <label class="radio radio-primary">
+                      <input type="radio" name="selected_option{{i+1}}{{j+1}}" [value]="z.keyword" [(ngModel)]="y.selected_option">
+                      <span>{{z.name}}</span>
+                      <span class="checkmark"></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="vendorForm.errorMsg">
+      <p class="text-danger">{{ vendorForm.errorMsg }}</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- APPROVE/DECLINE MODAL -->
+<ng-template #activationModal let-modal>
+  <div class="modal-header pr-2 pt-2 pb-2">
+    <div></div>
+    <div class="d-flex">
+      <i class="material-icons" id="closeModal" (click)="modal.dismiss('Cross click');">close</i>
+    </div>
+  </div>
+  <div class="modal-body">
+    <p>
+      <strong>Are you sure on approving or rejecting the account
+        <span class="txt-grdint-highlight">"{{deleteForm.email}}?"</span>
+      </strong>
+    </p>
+    <div *ngIf="deleteForm.errorMsg">
+      <p class="text-danger">{{ deleteForm.errorMsg }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" (click)="onActivate('approve');" class="btn btn-wide black-outline-btn ladda-button m-1" [disabled]="deleteForm.submit" [ladda]="deleteForm.submit">
+      <span class="black-outline-txt">Approve</span>
+    </button>
+    <button type="button" (click)="onActivate('decline');" class="btn btn-wide orng-outline-btn ladda-button m-1" [disabled]="deleteForm.submit" [ladda]="deleteForm.submit">
+      <span class="orng-outline-txt">Reject</span>
+    </button>
+  </div>
+</ng-template>
+
+<!-- STATUS MODAL -->
+<ng-template #statusModal let-modal>
+  <div class="modal-body">
+    <p><strong>Are you sure you want to {{ (deleteForm.exist_status=='active')? 'disable': 'enable' }} the <span
+          class="text-danger">"{{deleteForm.email}}"</span>?</strong></p>
+    <div *ngIf="deleteForm.errorMsg">
+      <p class="text-danger">{{ deleteForm.errorMsg }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide btn-outline-secondary"
+      (click)="modal.dismiss('Cross click');">No</button>
+    <button type="button" (click)="onUpdateStatus();" class="btn btn-primary">Yes</button>
+  </div>
+</ng-template>
+
+<!-- DELETE MODAL -->
+<ng-template #deleteModal let-modal>
+  <div class="modal-body">
+    <p>
+      <strong>Are you sure you want to permanently delete
+        <span class="txt-grdint-highlight">"{{deleteForm.email}}?"</span>
+      </strong>
+    </p>
+    <div *ngIf="deleteForm.errorMsg">
+      <p class="text-danger">{{ deleteForm.errorMsg }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+      (click)="modal.dismiss('Cross click');">
+      <span class="black-outline-txt">No</span>
+    </button>
+    <button type="button" (click)="onDelete();" class="btn btn-wide orng-outline-btn">
+      <span class="orng-outline-txt">Yes</span>
+    </button>
+  </div>
+</ng-template>
+
+<!-- Banner Modal -->
+<ng-template #bannerModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{vendorForm.email}}</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdateBanner();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12" align="center">
+            <div *ngIf="vendorForm.image">
+              <span (click)="vendorForm.img_change=null; vendorForm.image=null" class="material-icons item-close float-right"
+                aria-hidden="true">close</span>
+              <img *ngIf="vendorForm.img_change" [src]="vendorForm.image" height="100px;" width="auto;">
+              <img *ngIf="!vendorForm.img_change" [src]="imgBaseUrl+vendorForm.image" height="100px;" width="auto;">
+            </div>
+            <div *ngIf="!vendorForm.image">
+              <label>
+                <div>
+                  <i class="material-icons add-img">add_photo_alternate</i>
+                  <p>Click to upload image</p>
+                </div>
+                <input type="file" name="image" style="display: none;" (change)="fileChangeListener($event);" accept="image/jpeg, image/png" />
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="vendorForm.errorMsg">
+        <p class="text-danger">{{ vendorForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+       <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary ladda-button m-1" [disabled]="vendorForm.submit" [ladda]="vendorForm.submit">Update</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- COMMISSION MODAL -->
+<ng-template #commissionModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Update Vendors Commission</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdateCommission(settingForm);" ngNativeValidate>
+    <div class="modal-body pb-0">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12 form-group mb-3">
+            <label>Type</label>
+            <select name="cmsn_type" class="form-control select-arrow" [(ngModel)]="settingForm.cmsn_type">
+              <option value="">-- Select --</option>
+              <option value="flat">Flat Rates</option>
+              <option value="order_range">Order Value Range</option>
+              <option value="product_range">Product Range</option>
+            </select>
+          </div>
+          <div *ngIf="settingForm.cmsn_type=='order'" class="col-md-12 form-group mb-3">
+            <label>Commission in (%)</label>
+            <input type="tel" name="cmsn_in_pct" class="form-control" [(ngModel)]="settingForm.cmsn_in_pct" appNumberOnly required />
+          </div>
+          <div *ngIf="settingForm.cmsn_type!='order'" class="col-md-12 mb-3">
+            <div class="card p-3">
+              <div class="row">
+                <div class="col-md-12 mb-2">
+                  <b>PRICE RANGE</b>
+                </div>
+                <div class="col-md-12" *ngFor="let x of settingForm.price_range; let i=index;">
+                  <div class="card card-in-card w-100 p-3 mb-3">
+                    <span (click)="settingForm.price_range.splice(i, 1);" class="material-icons item-close absolute-item-close float-right" aria-hidden="true">close</span>
+                    <div class="row">
+                      <div class="col-md-6 form-group mb-3">
+                        <label>Price Above</label>
+                        <input type="tel" name="r_price{{i}}" class="form-control" [(ngModel)]="x.price" appNumberOnly required />
+                      </div>
+                      <div class="col-md-6 form-group mb-3">
+                        <label>Percentage</label>
+                        <input type="tel" name="r_percent{{i}}" class="form-control" [(ngModel)]="x.percentage" appNumberOnly required />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <p class="add-another mb-0 pull-right" (click)="settingForm.price_range.push({});">ADD NEW</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>Payment Gateway Charges (%)</label>
+            <input type="tel" name="pgw_charges" class="form-control" [(ngModel)]="settingForm.cmsn_config.pgw_charges" appNumberOnly required />
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="tax_on_cmsn" [(ngModel)]="settingForm.cmsn_config.tax_on_cmsn">
+              <span>Tax on Commission</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <ng-container *ngIf="settingForm.cmsn_config.tax_on_cmsn">
+            <div *ngIf="commonService.store_details?.country!='India'" class="col-md-6 form-group mb-3">
+              <label>Tax Name</label>
+              <input type="text" name="tax_name" class="form-control" [(ngModel)]="settingForm.cmsn_config.tax_name" required />
+            </div>
+            <div class="form-group mb-3" [ngClass]="(commonService.store_details?.country!='India')? 'col-md-6': 'col-md-12'">
+              <label>Tax (%)</label>
+              <input type="tel" name="tax_in_pct" class="form-control" [(ngModel)]="settingForm.cmsn_config.tax_in_pct" appNumberOnly required />
+            </div>
+          </ng-container>
+        </div>
+        <div class="row">
+          <div class="col-md-6 form-group mb-3">
+            <label>Settlement After</label>
+            <select name="settlem_type" class="form-control select-arrow" [(ngModel)]="settingForm.cmsn_config.settlem_type">
+              <option value="dispatched_on">Dispatched</option>
+              <option value="delivered_on">Delivered</option>
+            </select>
+          </div>
+          <div class="col-md-6 form-group mb-3">
+            <label>Settlement in Days</label>
+            <input type="tel" name="settlem_in_days" class="form-control" [(ngModel)]="settingForm.cmsn_config.settlem_in_days" appNumberOnly required />
+          </div>
+        </div>
+      </div>
+      <div *ngIf="settingForm.errorMsg">
+        <p class="text-danger">{{ settingForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>

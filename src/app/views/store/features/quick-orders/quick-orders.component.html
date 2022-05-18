@@ -1,0 +1,157 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb">
+    <h1>Quick Orders</h1>
+    <ul>
+      <li>View and manage your quick orders</li>
+    </ul>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="top-filter-sec">
+    <div class="row mb-4">
+      <!-- filter list -->
+      <div class="col-md-3">
+        <div class="form-group">
+          <select name="list_type" class="form-control select-arrow" [(ngModel)]="list_type"
+            (change)="onTypeChange(list_type);">
+            <option value="all">All</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+      <!-- search box -->
+      <div class="col-md-6 mt-sm-15">
+        <div class="form-group">
+          <input type="text" name="search_bar" placeholder="Search" class="form-control" [(ngModel)]="search_bar" />
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="pull-right">
+          <button type="button" class="btn btn-primary"
+            routerLink="/features/quick-orders/create/{{parentList.length+1}}">Create New Order</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- DATA LIST -->
+  <div *ngIf="list?.length" class="list-horizontal">
+
+    <div class="data-list-card-wrapper">
+      <div class="data-list-card-inner">
+        <div class="row m-0">
+
+          <!-- SINGLE LIST ITEM -->
+          <div
+            *ngFor="let x of list | orderDesc:'_id' | fieldSearch:'name':search_bar | paginate: { itemsPerPage: pageSize, currentPage: page }; let i=index;"
+            class="col-md-12 list-item data-list-card p-0" [ngClass]="x.disc_status? 'has-find-band': ''" [@animate]="{value:'*',params:{delay: (i*100)+'ms', y:'50px'}}">
+
+            <div class="d-flex flex-row">
+              <div *ngIf="x.disc_status" class="find-band"></div>
+              <div class="flex-grow-1 d-flex">
+                <div
+                  class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                  <p class="w-20 w-sm-100 m-b-0">{{x.name}}</p>
+                  <p class="w-25 w-sm-100 m-b-0">
+                    <span *ngFor="let item of x.item_names; let j=index;"
+                      class="d-block">{{item}}{{(j==x.item_names.length-1)? '': ','}}</span>
+                  </p>
+                  <p class="w-15 w-sm-100 m-b-0">{{ (x.cart_total - x.discount) |
+                    currency:commonService.store_currency.country_code }}</p>
+                  <p class="w-15 w-sm-100 m-b-0">{{x.usage_count}} used</p>
+                  <p class="w-10 w-sm-100 m-b-0">
+                    <span (click)="copyText(x._id, i);" class="badge badge-success badge-green-outline d-block cursor">
+                      <span class="badge-green-outline-txt">Copy</span>
+                      <span *ngIf="x.copied" class="tooltip">Link Copied</span>
+                    </span>
+                    <span *ngIf="!commonService?.desktop_device" (click)="socialShare(x._id);"
+                      class="badge badge-warning badge-red-outline d-block cursor">
+                      <span class="badge-red-outline-txt">Share</span>
+                    </span>
+                  </p>
+                  <p class="text-muted text-small w-15 w-sm-100 m-b-0 d-lg-block item-actions">
+                    <button class="btn btn-wide black-outline-btn w-md-100 mr-3"
+                      routerLink="/features/quick-orders/{{x._id}}">
+                      <span class="black-outline-txt">View</span>
+                    </button>
+                    <button *ngIf="x.status!='active'" class="btn btn-wide blue-outline-btn w-md-100 mr-3"
+                      (click)="deleteForm = x; modalService.open(statusModal, { centered: true });">
+                      <span class="blue-outline-txt">Enable</span>
+                    </button>
+                    <button *ngIf="x.status=='active'" class="btn btn-wide orng-outline-btn w-md-100 mr-3"
+                      (click)="deleteForm = x; modalService.open(statusModal, { centered: true });">
+                      <span class="orng-outline-txt">Disable</span>
+                    </button>
+                    <button class="btn orng-outline-btn w-md-100"
+                      (click)="deleteForm = x; modalService.open(deleteModal, { centered: true });">
+                      <span class="orng-outline-txt">Remove</span>
+                    </button>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
+    <!-- PAGINATION CONTROL -->
+    <div class="col-md-12 mt-3">
+      <pagination-controls (pageChange)="page=$event; commonService.pageTop(0);" autoHide="true" responsive="true"
+        maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+    </div>
+
+  </div>
+
+  <div *ngIf="!list?.length" class="row">
+    <div class="col-md-12 d-flex flex-column align-items-center justify-content-center no-rec-found-wrapper">
+      <img class="no-rec-found" src="assets/images/no_records_found.png" alt="no-records">
+      <p align="center">No data to display.</p>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE MODAL -->
+<ng-template #deleteModal let-modal>
+  <div class="modal-body">
+    <p><strong>Are you sure you want to remove <span class="txt-grdint-highlight">"{{deleteForm.name}}"</span>
+        order?</strong></p>
+    <div *ngIf="deleteForm.errorMsg">
+      <p class="text-danger">{{ deleteForm.errorMsg }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+      (click)="modal.dismiss('Cross click');">
+      <span class="black-outline-txt">No</span>
+    </button>
+    <button type="button" (click)="onDelete();" class="btn btn-wide orng-outline-btn">
+      <span class="black-outline-txt">Yes</span>
+    </button>
+  </div>
+</ng-template>
+
+<!-- STATUS MODAL -->
+<ng-template #statusModal let-modal>
+  <div class="modal-body">
+    <p><strong>Are you sure you want to {{ deleteForm.status=='active'? 'Disable': 'Enable' }} the <span
+          class="txt-grdint-highlight">"{{deleteForm.name}}"</span> order?</strong></p>
+    <div *ngIf="deleteForm.errorMsg">
+      <p class="text-danger">{{ deleteForm.errorMsg }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+      (click)="modal.dismiss('Cross click');">
+      <span class="black-outline-txt">No</span>
+    </button>
+    <button type="button" (click)="onUpdateStatus();" class="btn btn-wide btn-primary">Yes</button>
+  </div>
+</ng-template>

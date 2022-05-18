@@ -1,0 +1,271 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-md-8">
+        <h1>Gift Cards</h1>
+        <ul>
+          <li>Create and edit redeemable vouchers</li>
+        </ul>
+      </div>
+
+      <div class="col-md-4 d-flex align-items-center justify-content-end mt-sm-15">
+        <button type="button" class="btn btn-primary" (click)="openSettingModal(settingModal);">Gift Card
+          Setting</button>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="top-filter-sec">
+    <div class="row mb-4">
+      <div class="col-6">
+        <button type="button" class="btn btn-primary"
+          (click)="gcForm={form_type: 'add', rank: list.length+1, price_type: 'fixed', price: 0}; modalService.open(giftCardModal);">
+          Add New Gift Card
+        </button>
+      </div>
+      <!-- search box -->
+      <div *ngIf="list?.length" class="col-md-6 mt-sm-15">
+        <div class="form-group">
+          <input type="text" name="search_bar" placeholder="Search" class="form-control" [(ngModel)]="search_bar" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATA LIST -->
+  <div class="list-horizontal">
+
+    <div class="data-list-card-wrapper">
+      <div class="data-list-card-inner">
+        <div class="row m-0">
+
+          <div
+      *ngFor="let x of list | orderAsc:'rank' | fieldSearch:'name':search_bar | paginate: { itemsPerPage: pageSize, currentPage: page }; let i = index;"
+      class="list-item data-list-card col-md-12" [@animate]="{value:'*',params:{delay: (i*100)+'ms', y:'50px'}}">
+
+      <div class="d-flex flex-row">
+        <div class="list-thumb d-flex align-items-center">
+          <img [src]="imgBaseUrl+x.image" alt="">
+        </div>
+        <div class="flex-grow-1 pl-2 d-flex">
+          <div
+            class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+            <p class="w-30 w-sm-100 m-b-0">{{x.name}}</p>
+            <p *ngIf="x.price_type=='fixed'" class="m-0 text-muted text-small w-15 w-sm-100">{{x.price |
+              currency:commonService.store_currency?.country_code}}</p>
+            <p *ngIf="x.price_type=='flexible'" class="m-0 text-muted text-small w-15 w-sm-100">{{x.min_price |
+              currency:commonService.store_currency?.country_code}} to {{x.max_price |
+              currency:commonService.store_currency?.country_code}}</p>
+            <p class="m-0 text-muted text-small w-15 w-sm-100 d-lg-block item-actions">
+              <button class="btn btn-wide black-outline-btn w-md-100 mr-3" (click)="onEdit(x, giftCardModal);">
+                <span class="black-outline-txt">Edit</span>
+              </button>
+              <button class="btn orng-outline-btn w-md-100"
+                (click)="deleteForm = x; modalService.open(deleteModal, { centered: true });">
+                <span class="orng-outline-txt">Remove</span>
+              </button>
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <!-- PAGINATION CONTROL -->
+    <div class="row"  *ngIf="list?.length">
+      <div class="col-md-12 mt-3">
+        <pagination-controls (pageChange)="page=$event; commonService.pageTop(0);" autoHide="true" responsive="true"
+          maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+      </div>
+    </div>
+   
+  </div>
+
+  <div *ngIf="!list?.length" class="row">
+    <div class="col-md-12 d-flex flex-column align-items-center justify-content-center no-rec-found-wrapper">
+      <img class="no-rec-found" src="assets/images/no_records_found.png" alt="no-records">
+      <p align="center">No data to display. Create a new gift card to enable gifting on your website.</p>
+    </div>
+  </div>
+</div>
+
+<!-- GIFTCARD MODAL -->
+<ng-template #giftCardModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{ (gcForm?.form_type=='add')? 'Add': 'Update' }} Gift Card</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onSubmit(giftCardModal);" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12" align="center">
+            <p>Photo Resolution: 450x300</p>
+            <div *ngIf="gcForm.image">
+              <span (click)="gcForm.img_change=null; gcForm.image=null" class="material-icons item-close float-right"
+                aria-hidden="true">close</span>
+              <img *ngIf="gcForm.img_change" [src]="gcForm.image" height="100px;" width="auto;">
+              <img *ngIf="!gcForm.img_change" [src]="imgBaseUrl+gcForm.image" height="100px;" width="auto;">
+            </div>
+            <div *ngIf="!gcForm.image">
+              <label>
+                <div>
+                  <i class="material-icons add-img">add_photo_alternate</i>
+                  <p>Click to upload image</p>
+                </div>
+                <input type="file" name="image" style="display: none;" (change)="fileChangeListener($event);"
+                  accept="image/jpeg, image/png" />
+              </label>
+            </div>
+          </div>
+          <div class="col-md-8 form-group mb-3">
+            <label>Gift Card Title</label>
+            <input type="text" name="name" class="form-control" [(ngModel)]="gcForm.name" #name="ngModel" required />
+          </div>
+          <div class="col-md-4 form-group mb-3">
+            <label>Rank</label>
+            <input *ngIf="gcForm?.form_type=='add'" type="number" name="rank" class="form-control"
+              [(ngModel)]="gcForm.rank" #rank="ngModel" min="1" max="{{list.length+1}}" appNumberOnly required />
+            <input *ngIf="gcForm?.form_type!='add'" type="number" name="rank" class="form-control"
+              [(ngModel)]="gcForm.rank" #rank="ngModel" min="1" max="{{list.length}}" appNumberOnly required />
+          </div>
+          <div *ngIf="gcForm?.form_type!='add'" class="col-md-12 form-group mb-3">
+            <label>Page URL - {{commonService.store_details?.base_url}}/gift-cards/{{gcForm.page_url}}</label>
+            <input type="text" name="page_url" class="form-control" [(ngModel)]="gcForm.page_url" #page_url="ngModel"
+              appNoSplChar required />
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>Description</label>
+            <textarea class="form-control" aria-label="With textarea" name="description"
+              [(ngModel)]="gcForm.description" #description="ngModel"></textarea>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="radio radio-primary">
+              <input type="radio" name="price_type" value="fixed"
+                (change)="gcForm.min_price=null; gcForm.max_price=null;" [(ngModel)]="gcForm.price_type">
+              <span>Fixed Price</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div class="col-md-8 mb-3">
+            <label class="radio radio-primary">
+              <input type="radio" name="price_type" value="flexible" (change)="gcForm.price=null;"
+                [(ngModel)]="gcForm.price_type">
+              <span>Flexible Price</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div *ngIf="gcForm.price_type=='fixed'" class="col-md-12 form-group mb-3">
+            <label>Price</label>
+            <input type="text" name="price" class="form-control" [(ngModel)]="gcForm.price" #price="ngModel"
+              appNumberOnly required />
+          </div>
+          <div *ngIf="gcForm.price_type=='flexible'" class="col-md-6 form-group mb-3">
+            <label>Minimum Price Limit</label>
+            <input type="text" name="min_price" class="form-control" [(ngModel)]="gcForm.min_price" #min_price="ngModel"
+              appNumberOnly required />
+          </div>
+          <div *ngIf="gcForm.price_type=='flexible'" class="col-md-6 form-group mb-3">
+            <label>Maximum Price Limit</label>
+            <input type="text" name="max_price" class="form-control" [(ngModel)]="gcForm.max_price" #max_price="ngModel"
+              appNumberOnly required />
+          </div>
+        </div>
+      </div>
+      <div *ngIf="gcForm.errorMsg">
+        <p class="text-danger">{{ gcForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-wide black-outline-btn" id="closeModal"
+        (click)="modal.dismiss('Cross click');">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary ladda-button m-1" [disabled]="gcForm.submit"
+        [ladda]="gcForm.submit">
+        {{ (gcForm?.form_type=='add')? 'Add': 'Update' }}
+      </button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- DELETE MODAL -->
+<ng-template #deleteModal let-modal>
+  <div class="modal-body">
+    <p><strong>Are you sure you want to remove <span class="txt-grdint-highlight">"{{deleteForm.name}}"</span> gift
+        card?</strong></p>
+    <div *ngIf="deleteForm.errorMsg">
+      <p class="text-danger">{{ deleteForm.errorMsg }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+      (click)="modal.dismiss('Cross click');">
+      <span class="black-outline-txt">No</span>
+    </button>
+    <button type="button" (click)="onDelete();" class="btn btn-wide orng-outline-btn">
+      <span class="orng-outline-txt">Yes</span>
+    </button>
+  </div>
+</ng-template>
+
+<!-- SETTING MODAL -->
+<ng-template #settingModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Gift Card Setting</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdateSetting();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12 form-group mb-3">
+            <label>Price List</label>
+            <tag-input class="w-100" name="form_price_list" [(ngModel)]="settingForm.form_price_list"
+              #form_price_list="ngModel" placeholder="" [secondaryPlaceholder]="'Enter options separated by commas'"
+              [separatorKeyCodes]="[188]"></tag-input>
+          </div>
+          <div class="form-group mb-3 col-md-12">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="price_range_status"
+                [(ngModel)]="settingForm.price_range_status"
+                (change)="!settingForm.price_range? settingForm.price_range={}: '';">
+              <span>Enable Price Range</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <ng-container *ngIf="settingForm.price_range_status && settingForm.price_range">
+            <div class="col-md-6 form-group mb-3">
+              <label>From</label>
+              <input type="text" name="from" class="form-control" [(ngModel)]="settingForm.price_range.from"
+                #from="ngModel" appNumberOnly required />
+            </div>
+            <div class="col-md-6 form-group mb-3">
+              <label>To</label>
+              <input type="text" name="to" class="form-control" [(ngModel)]="settingForm.price_range.to" #to="ngModel"
+                appNumberOnly required />
+            </div>
+          </ng-container>
+        </div>
+      </div>
+      <div *ngIf="settingForm.errorMsg">
+        <p class="text-danger">{{ settingForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+        (click)="modal.dismiss('Cross click');">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>

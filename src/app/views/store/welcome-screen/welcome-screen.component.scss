@@ -1,0 +1,117 @@
+.you-dit-it-section {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: #fff;
+  z-index: 999;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  .you-dit-it-vector-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    img {
+      width: 575px;
+    }
+  }
+  .you-dit-it-confetti-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    img {
+      width: 100%;
+    }
+    .mobile-confetti-top {
+      display: none;
+    }
+  }
+  .you-dit-it-center-section {
+    width: 100%;
+    .you-dit-it-image {
+      img {
+        width: 575px;
+        margin-bottom: 20px;
+      }
+    }
+
+    .you-dit-it-message {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      h2 {
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+      }
+      h6 {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+        .highlighted-text {
+          color: #ec848b;
+        }
+      }
+      .ready-sell {
+        width: 100%;
+        text-align: left;
+      }
+    }
+  }
+  .you-dit-it-vector-bottom {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    z-index: -1;
+    img {
+      width: 575px;
+    }
+  }
+}
+
+@media only screen and (max-width: 768px) {  
+  .you-dit-it-section {
+    position:relative;
+    .row {
+      flex-direction: column-reverse;
+    }
+    .you-dit-it-vector-top {
+      img {
+        width: 300px;
+      }
+    }
+
+    .you-dit-it-confetti-top {
+      .desktop-confetti-top {
+        display: none;
+      }
+      .mobile-confetti-top {
+        display: block;
+      }
+    }
+
+    .you-dit-it-center-section {
+      .you-dit-it-image {
+        img {
+          width: 300px;
+        }
+      }
+      .you-dit-it-message {
+        .ready-sell {
+          width: auto;
+          text-align: center;
+        }
+      }
+    }
+    .you-dit-it-vector-bottom {
+      img {
+        width: 300px;
+      }
+    }
+  }
+}

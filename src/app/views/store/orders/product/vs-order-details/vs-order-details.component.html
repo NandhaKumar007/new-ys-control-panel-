@@ -1,0 +1,306 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-8">
+        <h1>#{{ vendorInfo.order_number }}</h1>
+        <ul>
+          <li>View and manage your order</li>
+        </ul>
+      </div>
+      <div class="col-4 z-i-0" align="right">
+        <button type="button" class="btn btn-wide btn-outline-secondary" (click)="commonService.goBack();">
+          Back
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="top-filter-sec">
+    <div class="row">
+      <div class="col-lg-9">
+        <!-- customer details -->
+        <div class="order-section mtb-10">
+          <p class="sec-desc">Vendor Details</p>
+          <div class="col-md-12 list-item p-0 mtb-10">
+            <div class="card mb-4 d-flex flex-row">
+              <div class="flex-grow-1 pl-2 d-flex">
+                <div
+                  class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                  <p class="w-30 w-sm-100 m-b-0">{{ vendorDetails?.company_details?.brand }}</p>
+                  <p class="w-30 w-sm-100 m-b-0">{{ vendorDetails?.email }}</p>
+                  <p class="w-30 w-sm-100 m-b-0">{{ vendorDetails?.mobile }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- product list -->
+        <div class="list-item col-md-12 p-0 mb-4">
+          <p class="sec-desc">Product Details</p>
+          <div *ngFor="let x of itemList; let i=index;" class="card m-10 d-flex flex-row pl-3 pr-3">
+            <div class="list-thumb d-flex p-2">
+              <img [src]="imgBaseUrl+x.image" alt="">
+            </div>
+            <div class="flex-grow-1 pl-2 d-flex">
+              <div class="card-body row">
+                <div class="col-md-5 d-flex justify-content-center flex-column">
+                  <span>
+                    {{x.name}}
+                  </span>
+                  <ng-container *ngIf="x.variant_status">
+                    <ng-container *ngFor="let y of x.variant_types;">
+                      <span class="w-100">
+                        <b>{{y.name}}: </b>{{y.value}}</span>
+                    </ng-container>
+                  </ng-container>
+                  <span *ngIf="x.slot_details" class="w-100">
+                    <b>Delivery on: </b>{{ x.slot_details?.date | date: "dd MMM y" }} ({{ x.slot_details?.slot }})
+                  </span>
+                  <div *ngIf="x.addon_status && x.selected_addon">
+                    <b>Addon: </b><span class="w-100">{{x.selected_addon?.name}}</span>
+                    <ng-container *ngIf="x.customization_status">
+                      <br>
+                      <b *ngIf="x.customized_model?.sizing_list?.length>1">
+                        {{ x.customized_model.sizing_list[x.customized_model.sizing_list.length-2].value[0].unique_name }} - 
+                        {{ x.customized_model.sizing_list[x.customized_model.sizing_list.length-1].value[0].unique_name }}
+                        <br>
+                      </b>
+                      <!-- <b class="w-100 text-primary"
+                        (click)="commonService.custom_model=x.customized_model; modalService.open(customizationModal, { size: 'lg'});"
+                        style="cursor:pointer;">{{x.customized_model?.name}}</b> -->
+                    </ng-container>
+                  </div>
+                </div>
+
+                <div class="col-md-2 flex-center"> {{x.sku}} </div>
+                <div class="col-md-2 flex-center">{{x.quantity}} {{x.unit? x.unit: 'Qty'}}</div>
+                <div *ngIf="x.unit=='Pcs'" class="col-md-2 flex-center">
+                  {{ (x.final_price*x.quantity) | currency: commonService.store_currency?.country_code}}</div>
+                <div *ngIf="x.unit!='Pcs'" class="col-md-2 flex-center">
+                  {{ ((x.final_price*x.quantity)+x.addon_price) | currency:
+                  commonService.store_currency?.country_code}}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3">
+        <!-- order summary -->
+        <div class="summary-section mtb-10">
+          <div class="order-summary-header">
+            <p class="sec-desc">Order Summary</p>
+          </div>
+          <div class="card order-summary-details mtb-10">
+            <div class="row mtb-10">
+              <div class="col-6">
+                <div class="box-card card-head">
+                  <p>Item Total</p>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="box-card">
+                  <p class="pull-right text-right">
+                    {{vendorInfo.sub_total | currency: commonService.store_currency?.country_code}}
+                  </p>
+                </div>
+              </div>
+              <ng-container *ngIf="vendorInfo?.gift_wrapper > 0">
+                <div class="col-6">
+                  <div class="box-card card-head">
+                    <p>Gift Wrapping</p>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="box-card">
+                    <p class="pull-right text-right">
+                      {{vendorInfo.gift_wrapper | currency: commonService.store_currency?.country_code}}</p>
+                  </div>
+                </div>
+              </ng-container>
+              <div class="col-6">
+                <div class="box-card card-head">
+                  <p>Shipping</p>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="box-card">
+                  <p class="pull-right text-right">
+                    {{vendorInfo.shipping_cost | currency: commonService.store_currency?.country_code}}</p>
+                </div>
+              </div>
+              <ng-container *ngIf="vendorInfo?.discount_amount > 0">
+                <div class="col-6">
+                  <div class="box-card card-head">
+                    <p>Discount</p>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="box-card">
+                    <p class="pull-right text-right">
+                      -{{vendorInfo.discount_amount | currency: commonService.store_currency?.country_code}}</p>
+                  </div>
+                </div>
+              </ng-container>
+              <div class="col-6">
+                <div class="box-card card-head">
+                  <p>Grand Total</p>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="box-card">
+                  <p class="pull-right text-right">
+                    {{vendorInfo.final_price | currency: commonService.store_currency?.country_code}}
+                  </p>
+                </div>
+              </div>
+              <div class="col-12"><hr class="mt-3"></div>
+              <!-- Commission -->
+              <div class="col-6">
+                <div class="box-card card-head">
+                  <p>Commision on Items</p>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="box-card">
+                  <p class="pull-right text-right">
+                    - {{vendorInfo.items_commission | currency: commonService.store_currency?.country_code}}
+                  </p>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="box-card card-head">
+                  <p>Actual Shipping</p>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="box-card">
+                  <p class="pull-right text-right">
+                    - {{vendorInfo.shipping_method?.dp_charges | currency: commonService.store_currency?.country_code}}
+                  </p>
+                </div>
+              </div>
+              <ng-container *ngIf="vendorInfo.pg_charges>0">
+                <div class="col-6">
+                  <div class="box-card card-head">
+                    <p>Payment Gateway Charges ({{cmsn_config.pgw_charges}}%)</p>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="box-card">
+                    <p class="pull-right text-right">
+                      - {{vendorInfo.pg_charges | currency: commonService.store_currency?.country_code}}
+                    </p>
+                  </div>
+                </div>
+              </ng-container>
+              <div class="col-12"><hr class="mt-3"></div>
+              <ng-container *ngIf="vendorInfo.commission_tax>0">
+                <div class="col-6">
+                  <div class="box-card card-head">
+                    <p>Tax on Commission ({{cmsn_config.tax_in_pct}}%)</p>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="box-card">
+                    <p class="pull-right text-right">
+                      - {{vendorInfo.commission_tax | currency: commonService.store_currency?.country_code}}
+                    </p>
+                  </div>
+                </div>
+              </ng-container>
+              <div class="col-6">
+                <div class="box-card card-head">
+                  <p>Settlement Amount</p>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="box-card">
+                  <p class="pull-right text-right">
+                    {{ vendorInfo.final_price - (vendorInfo.total_commission + vendorInfo.commission_tax) | currency: commonService.store_currency?.country_code }}
+                  </p>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="box-card card-head">
+                  <p>Settlement On</p>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="box-card">
+                  <p class="pull-right text-right">
+                    {{ vendorInfo.settlement_on | date: "dd MMM y"}}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- order status -->
+        <div class="order-summary-header">
+          <p class="sec-desc">Order Status</p>
+        </div>
+        <div class="card order-summary-details mtb-10">
+          <div class="row mtb-10">
+            <ng-container *ngIf="order_details?.created_on">
+              <div class="col-5">
+                <div class="box-card card-head">
+                  <p>Placed on</p>
+                </div>
+              </div>
+              <div class="col-7">
+                <div class="box-card">
+                  <p class="pull-right text-right">{{ order_details.created_on | date: "dd MMM y hh:mm a"}}</p>
+                </div>
+              </div>
+            </ng-container>
+            <ng-container *ngIf="vendorInfo?.confirmed_on">
+              <div class="col-5">
+                <div class="box-card card-head">
+                  <p>Confirmed on</p>
+                </div>
+              </div>
+              <div class="col-7">
+                <div class="box-card">
+                  <p class="pull-right text-right">{{ vendorInfo.confirmed_on | date: "dd MMM y hh:mm a"}}</p>
+                </div>
+              </div>
+            </ng-container>
+            <ng-container *ngIf="vendorInfo?.dispatched_on">
+              <div class="col-5">
+                <div class="box-card card-head">
+                  <p>Dispatched on</p>
+                </div>
+              </div>
+              <div class="col-7">
+                <div class="box-card">
+                  <p class="pull-right text-right">{{ vendorInfo.dispatched_on | date: "dd MMM y hh:mm a"}}</p>
+                </div>
+              </div>
+            </ng-container>
+            <ng-container *ngIf="vendorInfo?.delivered_on">
+              <div class="col-5">
+                <div class="box-card card-head">
+                  <p>Delivered on</p>
+                </div>
+              </div>
+              <div class="col-7">
+                <div class="box-card">
+                  <p class="pull-right text-right">{{ vendorInfo.delivered_on | date: "dd MMM y hh:mm a"}}</p>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,80 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb">
+    <h1>DiNAMIC Offer Details</h1>
+    <ul>
+      <li>{{params.id? 'Edit': 'Enter'}} offer details</li>
+    </ul>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <form autocomplete="off" (ngSubmit)="onSubmit();" ngNativeValidate>
+    <div class="row">
+      <div class="col-md-6 form-group mb-3">
+        <label>SKU</label>
+        <input type="text" name="sku" class="form-control" [(ngModel)]="offerForm.sku" #sku="ngModel" required />
+      </div>
+      <div class="col-md-6 form-group mb-3">
+        <label>Name</label>
+        <input type="text" name="name" class="form-control" [(ngModel)]="offerForm.name" #name="ngModel" required />
+      </div>
+      <div class="col-md-4 form-group mb-3">
+        <label>Purchase Amount</label>
+        <input type="text" name="purchase_amount" class="form-control" [(ngModel)]="offerForm.purchase_amount" #purchase_amount="ngModel" appNumberOnly required />
+      </div>
+      <div class="col-md-4 form-group mb-3">
+        <label>Redeem Amount</label>
+        <input type="text" name="redeem_amount" class="form-control" [(ngModel)]="offerForm.redeem_amount" #redeem_amount="ngModel" appNumberOnly required />
+      </div>
+      <div class="col-md-4 form-group mb-3">
+        <label>Validity in days</label>
+        <input type="text" name="valid_in_days" class="form-control" [(ngModel)]="offerForm.valid_in_days" #valid_in_days="ngModel" appNumberOnly required />
+      </div>
+      <div class="col-md-12 form-group mb-3 quill-mb-5">
+        <label>Description</label>
+        <quill-editor class="rounded" [placeholder]="null" [(ngModel)]="offerForm.description" [ngModelOptions]="{standalone: true}"></quill-editor>
+      </div>
+
+      <div align="center" class="col-md-6 col-lg-4 form-group mb-3" *ngFor="let x of offerForm.image_list; let i=index;">
+        <div class="card p-3 mt-3 mb-3">
+          <ng-container *ngIf="offerForm.image_list.length>1">
+            <span (click)="offerForm.image_list.splice(i, 1);" class="material-icons item-close absolute-item-close float-right " aria-hidden="true">close</span>
+          </ng-container>
+          <label>
+            <div *ngIf="!x.image">
+              <i class="material-icons add-img">add_photo_alternate</i>
+              <p>Click to upload image</p>
+            </div>
+            <img *ngIf="x.image && x.img_change" [src]="x.image" height="150" width="auto">
+            <img *ngIf="x.image && !x.img_change" [src]="imgBaseUrl+x.image" height="150" width="auto">
+            <input type="file" name="image{{i}}" style="display: none;" (change)="fileChangeListener(i, $event);" accept="image/jpeg, image/png" />
+          </label>
+        </div>
+      </div>
+      <div *ngIf="image_count > offerForm.image_list.length" align="center" class="col-md-6 col-lg-4 d-flex align-items-center form-group mb-3 z-i-0">
+        <div class="add-another-opt w-100" (click)="offerForm.image_list.push({});">
+          <p>ADD ANOTHER IMAGE</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="separator-breadcrumb border-top mt-5"></div>
+    <div class="row">
+      <div *ngIf="offerForm.errorMsg" class="col-md-12 mt-3 mb-3">
+        <p class="text-danger" align="center">{{ offerForm.errorMsg }}</p>
+      </div>
+      <div align="center" class="col-md-12 z-i-0">
+        <button type="button" routerLink="/features/dinamic-offers" class="btn btn-wide black-outline-btn">
+          <span class="black-outline-txt">Cancel</span>
+        </button>&nbsp; &nbsp; &nbsp;
+        <button type="submit" class="btn btn-wide btn-primary ladda-button m-1" [disabled]="offerForm.btnLoader" [ladda]="offerForm.btnLoader">
+          {{params.id? 'Update': 'Add'}}
+        </button>
+      </div>
+    </div>
+  </form>
+
+</div>

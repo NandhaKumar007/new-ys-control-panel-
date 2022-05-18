@@ -1,0 +1,548 @@
+<div class="breadcrumb with-back-btn">
+  <div *ngIf="commonService.deployInProgress" class="row">
+    <div class="col-md-12">
+      <h1>Dashboard</h1>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6" [ngClass]="(!commonService.deployInProgress)? 'd-flex align-items-center': ''">
+      <h1 *ngIf="!commonService.deployInProgress">Dashboard</h1>
+      <div *ngIf="commonService.deployInProgress" class="my-3 home-progress-section-wrapper row mx-0 flex-sm-row-reverse">
+        <div class="progress-step-count col-md-12 px-0 col-4">
+          <p class="progress-step-count-inner">
+            <span>{{completedPercentage}}%</span> completed
+          </p>
+        </div>
+        <div class="stpe-progress-bar col-md-12 col-8 px-0 pr-md-0 pr-3">
+          <div class="progress-bar">
+            <div class="progress-bar-inner" [ngStyle]="{'width.%':completedPercentage}"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card mb-2">
+        <div class="bdr-btm p-3">
+          <div class="row">
+            <div class="col-7 col-sm-7 col-md-7 pr-md-3 pr-1 d-flex align-items-center">
+              <div class="row m-0 w-100">
+                <div class="col-1 col-sm-1 px-0 d-flex align-items-center">
+                  <i class="material-icons fs-md-28">language</i>
+                </div>
+                <div class="col-11 col-sm-11 px-md-2 pr-0">
+                  <p class="card-data-b-head mb-0">Your website</p>
+                  <p class="mb-0 single-line-text-ellipsis">
+                    <a href="{{commonService.store_details?.base_url}}" target="_blank" class="card-data-b-head text-decoration-unl mb-0">
+                      {{baseUrl}}
+                    </a>
+                  </p> 
+                </div>                
+              </div>
+            </div>
+            <div class="col-5 col-sm-5 col-md-5 d-flex align-items-center justify-content-end">
+              <a (click)="shareDomain(infoModal, false);">
+                <i class="material-icons edit-icon mr-2">visibility</i>
+              </a>
+              <button (click)="shareDomain(infoModal, true);" class="btn btn-outline-primary" type="button">
+                <span class="outline-primary-txt">Share Link</span>
+              </button>
+            </div>
+          </div>
+          <ng-container *ngIf="baseUrl.indexOf('shop.yourstore.io')!=-1">
+            <div class="separator-breadcrumb border-top my-2"></div>
+            <div class="row pt-2">
+              <div class="col-8 col-sm-8 col-md-7 d-flex align-items-center">
+                <div class="home-headlines">
+                  <h4 class="mb-0">Get custom domain</h4>                
+                </div>
+              </div>
+              <div class="col-4 col-sm-4 col-md-5 d-flex align-items-center justify-content-end">
+                <a (click)="commonService.getCoustomDomain();">
+                  <span class="gray-icon-btn ml-3">
+                    <i class="material-icons">navigate_next</i>
+                  </span>
+                </a>             
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="separator-breadcrumb border-top"></div>
+
+<!-- deployment stages -->
+<div *ngIf="commonService.deployInProgress" class="row ml-0 mr-0 mt-4 mb-4">
+  <div class="col-md-12 p-0">
+    <div class="data-list-card-wrapper">
+      <div class="data-list-card-inner">
+        <div *ngFor="let x of deployList; let i=index;" class="data-list-card p-3">
+          <div class="row row-flex">
+            <div class="col-md-3">
+              <div class="data-list-inner-data">
+                <p class="m-0 data-head">{{x.heading}}</p>
+                <div *ngIf="x.sub_heading" class="hint-route-breadcrumb-wrapper">
+                  <div class="hint-route-breadcrumb">
+                    <span>{{x.sub_heading}}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="data-list-inner-data">
+                <p class="m-0 text-small w-sm-100">{{x.description}}</p>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="data-list-inner-data">
+                <p class="d-flex align-items-center m-0 text-small w-sm-100">
+                  <i class="material-icons-outlined mr-1">timer</i> Estimate:{{x.duration}} min
+                </p>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="data-list-inner-data">
+                <p class="m-0 text-small w-sm-100">
+                  <span *ngIf="!x.completed" class="badge badge-disabled">Pending</span>
+                  <span *ngIf="x.completed" class="badge badge-success">Completed</span>
+                </p>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="data-list-inner-data d-flex justify-content-center">
+                <button [ngClass]="x.completed? 'black-outline-btn': ''" class="btn btn-outline-primary w-100" type="button" [routerLink]="x.redirect">
+                  <span [ngClass]="x.completed? 'black-outline-txt': ''" class="outline-primary-txt">{{ (x.completed)? 'View': 'Start' }}</span>  
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- more options -->
+        <div class="data-list-card show-more-data-list-card">
+          <div class="show-more-accordian">
+            <div id="accordionOne">
+              <div class="card acc-card">
+                <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionOne">
+                  <div class="card-body p-0">
+                    <div class="data-list-card-wrapper">
+                      <div class="data-list-card-inner">
+                        <div *ngFor="let x of moreDeployList; let i=index;" class="data-list-card p-3">
+                          <div class="row row-flex">
+                            <div class="col-md-3">
+                              <div class="data-list-inner-data">
+                                <p class="m-0 data-head">{{x.heading}}</p>
+                                <div *ngIf="x.sub_heading" class="hint-route-breadcrumb-wrapper">
+                                  <div class="hint-route-breadcrumb">
+                                    <span>{{x.sub_heading}}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="col-md-3">
+                              <div class="data-list-inner-data">
+                                <p class="m-0 text-small w-sm-100">{{x.description}}</p>
+                              </div>
+                            </div>
+                            <div class="col-md-2">
+                              <div class="data-list-inner-data">
+                                <p class="d-flex align-items-center m-0 text-small w-sm-100">
+                                  <i class="material-icons-outlined mr-1">timer</i> Estimate:{{x.duration}} min
+                                </p>
+                              </div>
+                            </div>
+                            <div class="col-md-2">
+                              <!-- <div class="data-list-inner-data">
+                                <p class="m-0 text-small w-sm-100">
+                                  <span *ngIf="!x.completed" class="badge badge-disabled">Pending</span>
+                                  <span *ngIf="x.completed" class="badge badge-success">Complete</span>
+                                </p>
+                              </div> -->
+                            </div>
+                            <div class="col-md-2">
+                              <div class="data-list-inner-data d-flex justify-content-center">
+                                <button class="btn black-outline-btn w-100" type="button" [routerLink]="x.redirect">
+                                  <span class="black-outline-txt">View</span>  
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-header p-3" id="headingOne">
+                  <h5 class="mb-0">
+                    <button class="btn btn-link collapsed w-100 p-0 m-0" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                      Explore Optional Setup
+                      <span class="gray-icon-btn ml-3">
+                        <i class="material-icons">expand_more</i>
+                      </span>
+                    </button>
+                  </h5>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- whats new -->
+<div class="whats-new-acc card">
+  <div id="accordionTwo">
+    <div class="acc-card">
+      <div class="card-header p-3" id="headingTwo">
+        <h5 class="mb-0">
+          <button class="btn btn-link collapsed w-100 p-0 m-0" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+            <div class="breadcrumb home-breadcrumb mb-0">
+              <h1>What's New</h1>
+              <div class="home-headlines mt-2">
+                <h4>yourstore Anniversary Refresh</h4>
+                <h6>{{whats_new_list[whatsNewStep]?.date}}</h6>
+              </div>
+            </div>
+            <div class="d-flex align-items-center">
+              <span class="learn-more-text">Learn more</span>
+              <span class="gray-icon-btn ml-3">
+                <i class="material-icons">expand_more</i>
+              </span>
+            </div>
+          </button>
+        </h5>
+      </div>
+      <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionTwo">
+        <div class="card-body">
+          <div class="row">
+            <div *ngFor="let x of whats_new_list[whatsNewStep]?.steps;" class="col-md-12 p-0">
+              <div class="col-md-6">
+                <div class="card home-card p-3 mb-3">
+                  <h5 class="card-title">{{x.title}}</h5>
+                  <p [innerHtml]="x.description"></p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- pagination -->
+          <div class="separator mb-3"></div>
+          <div class="row">
+            <div class="col-md-6 offset-md-6">
+              <div class="whats-new-pagination">
+                <button type="button" (click)="whatsNewStep = whatsNewStep-1;" [disabled]="whatsNewStep<=1" class="btn btn-wide btn-primary mr-3">
+                  <i class="material-icons-outlined">chevron_left</i>
+                </button>
+                <button type="button" (click)="whatsNewStep = whatsNewStep+1;" [disabled]="whatsNewStep>=totalWhatsNewScreen" class="btn btn-wide btn-primary">
+                  <i class="material-icons-outlined">chevron_right</i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- dashboard -->
+<div *ngIf="dispDashboard" class="row mt-4">
+  <div class="col-md-12">
+    <div class="card p-3 mb-4">
+      <h5 class="card-title">Filter</h5>
+      <div class="top-filter-sec">
+      <div class="row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <input type="text" placeholder="Select From Date" class="form-control" name="from_date" autocomplete="off" [(ngModel)]="filterForm.from_date"
+              (ngModelChange)="filterForm.type='custom'; getDashboardData();" bsDatepicker [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }"
+            />
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <input type="text" placeholder="Select To Date" class="form-control" name="to_date" autocomplete="off" [(ngModel)]="filterForm.to_date"
+              (ngModelChange)="filterForm.type='custom'; getDashboardData();" bsDatepicker [minDate]="filterForm.from_date"
+              [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }" />
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <select name="type" class="form-control select-arrow" [(ngModel)]="filterForm.type" (change)="filterForm.type!='custom' ? onFilterChange(filterForm.type): ''">
+              <option value="today">Today</option>
+              <option value="yesterday">Yesterday</option>
+              <option value="last_7_days">Last 7 days</option>
+              <option value="last_30_days">Last 30 days</option>
+              <option value="current_month">Current month</option>
+              <option value="last_month">Last month</option>
+              <option value="current_year">Current year</option>
+              <option value="last_year">Last year</option>
+              <option value="current_fin_year">Current financial year</option>
+              <option value="last_fin_year">Last financial year</option>
+              <option value="all_time">All time</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6 col-md-12">
+    <!-- CARD ICON -->
+    <div class="row m-0">
+
+      <div class="col-lg-4 col-md-6 col-sm-6 d-flex">
+        <div class="card card-icon w-100 mb-4">
+          <div class="card-body text-center">
+            <i class="material-icons">cloud_upload</i>
+            <p class="text-muted text-gradient mt-2 mb-2">Uploads</p>
+            <p class="text-primary text-18 line-height-1 m-0">
+              <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+              <span *ngIf="!preLoader">{{order_details?.products}}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6 col-sm-6 d-flex">
+        <div class="card card-icon w-100 mb-4">
+          <div class="card-body text-center">
+            <i class="material-icons">person_pin_circle</i>
+            <p class="text-muted text-gradient mt-2 mb-2">New Customers</p>
+            <p class="text-primary text-18 line-height-1 m-0">
+              <i *ngIf="customerLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+              <span *ngIf="!customerLoader">{{customer_details?.total_customers}}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6 col-sm-6 d-flex">
+        <div class="card card-icon w-100 mb-4">
+          <div class="card-body text-center">
+            <i class="material-icons">remove_shopping_cart</i>
+            <p class="text-muted text-gradient mt-2 mb-2">Abandoned Carts</p>
+            <p class="line-height-1 text-title text-18 mt-2 mb-0">
+              <i *ngIf="customerLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+              <span *ngIf="!customerLoader">{{customer_details?.abandoned_count}}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6 col-sm-6 d-flex">
+        <div class="card card-icon w-100 mb-4">
+          <div class="card-body text-center">
+            <i class="material-icons">settings_backup_restore</i>
+            <p class="text-muted text-gradient mt-2 mb-2">Total Orders</p>
+            <p class="line-height-1 text-title text-18 mt-2 mb-0">
+              <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+              <span *ngIf="!preLoader">{{order_details?.order_list?.length}}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6 col-sm-6 d-flex">
+        <div class="card card-icon w-100 mb-4">
+          <div class="card-body text-center">
+            <i class="material-icons">all_out</i>
+            <p class="text-muted text-gradient mt-2 mb-2">Average Order Value</p>
+            <p class="line-height-1 text-title text-18 mt-2 mb-0">
+              <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+              <span *ngIf="!preLoader && order_details?.order_list?.length">
+                {{ (order_details?.total_sales / order_details?.order_list?.length).toFixed(0) | number : '1.0-0' }}
+              </span>
+              <span *ngIf="!preLoader && !order_details?.order_list?.length">0</span>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6 col-sm-6 d-flex">
+        <div class="card card-icon w-100 mb-4">
+          <div class="card-body text-center">
+            <i class="material-icons">monetization_on</i>
+            <p class="text-muted text-gradient mt-2 mb-2">Total Sales</p>
+            <p class="text-primary text-18 line-height-1 m-0">
+              <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+              <span *ngIf="!preLoader">{{order_details?.total_sales | number : '1.0-0'}}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <ng-container *ngIf="commonService.ys_features.indexOf('giftcard')!=-1">
+        <div class="col-lg-4 col-md-6 col-sm-6 d-flex">
+          <div class="card card-icon w-100 mb-4">
+            <div class="card-body text-center">
+              <i class="material-icons">redeem</i>
+              <p class="text-muted text-gradient mt-2 mb-2">Gift Card Orders</p>
+              <p class="line-height-1 text-title text-18 mt-2 mb-0">
+                <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+                <span *ngIf="!preLoader">{{order_details?.gc_list?.length}}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6 col-sm-6 d-flex">
+          <div class="card card-icon w-100 mb-4">
+            <div class="card-body text-center">
+              <i class="material-icons">all_out</i>
+              <p class="text-muted text-gradient mt-2 mb-2">Average GC Value</p>
+              <p class="line-height-1 text-title text-18 mt-2 mb-0">
+                <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+                <span *ngIf="!preLoader && order_details?.gc_list?.length">
+                  {{ (order_details?.gc_total_sales / order_details?.gc_list?.length).toFixed(0) | number : '1.0-0' }}
+                </span>
+                <span *ngIf="!preLoader && !order_details?.gc_list?.length">0</span>
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6 col-sm-6 d-flex">
+          <div class="card card-icon w-100 mb-4">
+            <div class="card-body text-center">
+              <i class="material-icons">monetization_on</i>
+              <p class="text-muted text-gradient mt-2 mb-2">Total GC Sales</p>
+              <p class="text-primary text-18 line-height-1 m-0">
+                <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+                <span *ngIf="!preLoader">{{order_details?.gc_total_sales | number : '1.0-0'}}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+    </div>
+  </div>
+
+  <div class="col-lg-6 col-md-12 d-flex">
+    <div class="card w-100 mb-4">
+      <div class="card-body">
+        <h5 class="card-title">Order Volume</h5>
+        <div *ngIf="preLoader" class="d-flex justify-content-center">
+          <i class="fa fa-circle-o-notch fa-spin load-spin"></i>
+        </div>
+        <div *ngIf="!preLoader && order_details?.order_list?.length" echarts [options]="chartLine" style="height: 300px"></div>
+        <div class="d-flex align-items-center justify-content-center" *ngIf="!preLoader && !order_details?.order_list?.length">
+          <p>No orders found</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6 col-md-12 d-flex">
+    <div class="card w-100 mb-4">
+      <div class="card-body">
+        <div class="card-title">Orders</div>
+        <div class="row">
+          <div class="col-md-12">
+            <table class="table">
+              <thead class="thead-light">
+                <tr>
+                  <th scope="col">Status</th>
+                  <th scope="col">Quantity</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Awaiting Confirmation</td>
+                  <td class="text-warning font-weight-bold">
+                    <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+                    <span *ngIf="!preLoader">{{order_details?.placed_orders}}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Confirmed</td>
+                  <td class="font-weight-bold" style="color: #42bcf5;">
+                    <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+                    <span *ngIf="!preLoader">{{order_details?.confirmed_orders}}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>In Transit</td>
+                  <td class="text-success font-weight-bold">
+                    <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+                    <span *ngIf="!preLoader">{{order_details?.dispatched_orders}}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Payment Pending</td>
+                  <td class="font-weight-bold" style="color: #f56725;">
+                    <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+                    <span *ngIf="!preLoader">{{order_details?.pending_orders}}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Completed</td>
+                  <td class="font-weight-bold" style="color: #d83967;">
+                    <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+                    <span *ngIf="!preLoader">{{order_details?.completed_orders}}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Cancelled</td>
+                  <td class="font-weight-bold" style="color: #a9a9a9;">
+                    <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+                    <span *ngIf="!preLoader">{{order_details?.cancelled_orders}}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="col-md-12">
+            <div *ngIf="preLoader">
+              <i class="fa fa-circle-o-notch fa-spin load-spin"></i>
+            </div>
+            <div id="dashboard-piechart" *ngIf="!preLoader" echarts [options]="chartPie" [autoResize]="true" style="height: 200px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6 col-md-12 d-flex">
+    <div class="card w-100 mb-4">
+      <div class="card-body">
+        <div class="card-title">Top Customers</div>
+        <div *ngIf="customerLoader" class="d-flex justify-content-center">
+          <i class="fa fa-circle-o-notch fa-spin load-spin"></i>
+        </div>
+        <div *ngIf="!customerLoader">
+          <ng-container *ngIf="customer_details?.top_customers?.length">
+            <div *ngFor="let x of customer_details.top_customers;" class="d-flex align-items-center border-bottom-dotted-dim pb-3 mb-3 top-customer">
+              <i class="material-icons">person_pin_circle</i>
+              <div class="flex-grow-1 mr-3">
+                <h6 class="m-0">{{x?.name}}</h6>
+                <p class="m-0 text-small text-muted">{{x.total_qty}} items purchased for {{x.total_price | currency: commonService.store_currency?.country_code}}</p>
+              </div>
+              <div>
+                <a routerLink="/customers/{{x._id}}" class="btn btn-wide btn-outline-primary">
+                  <span class="outline-primary-txt">View</span>
+                </a>
+              </div>
+            </div>
+          </ng-container>
+          <div *ngIf="!customer_details?.top_customers?.length" class="d-flex align-items-center justify-content-center">
+            <p>No customers found</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #infoModal let-modal>
+  <div class="modal-body">
+    <h6>{{infoConfig?.content}}</h6>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+      <span class="black-outline-txt">Close</span>
+    </button>
+    <button type="button" class="btn btn-wide btn-primary" (click)="modal.dismiss('Cross click');" routerLink="/store-setting/logo-management">
+      {{infoConfig?.btn_txt}}
+    </button>
+  </div>
+</ng-template>

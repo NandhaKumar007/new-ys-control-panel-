@@ -1,0 +1,146 @@
+<!-- Yourstore 1.1, Updated on: Feb 17, 2022 -->
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Yourstore</title>
+    <base href="/">
+    <meta name="robots" content="index">
+    <meta name="theme-color" content="#ec848b">
+    <meta name="msapplication-TileColor" content="#ec848b">
+    <meta name="description" content="yourstore control panel">
+    <meta name="keywords" content="">
+    <meta property="og:site_name" content="Yourstore">
+    <meta property="og:title" content="Yourstore">
+    <meta property="og:description" content="yourstore control panel">
+    <meta property="og:image" content="https://yourstore.io/login/assets/images/seo_logo.jpg">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/icon-192x192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <link rel="manifest" href="manifest.webmanifest">
+    <style>
+      #overlay {
+        position: fixed;
+        display: none;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0,0,0,0.5);
+        z-index: 2;
+        cursor: pointer;
+      }
+      .overlay_modal {
+        padding: 20px; 
+        background-color:#eee; 
+        margin:10px; 
+        border-radius: 14px; 
+        position:absolute; 
+        bottom: 0px;
+      }
+      .copy-link {
+        border: 1px solid #ec848b;
+        border-radius: 6px;
+        background: #ec848b;
+        color: #fff !important;
+        font-size: 10px;
+        padding-left: 3px;
+        padding-right: 3px;
+        position: relative;
+        top: -2px;
+      }
+    </style>
+  </head>
+  <body class="text-left">
+    <div id="overlay" class="container px-0">
+      <div class="row overlay_modal" style="margin: 10px;">
+        <div class="row align-items-center mx-0" style="border-bottom: 1px solid rgba(0,0,0,0.5); width:100%">
+          <div class="col-1 px-0">
+            <p>
+              <span class="material-icons" style="box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);border-radius: 10px;font-size: 20px;display: flex;align-items: center;justify-content: center;padding: 10px 20px;">browser_updated</span>       
+            </p> 
+          </div>
+          <div class="col-11">
+            <h5 style="margin-left: 10px;">Quick Install App</h5>
+          </div> 
+        </div>
+        <div class="col-md-12 px-0" style="padding-top: 15px;">
+          <ul style="list-style:none;padding-left:0">
+            <li class="pb-2">1. Open <a style="color: #ec848b;">yourstore.io/login</a> in Safari browser <a onclick="copyText()" id="iosText" class="copy-link">Copy Link</a></li>
+            <li class="pb-3">2. Tap on
+              <span class="material-icons" style="box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);border-radius: 4px;font-size: 14px;align-items: center;justify-content: center;padding: 5px;">
+                <span style="font-size: 18px;" class="material-icons-outlined">ios_share</span>
+              </span> in the address bar
+            </li>
+            <li class="pb-3">3. Scroll and select <b>Add to Home Screen</b>
+              <span class="material-icons" style="box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);border-radius: 4px;font-size: 14px;align-items: center;justify-content: center;padding: 5px;">
+                <span style="font-size: 18px;" class="material-icons-outlined">add_box</span>
+              </span>
+            </li>
+            <li>4. Click on the yourstore App icon in the Home screen and Login</li>
+          </ul>
+        </div>
+        <div class="closebtn" style="position:absolute; top: 19px; right:17px;">
+          <p class="mb-0" style="background-color: #fff;box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);border-radius: 100px; padding:7px;">
+            <span class="material-icons d-flex align-items-center justify-content-center" style="color:#999; font-size: 20px;">close</span>
+          </p>
+        </div>
+      </div>
+    </div>
+    <app-root>
+      <div class="loader-bg">
+        <div class="loadscreen flex">
+          <div class="loader-center">
+            <img src="assets/images/main-loading_logo.svg" class="logo mb-3" style="display: none" alt="">
+            <div class="loader_container">
+              <div class="item-1"></div>
+              <div class="item-2"></div>
+              <div class="item-3"></div>
+              <div class="item-4"></div>
+              <div class="item-5"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </app-root>
+    <noscript>Please enable JavaScript to continue using this application.</noscript>
+    <script>
+      let iosPlatforms = ["iPad", "iPhone", "iPod", "iPod touch"];
+      if(iosPlatforms.indexOf(navigator.platform)!=-1 && window.innerWidth<=800 && document.cookie.indexOf("pwa=false")==-1) {
+        document.getElementById("overlay").style.display = "block";
+      }
+      $(document).ready(function () {
+        $(document).on('click', '.closebtn', async function(e) {
+          document.getElementById("overlay").style.display = "none";
+          document.cookie = "pwa=false";
+        });
+      });
+
+      function copyText() {
+        let val = "https://yourstore.io/login";
+        let selBox = document.createElement('textarea');
+        selBox.style.position = 'fixed';
+        selBox.style.left = '0';
+        selBox.style.top = '0';
+        selBox.style.opacity = '0';
+        selBox.value = val;
+        document.body.appendChild(selBox);
+        selBox.focus();
+        selBox.select();
+        document.execCommand('copy');
+        document.body.removeChild(selBox);
+        document.getElementById("iosText").innerHTML = "Copied";
+      }
+    </script>
+  </body>
+</html>

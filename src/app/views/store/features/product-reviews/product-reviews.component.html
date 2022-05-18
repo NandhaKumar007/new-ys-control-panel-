@@ -1,0 +1,154 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-md-12">
+        <h1>Product Reviews</h1>
+        <ul>
+          <li style="padding: 0px;">View and manage your product reviews</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="top-filter-sec">
+    <div class="row mb-4">
+      <!-- category list -->
+      <div class="col-md-3 col-6">
+        <div class="form-group">
+          <select name="list_type" class="form-control select-arrow" [(ngModel)]="filterForm.type"
+            (change)="getReviewProducts();">
+            <option value="all">All</option>
+            <option value="active">Published</option>
+            <option value="inactive">Unpublished</option>
+          </select>
+        </div>
+      </div>
+      <!-- search -->
+      <div class="col-md-3 col-6">
+        <div class="form-group">
+          <input type="text" name="search_bar" placeholder="Search" class="form-control" autocomplete="off"
+            [(ngModel)]="filterForm.search_bar" />
+        </div>
+      </div>
+
+      <!-- from date -->
+      <div class="col-md-3 col-6">
+        <div class="form-group">
+          <input type="text" placeholder="Select Date" class="form-control" name="from_date"
+            [(ngModel)]="filterForm.from_date" (ngModelChange)="getReviewProducts();" bsDatepicker
+            [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }" />
+        </div>
+      </div>
+      <!-- to date -->
+      <div class="col-md-3 col-6">
+        <div class="form-group">
+          <input type="text" placeholder="Select Date" class="form-control" name="to_date"
+            [(ngModel)]="filterForm.to_date" (ngModelChange)="getReviewProducts();" bsDatepicker
+            [minDate]="filterForm.from_date" [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }" />
+        </div>
+      </div>
+      <!-- sort -->
+
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <!-- DATA LIST -->
+  <div class="list-horizontal">
+
+    <div class="data-list-card-wrapper">
+      <div class="data-list-card-inner">
+        <div class="row m-0">
+
+          <div
+            *ngFor="let x of list | orderDesc:'_id' | gridSearch: { product_sku: filterForm.search_bar, product_name: filterForm.search_bar } | paginate: { itemsPerPage: pageSize, currentPage: page }; let i = index;"
+            class="list-item col-md-12 data-list-card" [@animate]="{value:'*',params:{delay: (i*100)+'ms', y:'50px'}}">
+
+            <div class="">
+              <!-- <div class="list-thumb d-flex align-items-center mtb-20">
+              <img [src]="imgBaseUrl+x.productDetails[0]?.image_list[0].image" alt="">
+            </div> -->
+              <div class="row">
+
+                <div class="col-3 d-flex align-items-center p-0">
+                  <div class="list-thumb d-flex align-items-center mtb-20">
+                    <img [src]="imgBaseUrl+x.productDetails[0]?.image_list[0].image" alt="">
+                  </div>
+
+                </div>
+
+                <div class="col-9 d-flex align-items-center">
+               
+                    <div class="row w-100">
+
+                      <div class="col-md-3 d-flex align-items-center">
+                        <p class="m-0">{{x.product_name}}</p>
+                      </div>
+  
+                      <div class="col-md-3 d-flex align-items-center">
+                        <p class="m-0 text-muted text-small w-sm-100">{{x.product_sku}}</p>
+                      </div>
+  
+                      <div class="col-md-3 d-flex align-items-center">
+                        <p class="m-0 text-muted text-small w-sm-100">
+                          {{ x.reviews?.length }} {{ (x.reviews?.length>1)? 'Reviews': 'Review' }}
+                        </p>
+                      </div>
+  
+                      <div class="col-md-3 d-flex align-items-center justify-content-end">
+                        <button (click)="onSelect(x);"
+                          class="btn btn-wide black-outline-btn w-100 mr-3 w-100 w-lg-auto m-b-10">
+                          <span class="black-outline-txt">View</span>
+                        </button>
+                      </div>
+  
+                    </div>
+                  </div>
+                 
+                
+
+
+                <!-- <div
+                class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                <p class="m-0 prod-card-content">{{x.product_name}}</p>
+                <p class="m-0 text-muted text-small w-sm-100">{{x.product_sku}}</p>
+                <p class="m-0 text-muted text-small w-sm-100">
+                  {{ x.reviews?.length }} {{ (x.reviews?.length>1)? 'Reviews': 'Review' }}
+                </p>
+                <div class="mr-2 c-w-15 w-md-100 d-lg-block item-actions">
+                  <button (click)="onSelect(x);" class="btn btn-wide black-outline-btn w-100 mr-3 w-100 w-lg-auto m-b-10">
+                    <span class="black-outline-txt">View</span>
+                  </button>
+                </div>
+              </div> -->
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGINATION CONTROL -->
+    <div class="row">
+      <div class="col-md-12 mt-3" *ngIf="list?.length">
+        <pagination-controls (pageChange)="page=$event; commonService.pageTop(0);" autoHide="true" responsive="true"
+          maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+      </div>
+    </div>
+
+  </div>
+
+  <div *ngIf="!list?.length" class="row">
+    <div class="col-md-12 d-flex flex-column align-items-center justify-content-center no-rec-found-wrapper">
+      <img class="no-rec-found" src="assets/images/no_records_found.png" alt="no-records">
+      <p align="center">No data to display.</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,5 @@
+<div class="auth-layout-wrap">
+  <div [ngClass]="(router.url.indexOf('signup')!=-1)? 'signup-card': 'auth-content'">
+    <router-outlet></router-outlet>
+  </div>
+</div>

@@ -1,0 +1,157 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+
+  <div class="breadcrumb">
+    <h1>Amenities</h1>
+    <ul>
+      <li>Manage your project amenities</li>
+    </ul>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="top-filter-sec">
+    <div class="row mb-4">
+      <div class="col-6">
+        <button type="button" (click)="amenityForm = { rank: maxRank+1, form_type: 'add' }; modalService.open(amenityModal);"
+          class="btn btn-primary">Add New</button>
+      </div>
+      <!-- search box -->
+      <div class="col-md-6 mt-sm-15" align="right">
+        <div class="form-group">
+          <input type="text" name="search_bar" placeholder="Search" class="form-control" [(ngModel)]="search_bar" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- DATA LIST -->
+  <div *ngIf="list?.length" class="list-horizontal">
+
+    <div class="data-list-card-wrapper">
+      <div class="data-list-card-inner">
+        <div class="row m-0">
+          <!-- SINGLE LIST ITEM -->
+          <div *ngFor="let x of list | orderAsc:'rank' | fieldSearch:'name':search_bar | paginate: { itemsPerPage: pageSize, currentPage: page }; let i=index;"
+            class="col-md-12 list-item data-list-card" [@animate]="{value:'*',params:{delay: (i*100)+'ms', y:'50px'}}">
+            <div class="d-flex flex-row">
+              <div class="list-thumb d-flex align-items-center">
+                <img [src]="imgBaseUrl+x.image" alt="">
+              </div>
+              <div class="flex-grow-1 pl-2 d-flex">
+                <div class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                  <p class="w-15 w-sm-100 m-b-0">{{x.name}}</p>
+                  <p class="m-0 w-15 w-sm-100">{{x._id}}</p>
+                  <p class="m-0 w-15 w-sm-100 d-lg-block item-actions">
+                    <button class="btn btn-wide black-outline-btn w-md-100 mr-3" (click)="onEdit(x, amenityModal);">
+                      <span class="black-outline-txt">Edit</span>
+                    </button>
+                    <button class="btn orng-outline-btn w-md-100" (click)="deleteForm = x; modalService.open(deleteModal, { centered: true });">
+                      <span class="orng-outline-txt">Remove</span>
+                    </button>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGINATION CONTROL -->
+    <div class="row">
+      <div class="col-md-12 mt-3">
+        <pagination-controls (pageChange)="page=$event; commonService.pageTop(0);" autoHide="true" responsive="true"
+          maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+      </div>
+    </div>
+
+
+  </div>
+
+  <div *ngIf="!list?.length" class="row">
+    <div class="col-md-12 d-flex flex-column align-items-center justify-content-center no-rec-found-wrapper">
+      <img class="no-rec-found" src="assets/images/no_records_found.png" alt="no-records">
+      <p align="center">No data to display.</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- AMENITY MODAL -->
+<ng-template #amenityModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">
+      {{amenityForm.form_type=='add'? 'Add New': 'Update'}}
+    </h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onSubmit();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12" align="center">
+            <p>Photo Resolution: 50x50</p>
+            <div *ngIf="amenityForm.image">
+              <span (click)="amenityForm.img_change=null; amenityForm.image=null" class="material-icons item-close float-right" aria-hidden="true">close</span>
+              <img *ngIf="amenityForm.img_change" [src]="amenityForm.image" height="100px;" width="auto;">
+              <img *ngIf="!amenityForm.img_change" [src]="imgBaseUrl+amenityForm.image" height="100px;" width="auto;">
+            </div>
+            <div *ngIf="!amenityForm.image">
+              <label>
+                <div>
+                  <i class="material-icons add-img">add_photo_alternate</i>
+                  <p>Click to upload image</p>
+                </div>
+                <input type="file" name="image" style="display: none;" (change)="fileChangeListener($event);" accept="image/jpeg, image/png" />
+              </label>
+            </div>
+          </div>
+
+          <div class="col-md-12 form-group mb-3">
+            <label>Name</label>
+            <input type="text" name="name" class="form-control" [(ngModel)]="amenityForm.name" required />
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>Rank</label>
+            <input *ngIf="amenityForm.form_type=='add'" type="number" name="rank" class="form-control"
+            [(ngModel)]="amenityForm.rank" min="1"max="{{maxRank+1}}" appNumberOnly required />
+            <input *ngIf="amenityForm.form_type!='add'" type="number" name="rank" class="form-control"
+            [(ngModel)]="amenityForm.rank" min="1"max="{{maxRank}}" appNumberOnly required />
+          </div>
+        </div>
+      </div>
+      <div *ngIf="amenityForm.errorMsg">
+        <p class="text-danger">{{ amenityForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+        (click)="modal.dismiss('Cross click');">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">{{amenityForm.form_type=='add'? 'Add': 'Update'}}</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- DELETE MODAL -->
+<ng-template #deleteModal let-modal>
+  <div class="modal-body">
+    <p>
+      <strong>Are you sure you want to delete <span class="txt-grdint-highlight">"{{deleteForm.name}}"</span>?</strong>
+    </p>
+    <div *ngIf="deleteForm.errorMsg">
+      <p class="text-danger">{{ deleteForm.errorMsg }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+      (click)="modal.dismiss('Cross click');">
+      <span class="black-outline-txt">No</span>
+    </button>
+    <button type="button" (click)="onDelete();" class="btn btn-wide orng-outline-btn">
+      <span class="orng-outline-txt">Yes</span>
+    </button>
+  </div>
+</ng-template>

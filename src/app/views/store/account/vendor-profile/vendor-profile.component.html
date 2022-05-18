@@ -1,0 +1,158 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-md-8">
+        <h1>Profile</h1>
+        <ul><li>View and manage your profile information</li></ul>
+      </div>
+      <div class="col-md-4 d-flex align-items-center justify-content-end mt-sm-15">
+        <button type="button" (click)="imgForm={ image: vendorDetails.image }; modalService.open(bannerModal);" class="btn btn-primary mr-3">Change Banner</button>
+        <button type="button" (click)="pwdForm={}; modalService.open(changePwdModal);" class="btn btn-primary">Change Password</button>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="row">
+    <div class="col-md-6 col-lg-6 d-flex">
+      <div class="card setting-card w-100 p-3">
+        <div class="card card-in-card p-3 mb-3">
+          <h5 class="mb-3">CONTACT INFORMATION</h5>
+          <div class="ml-3">
+            <p>{{vendorDetails?.contact_person}}</p>
+            <p>{{vendorDetails?.mobile}}</p>
+            <p>{{vendorDetails?.email}}</p>
+          </div>
+        </div>
+        <div class="card card-in-card p-3 mb-3">
+          <h5 class="mb-3">STORE INFORMATION</h5>
+          <div class="ml-3">
+            <p>{{vendorDetails?.company_details?.name}} ({{vendorDetails?.company_details?.brand}})</p>
+            <p *ngIf="vendorDetails?.company_details?.gst_no"><b>GST No:</b> {{vendorDetails?.company_details?.gst_no}}</p>
+            <p *ngIf="vendorDetails?.company_details?.pan_no"><b>PAN No:</b> {{vendorDetails?.company_details?.pan_no}}</p>
+            <p *ngIf="vendorDetails?.company_details?.tin_no"><b>TIN No:</b> {{vendorDetails?.company_details?.tin_no}}</p>
+          </div>
+        </div>
+        <div class="card card-in-card p-3 mb-3">
+          <h5 class="mb-3">REGISTERED ADDRESS</h5>
+          <div class="ml-3">
+            <p>{{vendorDetails?.registered_address?.address}}</p>
+            <p>{{vendorDetails?.registered_address?.city}} - {{vendorDetails?.registered_address?.pincode}}</p>
+            <p>{{vendorDetails?.registered_address?.state}}, {{vendorDetails?.registered_address?.country}}</p>
+          </div>
+        </div>
+        <div class="card card-in-card p-3 mb-3">
+          <h5 class="mb-3">PICKUP ADDRESS</h5>
+          <div class="ml-3">
+            <p>{{vendorDetails?.pickup_address?.address}}</p>
+            <p>{{vendorDetails?.pickup_address?.city}} - {{vendorDetails?.pickup_address?.pincode}}</p>
+            <p>{{vendorDetails?.pickup_address?.state}}, {{vendorDetails?.pickup_address?.country}}</p>
+          </div>
+        </div>
+        <div class="card card-in-card p-3 mb-3">
+          <h5 class="mb-3">BANK INFORMATION</h5>
+          <div class="ml-3">
+            <p>{{vendorDetails?.bank_details?.beneficiary}}</p>
+            <p>{{vendorDetails?.bank_details?.name}}</p>
+            <p>{{vendorDetails?.bank_details?.acc_no}}</p>
+            <p>{{vendorDetails?.bank_details?.branch}} ({{vendorDetails?.bank_details?.ifsc_code}})</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- change pwd modal -->
+<ng-template #changePwdModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Change Password</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onChangePwd();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12 form-group mb-3">
+            <label>Current Password</label>
+            <input type="text" name="current_pwd" class="form-control" [(ngModel)]="pwdForm.current_pwd" required />
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>New Password</label>
+            <div class="custom-input-prepend-append-group">
+              <input [type]="pwdForm.input_txt? 'text': 'password'" name="new_pwd" class="form-control" (input)="pwdForm.errorMsg=null;"
+              style="padding: 10px;" [(ngModel)]="pwdForm.new_pwd" pattern=".{6,}" title="Six or more characters" required />
+              <div class="custom-input-append">
+                <i class="material-icons mr-3" *ngIf="!pwdForm.input_txt" (click)="pwdForm.input_txt = !pwdForm.input_txt" aria-hidden="true">visibility</i>
+                <i class="material-icons mr-3" *ngIf="pwdForm.input_txt" (click)="pwdForm.input_txt = !pwdForm.input_txt" aria-hidden="true">visibility_off</i>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>Confirm New Password</label>
+            <div class="custom-input-prepend-append-group">
+              <input type="text" name="confirm_new_pwd" style="padding: 10px;" class="form-control" [(ngModel)]="pwdForm.confirm_new_pwd" required />
+              <div *ngIf="pwdForm.confirm_new_pwd && pwdForm.new_pwd==pwdForm.confirm_new_pwd" class="custom-input-append">
+                <i class="material-icons mr-3" aria-hidden="true">check_circle_outline</i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="pwdForm.errorMsg"><p class="text-danger">{{ pwdForm.errorMsg }}</p></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+       <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary ladda-button m-1" [disabled]="pwdForm.new_pwd!=pwdForm.confirm_new_pwd || pwdForm.submit" [ladda]="pwdForm.submit">
+        Submit
+      </button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- Banner Modal -->
+<ng-template #bannerModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Update Banner Image</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdateBanner();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12" align="center">
+            <div *ngIf="imgForm.image">
+              <span (click)="imgForm.img_change=null; imgForm.image=null" class="material-icons item-close float-right"
+                aria-hidden="true">close</span>
+              <img *ngIf="imgForm.img_change" [src]="imgForm.image" height="100px;" width="auto;">
+              <img *ngIf="!imgForm.img_change" [src]="imgBaseUrl+imgForm.image" height="100px;" width="auto;">
+            </div>
+            <div *ngIf="!imgForm.image">
+              <label>
+                <div>
+                  <i class="material-icons add-img">add_photo_alternate</i>
+                  <p>Click to upload image</p>
+                </div>
+                <input type="file" name="image" style="display: none;" (change)="fileChangeListener($event);" accept="image/jpeg, image/png" />
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="imgForm.errorMsg">
+        <p class="text-danger">{{ imgForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+       <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary ladda-button m-1" [disabled]="imgForm.submit" [ladda]="imgForm.submit">Update</button>
+    </div>
+  </form>
+</ng-template>

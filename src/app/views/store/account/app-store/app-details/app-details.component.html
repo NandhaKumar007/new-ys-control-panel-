@@ -1,0 +1,109 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div class="app-detail-section" *ngIf="!pageLoader">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="app-detail-header-wraper">
+        <div class="row">
+          <div class="col-6">
+            <div class="app-deatil-header-info">
+              <span *ngIf="!featureDetails.image_list.length" class="material-icons-outlined">widgets</span>
+              <img *ngIf="featureDetails.image_list.length" [src]="imgBaseUrl+featureDetails.image_list[0].image" alt="app-icon">
+              <div class="app-deatil-contant">
+                <h5>{{featureDetails.name}}</h5>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-full-deatil">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="app-screen-slider-wrapper">
+          <div *ngIf="featureDetails.image_list.length>1" class="app-main-screen">
+            <img [src]="imgBaseUrl+featureDetails.image_list[selectedImageIndex].image" alt="app-screen-img">
+          </div>
+          <div *ngIf="featureDetails.image_list.length>2" class="app-slider-thumails">
+            <div class="app-slider-inner-thumails slim-scroll">
+              <ng-container *ngFor="let x of featureDetails.image_list;let i=index;">
+                <div *ngIf="i>0" class="app-single-thumail">
+                  <div class="app-single-thumail-inner">
+                    <img (click)="selectedImageIndex=i;" [src]="imgBaseUrl+x.image" alt="app-screen-thum">
+                  </div>
+                </div>
+              </ng-container>
+            </div>
+          </div>
+          <div class="app-full-description">
+            <h4>{{featureDetails.name}} Integration Overview</h4>
+            <p [innerHTML]="featureDetails.description"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="app-screen-slider-deatils">
+          <h4>Details</h4>
+          <div class="app-screen-slider-inner-deatils">
+            <div *ngIf="packageInfo?.currency_types[commonService.store_currency?.country_code]?.price>0" class="slider-inner-deatils-steps">
+              <h6>Price</h6>
+              <p>{{ packageInfo?.currency_types[commonService.store_currency?.country_code]?.price | currency:commonService.store_currency?.country_code:'symbol':'1.0' }}</p>
+            </div>
+            <div *ngIf="featureDetails.linked_packages?.length" class="slider-inner-deatils-steps">
+              <h6>Compatible Plans</h6>
+              <p *ngFor="let x of featureDetails.linked_packages | orderAsc:'rank';">{{x.package_name}}</p>
+            </div>
+            <div class="slider-inner-deatils-steps">
+              <ng-container *ngIf="packageInfo">
+                <h6>Availability</h6>
+                <div class="app-indicator">
+                  <div class="app-installed">
+                    <i class="material-icons">check_circle</i> Compatible with your plan
+                  </div>
+                </div>
+              </ng-container>
+              <ng-container *ngIf="packageInfo?.currency_types[commonService.store_currency?.country_code]?.price>0">
+                <button (click)="openModal('install', confirmModal)" *ngIf="commonService.ys_features.indexOf(featureDetails.keyword)==-1 && appDetails?.status!='active'" class="btn btn-primary app-btn mt-3">
+                  Install App
+                </button>
+                <ng-container *ngIf="appDetails?.status=='active'">
+                  <button (click)="openModal('uninstall', confirmModal)" *ngIf="!appDetails?.uninstalled" class="btn btn-primary app-btn mt-3">
+                    Uninstall App
+                  </button>
+                  <button *ngIf="!appDetails?.paid" routerLink="/account/app-store/payments" class="btn btn-primary app-btn ml-3 mt-3">
+                    Make Payment
+                  </button>
+                </ng-container>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<ng-template #confirmModal let-modal>
+  <div class="modal-body">
+    <p><strong>Are you sure you want to {{featureDetails.form_type}} the <span class="txt-grdint-highlight">"{{featureDetails.name}}"</span> app?</strong></p>
+    <div *ngIf="featureDetails.errorMsg">
+      <p class="text-danger">{{featureDetails.errorMsg}}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('cancel')">
+      <span class="black-outline-txt">No</span>
+    </button>
+    <button type="button" class="btn btn-wide orng-outline-btn ladda-button m-1" [disabled]="featureDetails.submit"
+    [ladda]="featureDetails.submit" (click)="onSubmit(featureDetails);">
+      <span class="orng-outline-txt">Yes</span>
+    </button>
+  </div>
+</ng-template>

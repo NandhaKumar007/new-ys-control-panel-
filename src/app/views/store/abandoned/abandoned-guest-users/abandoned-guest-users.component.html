@@ -1,0 +1,130 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb">
+    <h1>Abandoned {{ (router.url.indexOf('cart')!=-1)? 'Carts': 'Quotes' }} - Guest Users</h1>
+    <ul>
+      <li>View and manage the abandoned-{{ (router.url.indexOf('cart')!=-1)? 'carts': 'quotes' }}</li>
+    </ul>
+  </div>
+
+  <div class="separator-breadcrumb border-top"></div>
+  <div class="top-filter-sec">
+    <div *ngIf="list?.length" class="row mb-4">
+      <div class="col-md-6"></div>
+      <!-- search box -->
+      <div class="col-md-6">
+        <form autocomplete="off" (ngSubmit)="ngOnInit();" ngNativeValidate>
+          <div class="form-group">
+            <input type="text" name="search_bar" placeholder="Search" class="form-control" [(ngModel)]="filterForm.search" />
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- DATA LIST -->
+  <div *ngIf="list?.length" class="list-horizontal">
+
+    <div class="data-list-card-wrapper">
+      <div class="data-list-card-inner">
+        <div class="row m-0">
+
+          <!-- SINGLE LIST ITEM -->
+          <div *ngFor="let x of list; let i=index;"
+            class="col-md-12 list-item data-list-card" [@animate]="{value:'*',params:{delay: (i*100)+'ms', y:'50px'}}">
+
+            <div class="d-flex flex-row">
+              <div class="flex-grow-1 pl-2 d-flex mtb-0-60">
+                <div
+                  class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                  <p class="c-w-15 w-md-100 m-b-0">{{ x.email }}</p>
+                  <p class="w-20 w-md-100 m-b-0">
+                    <span class="d-block">{{ x.name }}</span>
+                    <span *ngIf="x.mobile!='NA'" class="d-block">{{ x.mobile }}</span>
+                  </p>
+                  <p class="w-20 w-md-100 m-b-0">{{ x.cart_updated_on | date: "dd MMM y hh:mm a" }}</p>
+                  <p class="w-10 w-md-100 m-b-0">
+                    <span class="d-block"> {{ x.cart_list?.length }} {{ (x.cart_list?.length>1)? 'items': 'item'
+                      }}</span>
+                    <span class="d-block">
+                      {{ x.cart_total | currency: commonService.store_currency?.country_code }}
+                    </span>
+                  </p>
+                  <div class="mr-2 c-w-15 w-md-100 d-lg-block item-actions c-m-md-0">
+                    <div class="product-btn-group btn-group w-md-100 w-100">
+                      <div class="btn-group w-md-100 w-100" ngbDropdown role="group" aria-label="Select all"
+                        placement="left">
+                        <button class="btn btn-wide btn-primary w-md-100 w-100" ngbDropdownToggle>Contact</button>
+                        <div class="dropdown-menu" ngbDropdownMenu>
+                          <a *ngIf="x.mobile!='NA'" target="blank"
+                            href="https://api.whatsapp.com/send?phone={{x.mobile}}&text=Hi {{x.name}},%0awe noticed that you intended to place an order on our website {{commonService.store_details.website}} which was interrupted or wasn't placed for reasons unknown. Can we help you with your order?">
+                            <button class="dropdown-item">Whatsapp</button>
+                          </a>
+                          <a href="mailto:{{x.email}}"><button class="dropdown-item">Mail</button></a>
+                          <a *ngIf="x.mobile!='NA'" href="tel:{{x.mobile}}"> <button
+                              class="dropdown-item">Call</button></a>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  <div class="mr-2 c-w-15 w-md-100 d-lg-block item-actions">
+                    <button class="btn btn-wide black-outline-btn w-100 mr-3" (click)="catchPageData();"
+                      routerLink="{{ (router.url.indexOf('cart')!=-1)? '/abandoned-cart/guest-user/'+x._id: '/abandoned-quotes/guest-user/'+x._id }}">
+                      <span class="black-outline-txt">View</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- PAGINATION CONTROL -->
+    <div *ngIf="list.length" class="row mt-4">
+      <div class="col-md-12 product-pagination-wrapper">
+        <ul role="navigation" class="ngx-pagination responsive product-pagination" aria-label="Pagination">
+          <li class="pagination-previous mr-3">
+            <a (click)="(page>1)? onChangePage('prev'): ''" [ngClass]="(page>1)? 'cursor': 'disabled'" aria-label="page">
+              <span class="cursor show-for-sr"></span>
+            </a>
+          </li>
+          <li class="current">
+            <span>{{page}}</span>
+          </li>
+          <li class="pagination-next ml-3">
+            <a (click)="(page<totalPages)? onChangePage('next'): ''" [ngClass]="(page<totalPages)? 'cursor': 'disabled'" aria-label="page">
+              <span class="cursor show-for-sr"></span>
+            </a>
+          </li>
+        </ul>
+        <div class="page-count-pagination">
+          <b class="mr-2">Go to</b>
+          <select name="select_page" style="width: 70px; display: inline;" class="form-control select-arrow" [(ngModel)]="page" (change)="commonService.pageTop(0); onLoadData();">
+            <option [ngValue]="i+1" *ngFor="let num of pagesList; let i=index;">{{i+1}}</option>
+          </select>
+          <b class="ml-2">page</b>
+        </div>
+      </div>
+    </div>
+    
+
+  </div>
+
+  <div *ngIf="!list?.length" class="row">
+    <div class="col-md-12 d-flex flex-column align-items-center justify-content-center no-rec-found-wrapper">
+      <img class="no-rec-found" src="assets/images/no_records_found.png" alt="no-records">
+      <p align="center">No data to display.</p>
+    </div>
+  </div>
+
+</div>

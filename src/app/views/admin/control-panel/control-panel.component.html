@@ -1,0 +1,39 @@
+<div [@animate]="{value:'*',params:{y:'120px',opacity:'0',delay:'100ms', duration: '400ms'}}">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="auth-card p-4">
+        <div class="auth-logo text-center mb-4">
+          <img src="assets/images/yourstore_logo.svg" alt="">
+        </div>
+        <h1 class="mb-3 text-18">Control Panel</h1>
+        <form autocomplete="off" (ngSubmit)="errorMsg=null; storePanel();" ngNativeValidate>
+          <div class="form-group">
+            <label>Store List</label>
+            <select name="store_id" class="form-control form-control-rounded select-arrow" [(ngModel)]="store_id" (change)="errorMsg=null;" required>
+              <option [ngValue]="x._id" *ngFor="let x of commonService.store_list | orderAsc:'name';">{{x.name}} ({{x.email}})</option>
+            </select>
+          </div>
+          <div *ngIf="errorMsg" align="center" style="margin: 20px 0 10px 0;">
+            <p style="color:red;"><strong>{{errorMsg}}</strong></p>
+          </div>
+          <div class="row">
+            <div class="col-md-6 d-flex align-items-center">
+              <div class="forgot-password-link">
+                <a class="text-muted cursor" (click)="commonService.signOut('/session/signin/master');">Sign out</a>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <btn-loading btnClass="btn-primary btn-rounded btn-block" [loadingText]="loadingText" [loading]="loading">Store Panel</btn-loading>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="col-md-12 mt-2">
+    <!-- <div class="col-md-12 mt-2"> -->
+      <div class="auth-card p-4 text-center" style="cursor: pointer;">
+       <button (click)="clientHub();" class="btn btn-wide btn-primary">Admin Panel</button>
+      </div>
+    </div>
+  </div>
+</div>

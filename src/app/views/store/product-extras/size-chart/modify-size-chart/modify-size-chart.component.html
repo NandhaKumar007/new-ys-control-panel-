@@ -1,0 +1,82 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div *ngIf="!params.chart_id" class="breadcrumb">
+    <h1>Create Size Chart</h1>
+    <ul>
+      <li>Enter chart details</li>
+    </ul>
+  </div>
+  <div *ngIf="params.chart_id" class="breadcrumb">
+    <h1>{{chartForm.name}}</h1>
+    <ul>
+      <li>Update chart details</li>
+    </ul>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <form autocomplete="off" (ngSubmit)="params.chart_id? onUpdate(): onAdd()" ngNativeValidate>
+
+    <div class="row">
+      <div class="col-md-6 form-group mb-3">
+        <label>Name</label>
+        <input type="text" name="name" class="form-control" [(ngModel)]="chartForm.name" #name="ngModel" required />
+      </div>
+      <div class="col-md-6 form-group mb-3">
+        <label>Unit</label>
+        <input type="text" name="unit" class="form-control" [(ngModel)]="chartForm.unit" #name="ngModel" required />
+      </div>
+      <div class="col-md-12 form-group mb-3">
+        <label>Description</label>
+        <textarea class="form-control" aria-label="With textarea" name="description" [(ngModel)]="chartForm.description" #description="ngModel" required></textarea>
+      </div>
+    </div>
+
+    <div class="row mt-3 mb-3">
+      <div class="col-md-12">
+        <h5>Size Chart</h5>
+      </div>
+      <div class="col-md-11">
+        <table class="table table-bordered size-chart">
+          <thead>
+            <th *ngFor='let key of duplicateKeys; let i=index;'>
+              <input type="text" class="table-input form-control" [(ngModel)]="key.name" [ngModelOptions]="{standalone: true}" (focusout)="focusOutFunction($event, i)" required />
+            </th>
+          </thead>
+          <tbody>
+            <tr *ngFor="let x of chartForm.chart_list;">
+              <td *ngFor="let key of keys;">
+                <input type="text" class="table-input form-control" [(ngModel)]="x[key]" [ngModelOptions]="{standalone: true}" required />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <button type="button" class="btn blue-outline-btn mr-1" (click)="chartForm.chart_list.push({});">
+         <span class="blue-outline-txt">+ Row</span> </button>
+        <button *ngIf="chartForm?.chart_list?.length>1" type="button" class="btn btn-primary" (click)="chartForm.chart_list.splice(chartForm.chart_list.length-1, 1);">- Row</button>
+      </div>
+      <div class="col-md-1">
+        <button type="button" class="btn blue-outline-btn mr-1" (click)="addColumn();">
+          <span class="blue-outline-txt">+ Column</span></button>
+        <button *ngIf="duplicateKeys?.length>1" type="button" class="btn btn-primary" (click)="removeColumn(duplicateKeys.length-1);">- Column</button>
+      </div>
+    </div>
+
+    <div style="margin-top: 50px;" class="separator-breadcrumb border-top"></div>
+    <div class="row">
+      <div *ngIf="chartForm.errorMsg" style="margin: 25px 0 25px 0;">
+        <p class="text-danger" align="center">{{ chartForm.errorMsg }}</p>
+      </div>
+      <div align="center" class="col-md-12 z-i-0">
+        <button type="button" routerLink="/product-extras/size-chart" class="btn btn-wide black-outline-btn">
+         <span class="black-outline-txt">Cancel</span>
+        </button>&nbsp; &nbsp; &nbsp;
+        <button type="submit" class="btn btn-wide btn-primary ladda-button m-1" [disabled]="btnLoader" [ladda]="btnLoader">{{params.chart_id? 'Update': 'Save'}}</button>
+      </div>
+    </div>
+
+  </form>
+
+</div>

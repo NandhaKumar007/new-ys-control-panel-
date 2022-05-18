@@ -1,0 +1,131 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb">
+    <h1>{{ (params?.feature_id)? 'Update': 'Add' }} App</h1>
+    <ul>
+      <li>{{ (params?.feature_id)? 'Update': 'Add' }} app details</li>
+    </ul>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <form autocomplete="off" (ngSubmit)="onSubmit();" ngNativeValidate>
+    <div class="row">
+      <div class="col-md-4 form-group mb-3">
+        <label>Title</label>
+        <input type="text" name="name" class="form-control" [(ngModel)]="featureForm.name" #name="ngModel" required />
+      </div>
+      <div class="col-md-4 form-group mb-3">
+        <label>Keyword</label>
+        <input type="text" name="keyword" class="form-control" [(ngModel)]="featureForm.keyword" #keyword="ngModel" [disabled]="params?.feature_id" appKeyword required />
+      </div>
+      <div class="col-md-4 form-group mb-3">
+        <label>Category</label>
+        <select name="category" class="form-control" [(ngModel)]="featureForm.category" #category="ngModel" required>
+          <option *ngFor="let x of commonService.feature_categories | orderAsc:'rank';" value="{{x.name}}">{{x.name}}</option>
+        </select>
+      </div>
+      <div class="col-md-12 form-group mb-3 quill-mb-5">
+        <label>Description</label>
+        <quill-editor class="rounded" [placeholder]="null" [(ngModel)]="featureForm.description" [ngModelOptions]="{standalone: true}"></quill-editor>
+      </div>
+      <div class="col-md-12 form-group mb-3">
+        <div [ngClass]="featureForm.link_to_package? 'card p-3': ''">
+          <label class="checkbox checkbox-primary">
+            <input class="form-check-input" type="checkbox" name="link_to_package" [(ngModel)]="featureForm.link_to_package" #link_to_package="ngModel">
+            <span>Link to Package</span>
+            <span class="checkmark"></span>
+          </label>
+          <div class="row mt-3">
+            <ng-container *ngIf="featureForm.link_to_package">
+              <ng-container *ngFor="let x of packageList | orderAsc: 'rank'; let i=index;">
+                <div class="col-md-12 form-group ml-5" [ngClass]="x.package_selected? 'mb-2': 'mb-3'">
+                  <label class="checkbox checkbox-primary">
+                    <input class="form-check-input" type="checkbox" name="package_selected{{i}}" [(ngModel)]="x.package_selected" #package_selected="ngModel">
+                    <span>{{x.name}}</span>
+                    <span class="checkmark"></span>
+                  </label>
+                </div>
+                <div *ngIf="x.package_selected" class="col-md-12 mb-3 ml-5">
+                  <div class="row">
+                    <div *ngFor="let y of x.currency_list; let j=index;" class="col-md-2 form-group mb-1">
+                      <label>Cost per Month ({{y.base}})</label>
+                      <input type="text" name="price{{i+1}}{{j+1}}" class="form-control" [(ngModel)]="y.price" #price="ngModel" appNumberOnly required />
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+      <!-- discount -->
+      <div class="col-md-12 form-group mb-3">
+        <div [ngClass]="featureForm.disc_status? 'card p-3': ''">
+          <label class="checkbox checkbox-primary">
+            <input class="form-check-input" type="checkbox" name="disc_status" [(ngModel)]="featureForm.disc_status" #disc_status="ngModel">
+            <span>Apply Discount</span>
+            <span class="checkmark"></span>
+          </label>
+          <ng-container *ngIf="featureForm.disc_status" class="ml-5">
+            <div class="col-md-12 mt-3 ml-5">
+              <div class="row">
+                <div *ngFor="let cur of discountCurrencyList; let k=index;" class="col-md-2 form-group mb-3">
+                  <label>Discount Value ({{cur.base}})</label>
+                  <input type="text" name="disc_amount{{k}}" class="form-control" [(ngModel)]="cur.price" #disc_amount="ngModel" appNumberOnly required />
+                </div>
+              </div>
+            </div>
+            <div class="col-md-12 mb-3 ml-5">
+              <div class="row">
+                <div class="col-md-2 form-group mb-3">
+                  <label>Start Date</label>
+                  <input type="text" placeholder="Select Start Date" class="form-control" name="disc_from" autocomplete="off" placement="top"
+                  [(ngModel)]="featureForm.disc_from" bsDatepicker [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }" required />
+                </div>
+                <div class="col-md-2 form-group mb-3">
+                  <label>End Date</label>
+                  <input type="text" placeholder="Select End Date" class="form-control" name="disc_to" autocomplete="off" placement="top"
+                    [(ngModel)]="featureForm.disc_to" bsDatepicker [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }" required />
+                </div>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div align="center" class="col-md-6 col-lg-4 form-group mb-3" *ngFor="let x of featureForm.image_list; let i=index;">
+        <div class="card p-3 mt-3 mb-3">
+          <span (click)="featureForm.image_list.splice(i, 1);" class="material-icons item-close absolute-item-close float-right" aria-hidden="true">close</span>
+          <label>
+            <div *ngIf="!x.image">
+              <i class="material-icons add-img">add_photo_alternate</i>
+              <p>Click to upload image</p>
+            </div>
+            <img *ngIf="x.image && x.img_change" [src]="x.image" height="150" width="auto">
+            <img *ngIf="x.image && !x.img_change" [src]="imgBaseUrl+x.image" height="150" width="auto">
+            <input type="file" name="image{{i}}" style="display: none;" (change)="fileChangeListener(i, $event);" accept="image/jpeg, image/png" />
+          </label>
+        </div>
+      </div>
+      <div align="center" class="col-md-6 col-lg-4 d-flex align-items-center form-group mb-3 z-i-0">
+        <div class="add-another-opt w-100" (click)="featureForm.image_list.push({});">
+          <p>ADD {{(featureForm.image_list.length)? 'ANOTHER': ''}} IMAGE</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="separator-breadcrumb border-top mt-5"></div>
+    <div class="row">
+      <div align="center" class="col-md-12">
+        <button type="button" routerLink="/admin/features" class="btn btn-wide btn-outline-secondary">Cancel</button>&nbsp; &nbsp; &nbsp;
+        <button type="submit" class="btn btn-primary">{{ (params?.feature_id)? 'Update': 'Add' }}</button>
+      </div>
+    </div>
+  </form>
+
+</div>

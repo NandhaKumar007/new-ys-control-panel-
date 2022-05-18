@@ -1,0 +1,413 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-8">
+        <h1>Create Quick Order</h1>
+        <ul>
+          <li>Fill in the details of the order</li>
+        </ul>
+      </div>
+      <div class="col-4 z-i-0" align="right">
+        <button type="button" class="btn btn-wide btn-outline-secondary" routerLink="/features/quick-orders">Back</button>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="top-filter-sec">
+    <div class="row">
+      <div class="col-lg-9">
+        <div class="order-section">
+          <!-- Customer Details -->
+          <div>
+            <p class="sec-desc">Order Details</p>
+          </div>
+          <div class="col-md-12 list-item p-0 mtb-10">
+            <div class="card mb-4 d-flex flex-row">
+              <div class="flex-grow-1 pl-2 d-flex">
+                <div class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                  <div class="mb-1" style="width: 100%;">
+                    <label>Name</label>
+                    <input type="text" name="name" [(ngModel)]="orderForm.name" class="form-control" required />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- product list -->
+          <div>
+            <p class="sec-desc pb-2">Product Details</p>
+          </div>
+          <div *ngIf="!cart_list.length" class="list-item col-md-12 p-0">
+            <div class="card mb-4 d-flex flex-row">
+              <p class="p-3 mb-1">No items found</p>
+            </div>
+          </div>
+          <div *ngIf="cart_list.length" class="list-item col-md-12">
+            <div *ngFor="let x of cart_list; let i=index;" class="card mb-4 d-flex flex-row pr-3 pl-3">
+              <div *ngIf="x.image" class="list-thumb d-flex align-items-center mtb-20">
+                <img [src]="imgBaseUrl+x.image" alt="image" />
+              </div>
+              <div class="flex-grow-1 pl-2 d-flex mtb-20">
+                <div class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                  <p class="m-0 prod-card-content w-md-100 cursor">{{x.name}}
+                    <ng-container *ngIf="x.variant_status">
+                      <p *ngFor="let y of x.variant_types;" class="inner-addon w-100">
+                        <strong>{{y.name}}: </strong>
+                        <span class="cart-addon">{{y.value}}</span>
+                      </p>
+                    </ng-container>
+                    <ng-container *ngIf="x.addon_status && x.selected_addon">
+                      <p class="inner-addon w-100">
+                        <b>Addon: </b><span class="w-100">{{x.selected_addon?.name}}</span>
+                      </p>
+                    </ng-container>
+                  </p>
+                  <p class="m-0 w-md-100">{{x.quantity}} {{x.unit}}</p>
+                  <p class="m-0 text-muted w-15 w-md-100">{{ x.final_price | currency:commonService.store_currency.country_code }}</p>
+                </div>
+              </div>
+              <span (click)="removeItemFromCart(i);" class="material-icons item-close absolute-item-close float-right" aria-hidden="true">close</span>
+            </div>
+          </div>
+          <p class="add-another x-close pull-right" (click)="page=1; openProductListModal(productListModal);">
+            ADD {{ cart_list.length? 'ANOTHER': 'A' }} PRODUCT
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-3">
+        <div class="summary-section md-mtb-10">
+          <div class="order-summary-header">
+            <p class="sec-desc">Order Total</p>
+          </div>
+          <div class="card order-summary-details mtb-10">
+            <div class="row mtb-20">
+              <ng-container *ngIf="discount>0">
+                <div class="col-6">
+                  <div class="box-card card-head">
+                    <p>Subtotal</p>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="box-card">
+                    <p class="pull-right">{{ cart_total | currency:commonService.store_currency.country_code }}</p>
+                  </div>
+                </div>
+
+                <div class="col-6">
+                  <div class="box-card card-head">
+                    <p>Discount</p>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="box-card">
+                    <p class="pull-right">- {{ discount | currency:commonService.store_currency.country_code }}</p>
+                  </div>
+                </div>
+              </ng-container>
+
+              <div class="col-6">
+                <div class="box-card card-head">
+                  <p>Grand Total</p>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="box-card">
+                  <p class="pull-right">
+                    {{ (cart_total - discount) | currency:commonService.store_currency.country_code }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <form autocomplete="off" (ngSubmit)="onSubmit();" ngNativeValidate>
+            <!-- Apply Discount -->
+            <div class="pb-2">
+              <p class="sec-desc">Discount</p>
+            </div>
+            <div class="card p-3 mb-3">
+              <label class="checkbox checkbox-primary m-0">
+                <input class="form-check-input" type="checkbox" name="disc_status" [(ngModel)]="orderForm.disc_status" (change)="discount=0; orderForm.disc_config={ type: 'amount', value: '' };" />
+                <span>Apply Discount</span>
+                <span class="checkmark"></span>
+              </label>
+              <div class="mt-3" *ngIf="orderForm.disc_status">
+                <div class="card card-in-card p-3">
+                  <div class="mb-3">
+                    <label class="radio radio-primary mb-2">
+                      <input type="radio" name="disc_type" [(ngModel)]="orderForm.disc_config.type" value="amount" (click)="discount=0; orderForm.disc_config.value=0;" class="form-check-input">
+                      <span>Flat Discount</span>
+                      <span class="checkmark"></span>
+                    </label>
+                    <label class="radio radio-primary mb-2">
+                      <input type="radio" name="disc_type" [(ngModel)]="orderForm.disc_config.type" value="percentage" (click)="discount=0; orderForm.disc_config.value=0;" class="form-check-input">
+                      <span>Percentage Discount</span>
+                      <span class="checkmark"></span>
+                    </label>
+                  </div>
+                  <div class="mb-3">
+                    <label>Discount {{ (orderForm.disc_config.type=='percentage')? '(%)': 'amount' }}</label>
+                    <input type="text" name="disc_value" (input)="changeDiscValue();" [(ngModel)]="orderForm.disc_config.value" class="form-control" required appNumberOnly />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Link Expiry -->
+            <div class="pb-2">
+              <p class="sec-desc">Set Link Validity</p>
+            </div>
+            <div class="card p-3 mb-3">
+              <label class="checkbox checkbox-primary m-0">
+                <input class="form-check-input" type="checkbox" name="expiry_status" [(ngModel)]="orderForm.expiry_status" />
+                <span>Enable Expiry</span>
+                <span class="checkmark"></span>
+              </label>
+              <div class="mt-3" *ngIf="orderForm.expiry_status">
+                <div class="card card-in-card p-3">
+                  <div class="mb-3">
+                    <label>Expiry Date</label>
+                    <input type="text" placeholder="Select Expiry Date" class="form-control" name="expiry_date" [(ngModel)]="orderForm.expiry_date" bsDatepicker
+                    [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }" required />
+                  </div>
+                  <div class="mb-3">
+                    <label>Expiry Time</label>
+                    <input type="text" placeholder="Select Expiry Time" class="form-control" name="expiry_time" [(ngModel)]="orderForm.expiry_time" (click)="timePicker();" required />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100" [disabled]="!cart_list.length">{{ (formType=='add')? 'Generate': 'Update' }} Link</button>
+          </form>
+          <ng-container *ngIf="formType=='update'">
+            <div class="tooltip-container">
+              <span *ngIf="orderForm.copied" class="tooltip">Link Copied</span>
+              <button type="button" (click)="copyText(orderForm._id);" class="btn btn-success w-100 m-0">Copy Link</button>
+            </div>
+            <button type="button" *ngIf="!commonService?.desktop_device" (click)="socialShare(orderForm._id);" class="btn btn-info w-100">Share Link</button>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCT LIST MODAL -->
+<ng-template #productListModal let-modal>
+  <!-- header -->
+  <div class="main-header-div d-flex align-items-center">
+    <div class="m-header">
+      <h4 class="modal-title" id="modal-basic-title"><b>{{ productDetails? 'Product Details': 'Products' }}</b></h4>
+      <p class="m-0">These are {{ productDetails? 'the selected product details': 'your products' }}</p>
+    </div>
+    <span class="m-close-btn"><a id="closeProductListModal" (click)="modal.dismiss('Cross click');">CLOSE</a></span>
+  </div>
+  <!-- body -->
+  <div class="modal-body lg-modal-body slim-scroll">
+    <ng-container *ngIf="!productDetails">
+      <div class="row">
+        <div class="col-md-6"></div>
+        <div class="col-md-6" align="right">
+          <input class="form-control" [(ngModel)]="product_list_modal_config.search_input" name="search_input"
+            type="text" placeholder="Search" />
+        </div>
+      </div>
+      <div class="clearfix">&nbsp;</div>
+    </ng-container>
+
+    <div class="customer-list-table">
+      <!-- loader -->
+      <div *ngIf="product_list_modal_config.pageLoader" class="col-md-12">
+        <app-spinner></app-spinner>
+      </div>
+      <!-- product list -->
+      <div *ngIf="!productDetails && !product_list_modal_config.pageLoader" class="col-md-12">
+        <div class="row"
+          *ngFor="let x of product_list | orderDesc: 'rank' | gridSearch: { name: product_list_modal_config.search_input, sku: product_list_modal_config.search_input } | paginate: { itemsPerPage: 10, currentPage: page }; let i=index;">
+          <div class="col-md-12 list-item">
+            <div class="card mb-2 d-flex flex-row">
+              <div class="list-thumb d-flex align-items-center mtb-20">
+                <img [src]="imgBaseUrl+x.image_list[0].image" alt="">
+              </div>
+              <div class="flex-grow-1 pl-2 d-flex mtb-20 flex-column">
+                <div class="card-body d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                  <p class="m-0 w-30 w-sm-100">{{x.name}}<br>{{x.sku}}</p>
+                  <p class="m-0 text-muted text-small w-15 w-sm-100">
+                    {{x.discounted_price | currency:commonService.store_currency.country_code }}</p>
+                  <p class="m-0 text-muted text-small w-15 w-sm-100">{{x.stock}} in stock</p>
+                  <p class="m-0 text-muted text-small w-15 w-md-100">
+                    <button class="btn btn-wide btn-primary w-100"
+                      (click)="onSelectProduct(x); commonService.scrollModalTop(0);">Select</button>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- selected product details -->
+      <ng-container *ngIf="productDetails">
+        <div class="order-create-product">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="d-flex flex-column">
+                <!-- product-image -->
+                <div>
+                  <div class="product-image d-flex justify-content-center align-items-center">
+                    <div class="list-thumb d-flex align-items-center mtb-20">
+                      <img *ngIf="productDetails.image" [src]="imgBaseUrl+productDetails.image" alt="prod-img">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="product-details">
+                <div class="product-discription">
+                  <h4 class="product-name">{{productDetails.name}}</h4>
+                  <div class="product-price">
+                    <ng-container *ngIf="productDetails.disc_status">
+                      <p>
+                        <span class="product-strike">
+                          {{ (productDetails.selling_price*productDetails.quantity) | currency:commonService.store_currency.country_code }}
+                        </span>
+                      </p>
+                    </ng-container>
+                    <p>
+                      <span *ngIf="productDetails.unit=='Pcs'" class="product-price">
+                        {{ (((productDetails.discounted_price*1)+(productDetails.addon_price*1)) * productDetails.quantity) | currency:commonService.store_currency.country_code }}
+                      </span>
+                      <span *ngIf="productDetails.unit!='Pcs'" class="product-price">
+                        {{ ((productDetails.discounted_price*productDetails.quantity) + (productDetails.addon_price*1)) | currency:commonService.store_currency.country_code }}
+                      </span>
+                    </p>
+                  </div>
+                  <p class="product-code">Product Code: {{productDetails.sku}}</p>
+                </div>
+                <!-- product-addon -->
+                <div class="product-addon border-top">
+                  <!-- variants -->
+                  <ng-container *ngIf="productDetails.variant_status">
+                    <div class="size-variant border-btm mt-2 pt-3 pb-3">
+                      <div *ngFor="let x of productDetails.variant_types; let i=index;">
+                        <div class="sizes">
+                          <p>{{x.name}}</p>
+                        </div>
+                        <div>
+                          <ng-container *ngFor="let y of x.options; let j=index;">
+                            <div class="d-inline-block mr-4">
+                              <label class="radio radio-primary">
+                                <input class="mr-2" type="radio" name="{{x.name}}" [checked]="x.value==y.value" (change)="x.value=y.value; setVariantPrice();">
+                                {{y.value}}
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                          </ng-container>
+                        </div>
+                      </div>
+                    </div>
+                  </ng-container>
+                  <!-- #variants -->
+
+                  <!-- qty scale -->
+                  <ng-container *ngIf="productDetails.stock > 1">
+                    <div class="border-btm d-flex flex-wrap justify-content-start align-items-center pt-3 pb-3">
+                      <div class="pro-qty d-flex justify-content-center align-items-center height-100">
+                        <button [ngClass]="productDetails.quantity>1? 'cursor': 'qty-btn-disabled'"
+                          (click)="(productDetails.quantity>1)? decQty(): ''">
+                          <i class="material-icons">
+                            remove_circle
+                          </i>
+                        </button>
+                        <input type="number" class="text-center" name="prod_qty" [(ngModel)]="productDetails.quantity">
+                        <button
+                          [ngClass]="(productDetails.stock>productDetails.quantity)? 'cursor': 'qty-btn-disabled'"
+                          (click)="(productDetails.stock>productDetails.quantity)? incQty(): ''">
+                          <i class="material-icons">
+                            add_circle
+                          </i>
+                        </button>
+                      </div>
+                      <span class="ml-2 quantity-unit">{{productDetails.unit}}</span>
+                    </div>
+                  </ng-container>
+                  <!-- #qty scale -->
+
+                  <!-- stock -->
+                  <p class="stock-report border-btm m-0 pt-3 pb-3" *ngIf="productDetails.stock > 0">
+                    <strong>{{productDetails.stock}} {{productDetails.unit}} Left in Stock.</strong>
+                  </p>
+                  <!-- #stock# -->
+
+                  <!-- Addon -->
+                  <div
+                    *ngIf="productDetails.stock>0 && productDetails?.addon_status && productDetails?.addon_list?.length"
+                    class="customization border-btm pt-3 pb-3">
+                    <!-- addon list -->
+                    <label>Addons</label>
+                    <select class="form-control" name="selected_addon" (change)="changeAddon(productDetails.selected_addon);" [(ngModel)]="productDetails.selected_addon">
+                      <option value="undefined" selected hidden>-- Please Select --</option>
+                      <option *ngFor="let x of productDetails.addon_list | orderAsc: 'rank'; let i=index;" [ngValue]="x">{{x.name}}</option>
+                    </select>
+                    <!-- addon alert -->
+                    <ng-container *ngIf="productDetails.addon_alert">
+                      <div class="danger-alert">
+                        <div class="alert-msg d-flex align-items-center justify-content-center p-2">
+                          <span class="material-icons"></span>
+                          <p class="m-0">Select a Addon</p>
+                        </div>
+                      </div>
+                    </ng-container>
+                  </div>
+                  <!-- #Addon# -->
+                </div>
+                <!-- btn-sec -->
+                <div class="product-add-btn">
+                  <!-- sold out -->
+                  <ng-container
+                    *ngIf="productDetails.stock < 1 || productDetails.quantity > productDetails.stock">
+                    <div class="danger-alert smooth-fadein">
+                      <div class="alert-msg d-flex align-items-center justify-content-center p-2">
+                        <span class="material-icons"></span>
+                        <p class="m-0">{{ (productDetails.stock < 1)? 'SOLD OUT': 'NOT ENOUGH QUANTITY TO PURCHASE' }}
+                        </p>
+                      </div>
+                    </div>
+                  </ng-container>
+                  <!-- #sold out# -->
+
+                  <!-- ADD TO CART & BUY NOW BTN -->
+                  <ng-container *ngIf="productDetails.stock >= 1">
+                    <ng-container
+                      *ngIf="productDetails.stock >= productDetails.quantity">
+                      <div class="buy-add-cart-btn border-btm pt-3 pb-3">
+                        <button class="btn btn-wide btn-primary" type="button" (click)="addtoCart();">Add to
+                          cart</button>
+                      </div>
+                    </ng-container>
+                  </ng-container>
+                  <!-- #ADD TO CART & BUY NOW BTN -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+  <div *ngIf="!productDetails && !product_list_modal_config.pageLoader" class="modal-footer">
+    <pagination-controls (pageChange)="page=$event; commonService.scrollModalTop(0);" autoHide="true" responsive="true"
+      maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+  </div>
+  <div *ngIf="productDetails" class="modal-footer">
+    <button class="btn btn-wide btn-primary" (click)="productDetails='';" type="button">Go Back</button>
+  </div>
+</ng-template>

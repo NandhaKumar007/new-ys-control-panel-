@@ -1,0 +1,169 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-md-12 p-0">
+        <div class="row">
+          <div class="col-md-12 d-flex justify-content-end align-items-start flex-column">
+            <h1>Billing Statement</h1>
+            <ul>
+              <li>View the statement of your payments</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="top-filter-sec">
+    <div class="row mb-4">
+      <div class="col-md-3 col-6">
+        <div class="form-group">
+          <input type="text" placeholder="Select Date" class="form-control" name="from_date"
+            [(ngModel)]="filterForm.from_date" (ngModelChange)="getList();" bsDatepicker
+            [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }" />
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="form-group">
+          <input type="text" placeholder="Select Date" class="form-control" name="to_date"
+            [(ngModel)]="filterForm.to_date" (ngModelChange)="getList();" bsDatepicker
+            [minDate]="filterForm.from_date" [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATA LIST -->
+  <div *ngIf="list?.length" class="list-horizontal">
+    <div class="data-list-card-wrapper">
+      <div class="data-list-card-inner">
+        <div class="row m-0">
+
+          <!-- SINGLE LIST ITEM -->
+          <div *ngFor="let x of list | orderDesc:'_id' | paginate: { itemsPerPage: pageSize, currentPage: page }; let i=index;"
+            class="col-md-12 list-item data-list-card" [@animate]="{value:'*',params:{delay: (i*100)+'ms', y:'50px'}}">
+
+            <div class="d-flex flex-row">
+              <div class="flex-grow-1 d-flex">
+                <div class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                  <!-- OTHER DATA -->
+                  <p class="m-0 w-20 w-sm-100 m-b-0">{{x.order_number}}</p>
+                  <!-- purchase plan -->
+                  <ng-container *ngIf="x.order_type=='purchase_plan'">
+                    <p class="m-0 w-10 w-sm-100 m-b-0">Purchase Plan</p>
+                    <p class="m-0 w-10 w-sm-100 m-b-0">{{ packageDetails[x.package_details?._id] }}</p>
+                  </ng-container>
+                  <!-- plan change -->
+                  <ng-container *ngIf="x.order_type=='plan_change'">
+                    <p class="m-0 w-10 w-sm-100 m-b-0">Change Plan</p>
+                    <p class="m-0 w-10 w-sm-100 m-b-0">{{ packageDetails[x.prev_package_details?._id] }} -> {{ packageDetails[x.package_details?._id] }}</p>
+                  </ng-container>
+                  <!-- plan renewal -->
+                  <ng-container *ngIf="x.order_type=='plan_renewal'">
+                    <p class="m-0 w-10 w-sm-100 m-b-0">Plan Renewal</p>
+                    <p class="m-0 w-10 w-sm-100 m-b-0">{{ packageDetails[x.package_details?._id] }}</p>
+                  </ng-container>
+                  <!-- purchase app -->
+                  <ng-container *ngIf="x.order_type=='purchase_app'">
+                    <p class="m-0 w-10 w-sm-100 m-b-0">Purchase App</p>
+                    <p class="m-0 w-10 w-sm-100 m-b-0">{{ x.app_list.length }} {{ (x.app_list.length>1)? 'apps': 'app' }}</p>
+                  </ng-container>
+                  <p class="m-0 w-10 w-sm-100 m-b-0">{{x.amount | currency: x.currency_type?.country_code}}</p>
+                  <p class="m-0 w-20 w-sm-100 m-b-0">{{x.created_on | date: "dd MMM y hh:mm a"}}</p>
+                  <p class="m-0 text-muted text-small w-sm-100 d-lg-block item-actions">
+                    <button (click)="selectedBill=x; modalService.open(detailsModal);" class="btn btn-wide black-outline-btn w-md-100 mr-3">
+                      <span class="black-outline-txt">View</span>
+                    </button>
+                    <a [href]="imgBaseUrl+'uploads/'+commonService.store_details._id+'/invoices/'+x._id+'.pdf'" target="_blank">
+                      <i class="material-icons">download</i>
+                    </a>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGINATION CONTROL -->
+    <div class="col-md-12 mt-3">
+      <pagination-controls (pageChange)="page=$event; commonService.pageTop(0);" autoHide="true" responsive="true" maxSize="5"
+        previousLabel="" nextLabel=""></pagination-controls>
+    </div>
+  </div>
+
+  <div *ngIf="!list?.length" class="row">
+    <div class="col-md-12 d-flex flex-column align-items-center justify-content-center no-rec-found-wrapper">
+      <img class="no-rec-found" src="assets/images/no_records_found.png" alt="no-records">
+      <p align="center">No data to display.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Details Modal -->
+<ng-template #detailsModal let-modal>
+  <div class="modal-header">
+    <div>
+      <h4 class="modal-title" id="modal-basic-title">{{selectedBill.order_number}}</h4>
+    </div>
+  </div>
+  <div class="modal-body">
+    <div class="form-group">
+      <div class="row">
+        <div class="col-md-12">
+          <!-- Purchase Plan -->
+          <ng-container *ngIf="selectedBill.order_type=='purchase_plan'">
+            <h5 class="mb-3">Purchase Plan</h5>
+            <p>{{ packageDetails[selectedBill.package_details?._id] }}: {{ selectedBill.package_details?.price | currency: selectedBill.currency_type?.country_code }}</p>
+            <p *ngIf="selectedBill.discount">Discount - Signup Offer: {{ selectedBill.discount | currency: selectedBill.currency_type?.country_code }}</p>
+          </ng-container>
+          <!-- Purchase App -->
+          <ng-container *ngIf="selectedBill.order_type=='purchase_app'">
+            <h5 class="mb-3">Purchase App</h5>
+            <p *ngFor="let x of selectedBill.app_list;">
+              {{x.name}}: {{ x.price | currency: selectedBill.currency_type?.country_code }}
+            </p>
+          </ng-container>
+          <!-- Plan Renewal -->
+          <ng-container *ngIf="selectedBill.order_type=='plan_renewal'">
+            <h5 class="mb-3">Plan Renewal</h5>
+            <p>{{ packageDetails[selectedBill.package_details?._id] }}: {{ selectedBill.package_details?.price | currency: selectedBill.currency_type?.country_code }}</p>
+            <p *ngFor="let x of selectedBill.app_list;">
+              {{x.name}}: {{ x.price | currency: selectedBill.currency_type?.country_code }}
+            </p>
+            <p>Transaction Charges: {{ selectedBill.transaction_charges | currency: selectedBill.currency_type?.country_code }}</p>
+            <p>Total: {{ (selectedBill.credit+selectedBill.amount) | currency: selectedBill.currency_type?.country_code }}</p>
+            <p>Claimed Credits: {{ selectedBill.credit | currency: selectedBill.currency_type?.country_code }}</p>
+          </ng-container>
+          <!-- Plan Change -->
+          <ng-container *ngIf="selectedBill.order_type=='plan_change'">
+            <h5 class="mb-3">Plan Change</h5>
+            <p>Plan: {{ packageDetails[selectedBill.prev_package_details?._id] }} -> {{ packageDetails[selectedBill.package_details?._id] }} {{ selectedBill.package_details?.price | currency: selectedBill.currency_type?.country_code }}</p>
+            <p *ngFor="let x of selectedBill.app_list;">
+              {{x.name}}: {{ x.price | currency: selectedBill.currency_type?.country_code }}
+            </p>
+            <p *ngIf="selectedBill.credit">Credits: {{ selectedBill.credit | currency: selectedBill.currency_type?.country_code }}</p>
+            <p *ngIf="selectedBill.discount">Discount: {{ selectedBill.discount - selectedBill.credit | currency: selectedBill.currency_type?.country_code }}</p>
+          </ng-container>
+
+          <p *ngIf="selectedBill.cgst">CGST({{selectedBill.cgst.percentage}}%) {{selectedBill.cgst.amount | currency: selectedBill.currency_type?.country_code}}</p>
+          <p *ngIf="selectedBill.sgst">SGST({{selectedBill.sgst.percentage}}%) {{selectedBill.sgst.amount | currency: selectedBill.currency_type?.country_code}}</p>
+          <p *ngIf="selectedBill.igst">IGST({{selectedBill.igst.percentage}}%) {{selectedBill.igst.amount | currency: selectedBill.currency_type?.country_code}}</p>
+          <p>Bill Amount: {{ selectedBill?.amount | currency: selectedBill.currency_type?.country_code }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" (click)="modal.dismiss('Cross click');" class="btn btn-wide black-outline-btn">
+      <span class="black-outline-txt">Close</span>
+    </button>
+  </div>
+</ng-template>

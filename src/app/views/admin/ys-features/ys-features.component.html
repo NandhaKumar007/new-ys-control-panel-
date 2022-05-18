@@ -1,0 +1,137 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-md-12 p-0">
+        <div class="row">
+          <div class="col-md-8 d-flex justify-content-end align-items-start flex-column">
+            <h1>Apps</h1>
+            <ul>
+              <li>Manage and edit yourstore app properties</li>
+            </ul>
+          </div>
+          <div class="col-md-4 mt-2 d-flex align-items-end justify-content-end mt-sm-15">
+            <button type="button" class="btn btn-primary" routerLink="/admin/features/add">Add Feature</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="form-group">
+        <select name="selected_category" (change)="onChange();" [(ngModel)]="selected_category" class="form-control select-arrow">
+          <option value="all">All</option>
+          <option *ngFor="let x of commonService.feature_categories | orderAsc:'rank';" value="{{x.name}}">{{x.name}}</option>
+        </select>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="form-group">
+        <select name="selected_package" (change)="onChange();" [(ngModel)]="selected_package" class="form-control select-arrow">
+          <option value="all">All</option>
+          <option *ngFor="let x of commonService.admin_packages | orderAsc:'rank';" value="{{x._id}}">{{x.name}}</option>
+        </select>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="form-group">
+        <select name="fea_type" (change)="onChange();" [(ngModel)]="fea_type" class="form-control select-arrow">
+          <option value="all">All</option>
+          <option value="free">Free</option>
+          <option value="paid">Paid</option>
+        </select>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="form-group">
+        <input type="text" name="search_bar" placeholder="Search" class="form-control" [(ngModel)]="search_bar" />
+      </div>
+    </div>
+  </div>
+
+  <!-- DATA LIST -->
+  <div *ngIf="list?.length" class="list-horizontal">
+
+
+    <div class="data-list-card-wrapper">
+      <div class="data-list-card-inner">
+        <div class="row m-0">
+
+          <!-- SINGLE LIST ITEM -->
+          <div
+            *ngFor="let x of list | fieldSearch:'name':search_bar | orderAsc:'rank' | paginate: { itemsPerPage: pageSize, currentPage: page }; let i=index;"
+            class="col-md-12 list-item data-list-card" [@animate]="{value:'*',params:{delay: (i*100)+'ms', y:'50px'}}">
+
+            <div class="d-flex flex-row">
+              <div class="flex-grow-1 d-flex">
+                <div
+                  class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                  <!-- OTHER DATA -->
+                  <p class="m-0 w-20 w-sm-100">{{ x.name }}</p>
+                  <p class="m-0 w-20 w-sm-100">
+                    <ng-container *ngIf="x.packages?.length">
+                      <li *ngFor="let p of x.packages;">{{p}}</li>
+                    </ng-container>
+                    <ng-container *ngIf="!x.packages?.length">NA</ng-container>
+                  </p>
+                  <!-- <p class="m-0 w-20 w-sm-100" *ngIf="x.disc_status && !x.disc_expired">{{
+                    x.disc_currency_types.INR.price |
+                    currency:'INR':'symbol':'1.0' }} off till {{ x.disc_to | date: "dd MMM y" }}</p>
+                  <p class="m-0 w-20 w-sm-100" *ngIf="x.disc_status && x.disc_expired">{{
+                    x.disc_currency_types.INR.price |
+                    currency:'INR':'symbol':'1.0' }} off expired</p>
+                  <p class="m-0 w-20 w-sm-100" *ngIf="!x.disc_status">{{ 0 | currency:'INR':'symbol':'1.0' }} off</p> -->
+                  <p class="m-0 text-muted text-small w-sm-100 d-lg-block item-actions">
+                    <button class="btn btn-wide btn-outline-secondary w-md-100 mr-3"
+                      routerLink="/admin/features/update/{{x._id}}">Edit</button>
+                    <button class="btn btn-outline-danger w-md-100"
+                      (click)="deleteForm = x; modalService.open(deleteModal, { centered: true });">Remove</button>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
+    <!-- PAGINATION CONTROL -->
+    <div class="row">
+      <div class="col-md-12 mt-3">
+        <pagination-controls (pageChange)="page=$event; commonService.pageTop(0);" autoHide="true" responsive="true"
+          maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!list?.length" class="row">
+    <div class="col-md-12">
+      <p align="center">No data to display.</p>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE MODAL -->
+<ng-template #deleteModal let-modal>
+  <div class="modal-body">
+    <p><strong>Are you sure you want to remove <span class="text-danger">"{{deleteForm.name}}"</span> app?</strong>
+    </p>
+    <div *ngIf="deleteForm.errorMsg">
+      <p class="text-danger">{{ deleteForm.errorMsg }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide btn-outline-secondary"
+      (click)="modal.dismiss('Cross click');">No</button>
+    <button type="button" (click)="onDelete();" class="btn btn-primary">Yes</button>
+  </div>
+</ng-template>

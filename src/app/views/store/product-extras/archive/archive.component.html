@@ -1,0 +1,231 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb">
+    <h1>Archive</h1>
+    <ul>
+      <li>Create collections and add or remove products</li>
+    </ul>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="top-filter-sec">
+    <div class="row mb-4">
+      <div class="col-6">
+        <button type="button" class="btn btn-primary"
+          (click)="addForm = { rank: maxRank+1 }; modalService.open(addModal);">Create New Collection</button>
+      </div>
+      <!-- search box -->
+      <div *ngIf="list?.length" class="col-md-6 mt-sm-15" align="right">
+        <div class="form-group">
+          <input type="text" name="search_bar" placeholder="Search" class="form-control" [(ngModel)]="search_bar" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- DATA LIST -->
+  <div *ngIf="list?.length" class="list-horizontal">
+
+    <div class="data-list-card-wrapper">
+      <div class="data-list-card-inner">
+        <div class="row m-0">
+
+          <!-- SINGLE LIST ITEM -->
+          <div
+            *ngFor="let x of list | orderAsc:'rank' | fieldSearch:'name':search_bar | paginate: { itemsPerPage: pageSize, currentPage: page }; let i=index;"
+            class="col-md-12 list-item data-list-card" [@animate]="{value:'*',params:{delay: (i*100)+'ms', y:'50px'}}">
+
+            <div class="">
+              <div class="">
+                <div
+                  class="card-body">
+                
+                
+                <div class="row">
+                  <div class="col-md-3 d-flex align-items-center">
+                    <p class="m-b-0">{{x.name}}</p>
+                  </div>
+                  <div class="col-md-3 d-flex align-items-center">
+                    <p class="m-0 text-muted text-small">{{x.product_count}} Products</p>
+                  </div>
+                  <div class="col-md-6 d-flex align-items-center justify-content-end">
+                    <p class="m-0 text-muted text-small d-lg-block item-actions w-md-100">
+                      <a *ngIf="x.product_count>0" class="btn blue-outline-btn w-md-100 mr-3"
+                        routerLink="/product-extras/archive/product/{{x._id}}/{{x.name}}">
+                        <span class="blue-outline-txt">View Products</span>
+                      </a>
+                      <button *ngIf="commonService.master_token && x.product_count>0"
+                        class="btn blue-outline-btn w-md-100 mr-3"
+                        (click)="btnLoader=false; deleteForm=x; modalService.open(unarchiveModal, { centered: true });">
+                        <span class="blue-outline-txt">Unarchive Products</span>
+                      </button>
+                      <button class="btn btn-wide black-outline-btn w-md-100 mr-3"
+                        (click)="editForm={ _id: x._id, name: x.name, prev_rank: x.rank, rank: x.rank }; modalService.open(editModal);">
+                        <span class="black-outline-txt">Edit</span>
+                      </button>
+                      <button class="btn orng-outline-btn w-md-100"
+                        (click)="deleteForm=x; modalService.open(deleteModal, { centered: true });">
+                        <span class="orng-outline-txt">Remove</span>
+                      </button>
+                    </p>
+                  </div>
+                </div>
+                  <!-- <p class="w-30 w-sm-100 m-b-0">{{x.name}}</p>
+                  <p class="m-0 text-muted text-small w-15 w-sm-100">{{x.product_count}} Products</p>
+                  <p class="m-0 text-muted text-small w-15 w-sm-100 d-lg-block item-actions">
+                    <a *ngIf="x.product_count>0" class="btn blue-outline-btn w-md-100 mr-3"
+                      routerLink="/product-extras/archive/product/{{x._id}}/{{x.name}}">
+                      <span class="blue-outline-txt">View Products</span>
+                    </a>
+                    <button *ngIf="commonService.master_token && x.product_count>0"
+                      class="btn blue-outline-btn w-md-100 mr-3"
+                      (click)="btnLoader=false; deleteForm=x; modalService.open(unarchiveModal, { centered: true });">
+                      <span class="blue-outline-txt">Unarchive Products</span>
+                    </button>
+                    <button class="btn btn-wide black-outline-btn w-md-100 mr-3"
+                      (click)="editForm={ _id: x._id, name: x.name, prev_rank: x.rank, rank: x.rank }; modalService.open(editModal);">
+                      <span class="black-outline-txt">Edit</span>
+                    </button>
+                    <button class="btn orng-outline-btn w-md-100"
+                      (click)="deleteForm=x; modalService.open(deleteModal, { centered: true });">
+                      <span class="orng-outline-txt">Remove</span>
+                    </button>
+                  </p> -->
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
+    <!-- PAGINATION CONTROL -->
+    <div class="row">
+      <div class="col-md-12 mt-3">
+        <pagination-controls (pageChange)="page=$event; commonService.pageTop(0);" autoHide="true" responsive="true"
+          maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+      </div>
+    </div>
+   
+
+  </div>
+
+  <div *ngIf="!list?.length" class="row">
+    <div class="col-md-12 d-flex flex-column align-items-center justify-content-center no-rec-found-wrapper">
+      <img class="no-rec-found" src="assets/images/no_records_found.png" alt="no-records">
+      <p align="center">No data to display. Create a collection to start achiving products.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<ng-template #addModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">New Collection</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onAdd();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12 form-group mb-3">
+            <label>Title</label>
+            <input type="text" name="name" class="form-control" [(ngModel)]="addForm.name" #name="ngModel" required />
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>Rank</label>
+            <input type="number" name="rank" class="form-control" [(ngModel)]="addForm.rank" #rank="ngModel" min="1"
+              max="{{maxRank+1}}" appNumberOnly required />
+          </div>
+        </div>
+      </div>
+      <div *ngIf="addForm.errorMsg">
+        <p class="text-danger">{{ addForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+        (click)="modal.dismiss('Cross click');">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">Add</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- EDIT MODAL -->
+<ng-template #editModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{editForm.name}}</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdate();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12 form-group mb-3">
+            <label>Title</label>
+            <input type="text" name="name" class="form-control" [(ngModel)]="editForm.name" #name="ngModel" required />
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>Rank</label>
+            <input type="number" name="rank" class="form-control" [(ngModel)]="editForm.rank" #rank="ngModel" min="1"
+              max="{{maxRank}}" appNumberOnly required />
+          </div>
+        </div>
+      </div>
+      <div *ngIf="editForm.errorMsg">
+        <p class="text-danger">{{ editForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+        (click)="modal.dismiss('Cross click');">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- UNARCHIVE MODAL -->
+<ng-template #unarchiveModal let-modal>
+  <div class="modal-body">
+    <p><strong>Are you sure you want to unarchive the products from <span
+          class="txt-grdint-highlight">"{{deleteForm.name}}"</span> folder?</strong></p>
+    <div *ngIf="deleteForm.errorMsg">
+      <p class="text-danger">{{ deleteForm.errorMsg }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+      (click)="modal.dismiss('Cross click');">
+      <span clas="black-outline-txt">No</span>
+    </button>
+    <button type="button" (click)="onUnarchiveProducts();" class="btn btn-wide btn-primary ladda-button m-1"
+      [disabled]="btnLoader" [ladda]="btnLoader">Yes</button>
+  </div>
+</ng-template>
+
+<!-- DELETE MODAL -->
+<ng-template #deleteModal let-modal>
+  <div class="modal-body">
+    <p><strong>Are you sure you want to delete <span class="txt-grdint-highlight">"{{deleteForm.name}}"</span>
+        folder?</strong></p>
+    <div *ngIf="deleteForm.errorMsg">
+      <p class="text-danger">{{ deleteForm.errorMsg }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+      (click)="modal.dismiss('Cross click');">
+      <span class="black-outline-txt">No</span>
+    </button>
+    <button type="button" (click)="onDelete();" class="btn btn-wide orng-outline-btn">
+      <span class="orng-outline-txt">Yes</span>
+    </button>
+  </div>
+</ng-template>

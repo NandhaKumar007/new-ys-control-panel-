@@ -1,0 +1,220 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-md-8">
+        <h1>Gift Card Orders</h1>
+        <ul>
+          <li class="p-0">View and manage your gift card orders</li>
+        </ul>
+      </div>
+      <div class="col-md-4 d-flex align-items-center justify-content-end mt-sm-15">
+        <button
+          *ngIf="commonService.ys_features.indexOf('sales_report')!=-1 || commonService.ys_features.indexOf('advanced_sales_report')!=-1"
+          type="button" (click)="exportAsXLSX();" class="btn btn-primary ladda-button mr-2" [disabled]="exportLoader"
+          [ladda]="exportLoader">Export</button>
+        <button *ngIf="commonService.ys_features.indexOf('manual_giftcard')!=-1 || commonService.subuser_features.indexOf('manual_giftcard')!=-1" type="button" class="btn btn-primary"
+          (click)="btnLoader=false; addForm = { from_name: commonService.store_details?.name }; modalService.open(addModal);">Create
+          New Gift Coupon</button>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="top-filter-sec">
+    <div class="row mb-4">
+      <!-- category list -->
+      <div class="col-md-3 col-6">
+        <div class="form-group">
+          <select name="list_type" class="form-control select-arrow" [(ngModel)]="list_type"
+            (change)="onTypeChange(list_type);">
+            <option value="all">All</option>
+            <option value="active">Active</option>
+            <option value="used">Used</option>
+            <option value="deactivated">Deactivated</option>
+            <option value="expired">Expired</option>
+          </select>
+        </div>
+      </div>
+      <!-- search -->
+      <div class="col-md-3 col-6">
+        <div class="form-group">
+          <input type="text" name="search_bar" placeholder="Search" class="form-control" autocomplete="off"
+            [(ngModel)]="search_bar" />
+        </div>
+      </div>
+
+      <!-- from date -->
+      <div class="col-md-3 col-6">
+        <div class="form-group">
+          <input type="text" placeholder="Select Date" class="form-control" name="from_date"
+            [(ngModel)]="filterForm.from_date" (ngModelChange)="getCouponList();" bsDatepicker
+            [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }" />
+        </div>
+      </div>
+      <!-- to date -->
+      <div class="col-md-3 col-6">
+        <div class="form-group">
+          <input type="text" placeholder="Select Date" class="form-control" name="to_date"
+            [(ngModel)]="filterForm.to_date" (ngModelChange)="getCouponList();" bsDatepicker
+            [minDate]="filterForm.from_date" [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }" />
+        </div>
+      </div>
+      <!-- sort -->
+
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <!-- DATA LIST -->
+  <div class="list-horizontal">
+
+    <div class="data-list-card-wrapper">
+      <div class="data-list-card-inner">
+        <div class="row m-0">
+
+          <div
+          *ngFor="let x of list | orderDesc:'created_on' | gridSearch: { order_number: search_bar, customer_name: search_bar, customer_email: search_bar, customer_mobile: search_bar, code: search_bar, to_name: search_bar, to_email: search_bar } | paginate: { itemsPerPage: pageSize, currentPage: page }; let i = index;"
+          class="list-item data-list-card col-md-12 p-0" [ngClass]="x.order_by=='admin' ? 'has-find-band': ''" [@animate]="{value:'*',params:{delay: (i*100)+'ms', y:'50px'}}">
+    
+          <div class="d-flex flex-row">
+            <div *ngIf="x.order_by=='admin'" class="find-band"></div>
+            <div class="flex-grow-1 pl-2 d-flex">
+              <div
+                class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                <p class="mb-0 c-w-15 w-md-100">#{{x.order_number}}</p>
+                <p class="mb-0 c-w-15 w-md-100 primary-color">{{x.code}}</p>
+                <p class="mb-0 c-w-15 w-md-100">{{x.created_on | date: "dd MMM y hh:mm a"}}</p>
+                <p class="mb-0 w-10 w-md-100">{{x.price | currency:commonService.store_currency?.country_code}}</p>
+                <p class="mb-0 c-w-15 w-md-100 mr-2">
+                  <span class="badge badge-warning badge-green">{{x.balance |
+                    currency:commonService.store_currency?.country_code}}</span>
+                </p>
+                <p *ngIf="x.status=='active'" class="mb-0 c-w-15 w-md-100 m-b-0">
+                  <ng-container *ngIf="checkValid(x.expiry_on);">
+                    <span *ngIf="x.balance<=0" class="badge badge-warning badge-blue">Used</span>
+                    <span *ngIf="x.balance>0" class="badge badge-warning badge-green">Active</span>
+                  </ng-container>
+                  <ng-container *ngIf="!checkValid(x.expiry_on);">
+                    <span class="badge badge-warning badge-red">Expired</span>
+                  </ng-container>
+                </p>
+                <p *ngIf="x.status=='deactivated'" class="mb-0 c-w-15 w-md-100 m-b-0">
+                  <span class="badge badge-warning badge-red">Deactivated</span>
+                </p>
+                <div class="mr-2 c-w-15 w-md-100 d-lg-block item-actions">
+                  <button routerLink="/orders/gift-coupon/{{x._id}}"
+                    class="btn btn-wide black-outline-btn w-100 mr-3 w-100 w-lg-auto m-b-10">
+                    <span class="black-outline-txt">View</span>
+                  </button>
+    
+                </div>
+                <div class="m-0 c-w-15 w-md-100 d-lg-block item-actions">
+                  <button [disabled]="x.status!='active'"
+                    (click)="deleteForm=x; modalService.open(deleteModal, { centered: true });"
+                    class="btn btn-wide orng-outline-btn w-100 w-lg-auto m-b-10">
+                    <span class="orng-outline-txt">Deactivate</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+    
+        </div>
+
+        </div>
+      </div>
+    </div>
+   
+    <!-- PAGINATION CONTROL -->
+    <div class="row" *ngIf="list?.length">
+      <div class="col-md-12 mt-3" >
+        <pagination-controls (pageChange)="page=$event; commonService.pageTop(0);" autoHide="true" responsive="true"
+          maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+      </div>
+    </div>
+   
+  </div>
+
+  <div *ngIf="!list?.length" class="row">
+    <div class="col-md-12 d-flex flex-column align-items-center justify-content-center no-rec-found-wrapper">
+      <img class="no-rec-found" src="assets/images/no_records_found.png" alt="no-records">
+      <p align="center">No data to display.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ADD COUPON -->
+<ng-template #addModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">New Gift Coupon</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onAdd();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12 form-group mb-3">
+            <label>Price</label>
+            <input type="text" name="price" class="form-control" [(ngModel)]="addForm.price" #price="ngModel"
+              appNumberOnly required />
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>From Name</label>
+            <input type="text" name="from_name" class="form-control" [(ngModel)]="addForm.from_name"
+              #from_name="ngModel" required />
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>To Name</label>
+            <input type="text" name="to_name" class="form-control" [(ngModel)]="addForm.to_name" #to_name="ngModel"
+              required />
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>To Email</label>
+            <input type="text" name="to_email" class="form-control" [(ngModel)]="addForm.to_email" #to_email="ngModel"
+              required />
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>Message</label>
+            <textarea class="form-control" aria-label="With textarea" name="message" [(ngModel)]="addForm.message"
+              #message="ngModel" required></textarea>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="addForm.errorMsg">
+        <p class="text-danger">{{ addForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+        (click)="modal.dismiss('Cross click');">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" [disabled]="btnLoader" [ladda]="btnLoader"
+        class="btn btn-wide btn-primary ladda-button">Create & Send Mail</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- Delete Modal -->
+<ng-template #deleteModal let-modal>
+  <div class="modal-body">
+    <p>
+      <strong>Are you sure you want to remove
+        <span class="txt-grdint-highlight">"{{deleteForm.code}}"</span> this coupon?</strong>
+    </p>
+    <div *ngIf="deleteForm.errorMsg">
+      <p class="text-danger">{{ deleteForm.errorMsg }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('cancel')">
+      <span class="black-outline-txt">No</span>
+    </button>
+    <button type="button" class="btn btn-wide orng-outline-btn" (click)="onDelete();">
+      <span class="orng-outline-txt">Yes</span>
+    </button>
+  </div>
+</ng-template>

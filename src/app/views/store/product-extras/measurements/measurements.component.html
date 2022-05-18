@@ -1,0 +1,424 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb">
+    <h1>Measurement Sets</h1>
+    <ul>
+      <li>Create your measurement requirements</li>
+    </ul>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="top-filter-sec">
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <button type="button" class="btn btn-primary"
+          (click)="btnLoader=false; addForm={ rank: maxRank+1, units: [{}], list: [{ conditions: [] }] }; modalService.open(addModal, { size: 'lg'});">Add
+          New Measurement Set</button>
+      </div>
+      <!-- search box -->
+      <div *ngIf="list?.length" class="col-md-6 mt-sm-15">
+        <div class="form-group">
+          <input type="text" name="search_bar" placeholder="Search" class="form-control" [(ngModel)]="search_bar" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- DATA LIST -->
+  <div *ngIf="list?.length" class="list-horizontal">
+
+    <div class="data-list-card-wrapper">
+      <div class="data-list-card-inner">
+        <div class="row m-0">
+          <!-- SINGLE LIST ITEM -->
+          <div
+            *ngFor="let x of list | orderAsc:'rank' | fieldSearch:'name':search_bar | paginate: { itemsPerPage: pageSize, currentPage: page }; let i=index;"
+            class="col-md-12 list-item data-list-card "
+            [@animate]="{value:'*',params:{delay: (i*100)+'ms', y:'50px'}}">
+
+            <div class="d-flex flex-row">
+              <div *ngIf="x.image" class="list-thumb d-flex align-self-center">
+                <!-- TUMBNAIL -->
+                <img [src]="imgBaseUrl+x.image" alt="">
+              </div>
+              <div class="flex-grow-1 pl-2 d-flex">
+                <div
+                  class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                  <!-- OTHER DATA -->
+                  <p class="m-0 w-30 w-sm-100">{{x.name}}</p>
+                  <p class="m-0 text-muted text-small w-15 w-sm-100">{{x.list?.length}} Measurements</p>
+                  <p class="m-0 text-muted text-small w-15 w-sm-100 d-lg-block item-actions">
+                    <button class="btn btn-wide black-outline-btn w-md-100 mr-3" (click)="onEdit(x, editModal);">
+                      <span class="black-outline-txt">Edit</span>
+                    </button>
+                    <button class="btn orng-outline-btn w-md-100"
+                      (click)="deleteForm = x; modalService.open(deleteModal, { centered: true });">
+                      <span class="orng-outline-txt">Remove</span>
+                    </button>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- PAGINATION CONTROL -->
+    <div class="row">
+      <div class="col-md-12 mt-3">
+        <pagination-controls (pageChange)="page=$event; commonService.pageTop(0);" autoHide="true" responsive="true"
+          maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+      </div>
+    </div>
+
+
+  </div>
+
+  <div *ngIf="!list?.length" class="row">
+    <div class="col-md-12 d-flex flex-column align-items-center justify-content-center no-rec-found-wrapper">
+      <img class="no-rec-found" src="assets/images/no_records_found.png" alt="no-records">
+      <p align="center">No data to display. Create a measurement set to enable advanced customization of your products.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<ng-template #addModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">New Measurement Set</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onAdd()" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12" align="center">
+            <p>Measurement Set Image Resolution: 180x180</p>
+            <div *ngIf="addForm.image">
+              <span (click)="addForm.img_change=null; addForm.image=null" class="material-icons item-close float-right"
+                aria-hidden="true">close</span>
+              <img [src]="addForm.image" height="100px;" width="auto;">
+            </div>
+            <div *ngIf="!addForm.image">
+              <label>
+                <div>
+                  <i class="material-icons add-img"> add_photo_alternate</i>
+                  <p>Click to upload image</p>
+                </div>
+                <input type="file" name="image" style="display: none;" (change)="fileChangeListener('add', $event)"
+                  accept="image/jpeg, image/png" />
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 form-group mb-3">
+            <label>Measurement Set Title</label>
+            <input type="text" name="name" class="form-control" [(ngModel)]="addForm.name" #name="ngModel" required />
+          </div>
+          <div class="col-md-6 form-group mb-3">
+            <label>Rank</label>
+            <input type="number" name="rank" class="form-control" [(ngModel)]="addForm.rank" #rank="ngModel" min="1"
+              max="{{maxRank+1}}" appNumberOnly required />
+          </div>
+        </div>
+
+        <!-- units -->
+        <div class="col-md-12 mb-3" align="center">
+          <b>MEASUREMENT UNITS</b>
+        </div>
+        <div class="card p-3 mb-3">
+          <div class="row">
+            <div class="col-md-6" *ngFor="let x of addForm.units; let i=index;">
+              <div class="card card-in-card p-3">
+                <div *ngIf="addForm.units?.length>1">
+                  <span (click)="addForm.units.splice(i, 1); addForm.list=[{conditions: []}];"
+                    class="material-icons item-close absolute-item-close float-right " aria-hidden="true">close</span>
+                </div>
+                <label>Unit {{i+1}}</label>
+                <select name="unit{{i}}" class="form-control" [(ngModel)]="x.name" #name="ngModel"
+                  (change)="addForm.list=[{conditions: []}];" required>
+                  <option *ngFor="let x of commonService.default_units;" [ngValue]="x.value">{{x.name}}</option>
+                </select>
+                <label class="mt-2">Max Measurement Value</label>
+                <input type="text" name="max_value{{i}}" class="form-control" [(ngModel)]="x.max_value"
+                  #max_value="ngModel" appNumberOnly required />
+              </div>
+            </div>
+            <div *ngIf="addForm.units?.length<commonService.default_units.length" class="ml-1 col-md-12"
+              [ngClass]="addForm.units.length? 'mt-3': ''">
+              <span class="add-another  x-close" (click)="addForm.units.push({}); addForm.list=[{conditions: []}];">
+                <b>ADD ANOTHER UNIT</b>
+              </span>
+            </div>
+          </div>
+        </div>
+        <!-- ## units ## -->
+
+        <div class="row">
+          <div class="col-md-12 mb-3" align="center">
+            <b>MEASUREMENT SETS</b>
+          </div>
+          <div class="col-md-12" *ngFor="let x of addForm.list; let i=index;">
+            <div class="card p-3 mb-3">
+              <div class="row">
+                <ng-container *ngIf="addForm.list.length > 1">
+                  <span (click)="addForm.list.splice(i, 1);"
+                    class="material-icons item-close absolute-item-close float-right " aria-hidden="true">close</span>
+                </ng-container>
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label>Measurement {{i+1}}</label>
+                    <input type="text" name="name{{i}}" class="form-control" [(ngModel)]="x.name" #name="ngModel"
+                      required />
+                  </div>
+                </div>
+                <!-- conditions -->
+                <div class="col-md-12" *ngFor="let y of x.conditions; let j=index;">
+                  <label>Condition {{j+1}}</label>
+                  <div class="card card-in-card p-3 mb-3">
+                    <span (click)="x.conditions.splice(j, 1);"
+                      class="material-icons item-close absolute-item-close float-right " aria-hidden="true">close</span>
+                    <ng-container *ngIf="y?.list?.length">
+                      <div class="row" *ngFor="let z of y.list; let k=index;">
+                        <div class="col-md-4">
+                          <div class="form-group">
+                            <label>From ({{z.unit}})</label>
+                            <input type="text" name="mm_from{{i+1}}{{j+1}}{{k+1}}" class="form-control"
+                              [(ngModel)]="z.mm_from" #mm_from="ngModel" appNumberOnly required />
+                          </div>
+                        </div>
+                        <div class="col-md-4">
+                          <div class="form-group">
+                            <label>To ({{z.unit}})</label>
+                            <input type="text" name="mm_to{{i+1}}{{j+1}}{{k+1}}" class="form-control"
+                              [(ngModel)]="z.mm_to" #mm_to="ngModel" appNumberOnly required />
+                          </div>
+                        </div>
+                        <div class="col-md-4">
+                          <div class="form-group">
+                            <label>Extra Stock Requirement</label>
+                            <input type="text" name="additional_qty{{i+1}}{{j+1}}{{k+1}}" class="form-control"
+                              [(ngModel)]="z.additional_qty" #additional_qty="ngModel" appNumberOnly required />
+                          </div>
+                        </div>
+                      </div>
+                    </ng-container>
+                  </div>
+                </div>
+                <div *ngIf="commonService.store_details?.additional_features?.measurements_condition" class="col-md-12">
+                  <span class="add-another  x-close" (click)="onAddCondition(x, 'add');">
+                    <b>{{ (x?.conditions?.length)? 'ADD ANOTHER CONDITION': 'ADD CONDITION' }}</b>
+                  </span>
+                </div>
+                <!-- ## conditions ## -->
+              </div>
+            </div>
+          </div>
+          <div class="col-md-12 form-group">
+            <span class="add-another  x-close" (click)="addForm.list.push({ conditions: [] });">
+              <b>ADD ANOTHER MEASUREMENT</b>
+            </span>
+          </div>
+        </div>
+
+      </div>
+      <div *ngIf="addForm.errorMsg">
+        <p class="text-danger">{{ addForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+        (click)="modal.dismiss('Cross click');">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary ladda-button m-1" [disabled]="btnLoader"
+        [ladda]="btnLoader">Add</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- EDIT MODAL -->
+<ng-template #editModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{editForm.name}}</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdate()" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12" align="center">
+            <p>Measurement Set Image Resolution: 150x150</p>
+            <div *ngIf="editForm.image">
+              <span (click)="editForm.img_change=null; editForm.image=null"
+                class="material-icons item-close float-right " aria-hidden="true">close</span>
+              <img *ngIf="editForm.img_change" [src]="editForm.image" height="100px;" width="auto;">
+              <img *ngIf="!editForm.img_change" [src]="imgBaseUrl+editForm.image" height="100px;" width="auto;">
+            </div>
+            <div *ngIf="!editForm.image">
+              <label>
+                <div>
+                  <i class="material-icons add-img">add_photo_alternate</i>
+                  <p>Click to upload image</p>
+                </div>
+                <input type="file" name="image" style="display: none;" (change)="fileChangeListener('edit', $event)"
+                  accept="image/jpeg, image/png" />
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 form-group mb-3">
+            <label>Measurement Set Title</label>
+            <input type="text" name="name" class="form-control" [(ngModel)]="editForm.name" #name="ngModel" required />
+          </div>
+          <div class="col-md-6 form-group mb-3">
+            <label>Rank</label>
+            <input type="number" name="rank" class="form-control" [(ngModel)]="editForm.rank" #rank="ngModel" min="1"
+              max="{{maxRank}}" appNumberOnly required />
+          </div>
+        </div>
+
+        <!-- units -->
+        <div class="col-md-12 mb-3" align="center">
+          <b>MEASUREMENT UNITS</b>
+        </div>
+        <div class="card p-3 mb-3">
+          <div class="row">
+            <div class="col-md-6" *ngFor="let x of editForm.units; let i=index;">
+              <div class="card card-in-card p-3">
+                <div *ngIf="editForm.units?.length>1">
+                  <span (click)="editForm.units.splice(i, 1); editForm.list=[{conditions: []}];"
+                    class="material-icons item-close absolute-item-close float-right " aria-hidden="true">close</span>
+                </div>
+                <label>Unit {{i+1}}</label>
+                <select name="unit{{i}}" class="form-control" [(ngModel)]="x.name" #name="ngModel"
+                  (change)="editForm.list=[{conditions: []}];" required>
+                  <option *ngFor="let x of commonService.default_units;" [ngValue]="x.value">{{x.name}}</option>
+                </select>
+                <label class="mt-2">Max Measurement Value</label>
+                <input type="text" name="max_value{{i}}" class="form-control" [(ngModel)]="x.max_value"
+                  #max_value="ngModel" appNumberOnly required />
+              </div>
+            </div>
+            <div *ngIf="editForm.units?.length<commonService.default_units.length" class="ml-1 col-md-12"
+              [ngClass]="editForm.units.length? 'mt-3': ''">
+              <span class="add-another  x-close" (click)="editForm.units.push({}); editForm.list=[{conditions: []}];">
+                <b>ADD ANOTHER UNIT</b>
+              </span>
+            </div>
+          </div>
+        </div>
+        <!-- ## units ## -->
+
+        <div class="row">
+          <div class="col-md-12 mb-3" align="center">
+            <b>MEASUREMENT SETS</b>
+          </div>
+          <div class="col-md-12" *ngFor="let x of editForm.list; let i=index;">
+            <div class="card p-3 mb-3">
+              <div class="row">
+                <ng-container *ngIf="editForm.list.length > 1">
+                  <span (click)="editForm.list.splice(i, 1);"
+                    class="material-icons item-close absolute-item-close float-right " aria-hidden="true">close</span>
+                </ng-container>
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label>Measurement {{i+1}}</label>
+                    <input type="text" name="name{{i}}" class="form-control" [(ngModel)]="x.name" #name="ngModel"
+                      required />
+                  </div>
+                </div>
+                <!-- conditions -->
+                <div class="col-md-12" *ngFor="let y of x.conditions; let j=index;">
+                  <label>Condition {{j+1}}</label>
+                  <div class="card card-in-card p-3 mb-3">
+                    <span (click)="x.conditions.splice(j, 1);"
+                      class="material-icons item-close absolute-item-close float-right " aria-hidden="true">close</span>
+                    <ng-container *ngIf="y?.list?.length">
+                      <div class="row" *ngFor="let z of y.list; let k=index;">
+                        <div class="col-md-4">
+                          <div class="form-group">
+                            <label>From ({{z.unit}})</label>
+                            <input type="text" name="mm_from{{i+1}}{{j+1}}{{k+1}}" class="form-control"
+                              [(ngModel)]="z.mm_from" #mm_from="ngModel" appNumberOnly required />
+                          </div>
+                        </div>
+                        <div class="col-md-4">
+                          <div class="form-group">
+                            <label>To ({{z.unit}})</label>
+                            <input type="text" name="mm_to{{i+1}}{{j+1}}{{k+1}}" class="form-control"
+                              [(ngModel)]="z.mm_to" #mm_to="ngModel" appNumberOnly required />
+                          </div>
+                        </div>
+                        <div class="col-md-4">
+                          <div class="form-group">
+                            <label>Extra Stock Requirement</label>
+                            <input type="text" name="additional_qty{{i+1}}{{j+1}}{{k+1}}" class="form-control"
+                              [(ngModel)]="z.additional_qty" #additional_qty="ngModel" appNumberOnly required />
+                          </div>
+                        </div>
+                      </div>
+                    </ng-container>
+                  </div>
+                </div>
+                <div *ngIf="commonService.store_details?.additional_features?.measurements_condition" class="col-md-12">
+                  <span class="add-another  x-close" (click)="onAddCondition(x, 'edit');">
+                    <b>{{ (x?.conditions?.length)? 'ADD ANOTHER CONDITION': 'ADD CONDITION' }}</b>
+                  </span>
+                </div>
+                <!-- ## conditions ## -->
+              </div>
+            </div>
+          </div>
+          <div class="col-md-12 form-group">
+            <span class="add-another  x-close" (click)="editForm.list.push({ conditions: [] });">
+              <b>ADD ANOTHER MEASUREMENT</b>
+            </span>
+          </div>
+        </div>
+
+      </div>
+      <div *ngIf="editForm.errorMsg">
+        <p class="text-danger">{{ editForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+        (click)="modal.dismiss('Cross click');">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary ladda-button m-1" [disabled]="btnLoader"
+        [ladda]="btnLoader">Update</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- DELETE MODAL -->
+<ng-template #deleteModal let-modal>
+  <div class="modal-body">
+    <p>
+      <strong>Are you sure you want to delete
+        <span class="txt-grdint-highlight">"{{deleteForm.name}}"</span> measurement set?</strong>
+    </p>
+    <div *ngIf="deleteForm.errorMsg">
+      <p class="text-danger">{{ deleteForm.errorMsg }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+      (click)="modal.dismiss('Cross click');">
+      <span class="black-outline-txt">No</span>
+    </button>
+    <button type="button" (click)="onDelete();" class="btn btn-wide orng-outline-btn">
+      <span class="orng-outline-txt">Yes</span>
+    </button>
+  </div>
+</ng-template>

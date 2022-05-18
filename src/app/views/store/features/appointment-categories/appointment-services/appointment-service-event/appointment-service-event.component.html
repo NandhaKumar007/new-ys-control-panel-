@@ -1,0 +1,132 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb">
+    <h1>{{ params.id? serviceForm.name: 'New Service' }}</h1>
+    <ul><li>{{ params.id? 'Update': 'Add' }} your service details</li></ul>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div>
+    <form autocomplete="off" (ngSubmit)="onSubmit();" ngNativeValidate>
+
+      <div class="row">
+        <div class="col-md-4"></div>
+        <div class="col-md-4" align="center">
+          <div *ngIf="serviceForm.image" class="mb-3">
+            <span (click)="serviceForm.img_change=null; serviceForm.image=null" class="material-icons item-close float-right" aria-hidden="true">close</span>
+            <img *ngIf="serviceForm.image && serviceForm?.img_change" [src]="serviceForm.image" height="100px;" width="auto;">
+            <img *ngIf="serviceForm.image && !serviceForm?.img_change" [src]="imgBaseUrl+serviceForm.image" height="100px;" width="auto;">
+          </div>
+          <div *ngIf="!serviceForm.image">
+            <label>
+              <div>
+                <i class="material-icons add-img">add_photo_alternate</i>
+                <p>Click to upload image</p>
+              </div>
+              <input type="file" name="image" style="display: none;" (change)="fileChangeListener($event)" accept="image/jpeg, image/png" />
+            </label>
+          </div>
+        </div>
+        <div class="col-md-4"></div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card p-3 mt-3">
+            <div class="row">
+              <div class="col-md-12 mb-3">
+                <b>SERVICE DETAILS</b>
+              </div>
+              <div class="col-md-12 form-group mb-3">
+                <label>Name</label>
+                <input type="text" name="name" class="form-control" [(ngModel)]="serviceForm.name" #name="ngModel" required />
+              </div>
+              <div class="col-md-12 form-group mb-3">
+                <label>Description</label>
+                <textarea class="form-control" aria-label="With textarea" name="description" [(ngModel)]="serviceForm.description" #description="ngModel"></textarea>
+              </div>
+              <div class="col-md-6 form-group mb-3">
+                <label>Price</label>
+                <input type="text" name="price" class="form-control" [(ngModel)]="serviceForm.price" #price="ngModel" appNumberOnly required />
+              </div>
+              
+              <div class="col-md-6 form-group mb-3">
+                <label>Rank</label>
+                <input type="number" name="rank" class="form-control" [(ngModel)]="serviceForm.rank" #rank="ngModel" min="1" max="{{maxRank}}" appNumberOnly required />
+              </div>
+              <div class="col-md-12 form-group mb-3">
+                <label>Service Duration (Minutes)</label>
+                <input type="text" name="service_duration" class="form-control" [(ngModel)]="serviceForm.service_duration" #service_duration="ngModel" appNumberOnly required />
+              </div>
+              <div class="col-md-12 form-group mb-3">
+                <label>Number of Concurrent Services</label>
+                <input type="text" name="no_of_concurrent_services" class="form-control" [(ngModel)]="serviceForm.no_of_concurrent_services" #no_of_concurrent_services="ngModel" appNumberOnly required />
+              </div>
+              <div class="col-md-12 form-group mb-3">
+                <label>Upcoming Days</label>
+                <input type="text" name="upcoming_days" class="form-control" [(ngModel)]="serviceForm.upcoming_days" #upcoming_days="ngModel" appNumberOnly required />
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-6">
+          <div class="card p-3 mt-3">
+            <div class="row">
+              <div class="col-md-12 mb-3">
+                <b>AVAILABLE DAYS</b>
+              </div>
+              <div class="form-group col-md-12 mt-2 mb-2" *ngFor="let x of serviceForm.available_days; let i=index;">
+                <label class="checkbox checkbox-primary">
+                  <input class="form-check-input" type="checkbox" name="active{{i}}" [(ngModel)]="x.active" (change)="(x.active && !x.opening_hrs.length)? x.opening_hrs=[{}]: x.opening_hrs=[];" #active="ngModel">
+                  <strong>{{x.day}}</strong>
+                  <span class="checkmark"></span>
+                </label>
+                <div *ngIf="x.active" class="row ml-4 mt-3">
+                  <div *ngFor="let y of x.opening_hrs; let j=index;" class="col-md-11 card card-in-card p-3 mb-3">
+                    <ng-container *ngIf="x.opening_hrs.length>1">
+                      <span (click)="x.opening_hrs.splice(j, 1);" class="material-icons item-close absolute-item-close float-right " aria-hidden="true">close</span>
+                    </ng-container>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <label>From</label>
+                        <input type="text" name="from{{i+1}}{{j}}" class="form-control" [(ngModel)]="y.from" (click)="timePicker(i, j, 'from');" #from="ngModel" required />
+                      </div>
+                      <div class="col-md-6">
+                        <label>To</label>
+                        <input type="text" name="to{{i+1}}{{j}}" class="form-control" [(ngModel)]="y.to" (click)="timePicker(i, j, 'to');" #to="ngModel" required />
+                      </div>
+                    </div>
+                  </div>
+                  <div *ngIf="x.opening_hrs.length<2" class="row">
+                    <div class="col-md-12">
+                      <strong (click)="x.opening_hrs.push({});" class="add-another x-close">ADD HOURS</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="separator-breadcrumb border-top mt-5"></div>
+      <div class="row">
+        <div class="col-md-12 mt-3 mb-3" *ngIf="serviceForm.errorMsg">
+          <p class="text-danger" align="center">{{ serviceForm.errorMsg }}</p>
+        </div>
+        <div align="center" class="col-md-12 z-i-0">
+          <button type="button" routerLink="/features/appointment-categories/{{params.category_id}}" class="btn btn-wide black-outline-btn">
+            <span class="black-outline-txt">Cancel</span>
+          </button>&nbsp; &nbsp; &nbsp;
+          <button type="submit" class="btn btn-wide btn-primary ladda-buatton m-1" [disabled]="btnLoader" [ladda]="btnLoader">
+            {{ params.id? 'Update': 'Add' }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

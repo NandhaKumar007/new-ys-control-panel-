@@ -1,0 +1,139 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb">
+    <h1>Extra Pages SEO</h1>
+    <ul>
+      <li>Edit the appearance of your pages in a search engine listing</li>
+    </ul>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="top-filter-sec">
+    <div *ngIf="list?.length" class="row mb-4">
+      <div class="col-md-6"></div>
+      <div class="col-md-6 mt-sm-15">
+        <div class="form-group">
+          <input type="text" name="search_bar" placeholder="Search" class="form-control" [(ngModel)]="search_bar" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- DATA LIST -->
+  <div *ngIf="list?.length" class="list-horizontal">
+
+    <div class="data-list-card-wrapper">
+      <div class="data-list-card-inner">
+        <div class="row m-0">
+
+          <!-- SINGLE LIST ITEM -->
+          <div
+            *ngFor="let x of list | fieldSearch:'name':search_bar | paginate: { itemsPerPage: pageSize, currentPage: page }; let i=index;"
+            class="col-md-12 list-item data-list-card" [@animate]="{value:'*',params:{delay: (i*100)+'ms', y:'50px'}}">
+
+            <div class="d-flex flex-row">
+              <div class="flex-grow-1 d-flex">
+                <div
+                  class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                  <p class="w-30 w-sm-100 m-b-0">{{x.name}}</p>
+                  <p class="m-0 text-muted text-small w-15 w-sm-100 max-w-200">
+                    {{commonService.store_details?.base_url}}/pages/{{x.page_url}}</p>
+                  <p class="m-0 text-muted text-small w-15 w-sm-100 d-lg-block item-actions">
+                    <button class="btn btn-wide black-outline-btn w-md-100 mr-3" (click)="onEdit(x, seoModal);">
+                      <span class="black-outline-txt">Edit</span>
+                    </button>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
+    <!-- PAGINATION CONTROL -->
+    <div class="row">
+      <div class="col-md-12 mt-3">
+        <pagination-controls (pageChange)="page=$event; commonService.pageTop(0);" autoHide="true" responsive="true"
+          maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+      </div>
+    </div>
+   
+
+  </div>
+
+  <div *ngIf="!list?.length" class="row">
+    <div class="col-md-12 d-flex flex-column align-items-center justify-content-center no-rec-found-wrapper">
+      <img class="no-rec-found" src="assets/images/no_records_found.png" alt="no-records">
+      <p align="center">No data to display. Add pages to edit their SEO settings.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SEO MODAL -->
+<ng-template #seoModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{ pageDetails?.name }}</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdate();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12 form-group mb-3">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="seo_status" [(ngModel)]="pageDetails.seo_status"
+                #seo_status="ngModel">
+              <span>Enable SEO</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <ng-container *ngIf="pageDetails.seo_status">
+            <div class="col-md-12 form-group mb-3">
+              <label>H1 Tag</label>
+              <span *ngIf="pageDetails.seo_details?.h1_tag?.length"
+                class="label_hint">{{pageDetails.seo_details?.h1_tag?.length}} of 70 characters used</span>
+              <input type="text" name="h1_tag" class="form-control" [(ngModel)]="pageDetails.seo_details.h1_tag"
+                #h1_tag="ngModel" maxlength="70" required />
+            </div>
+            <div class="col-md-12 form-group mb-3">
+              <label>Page Title</label>
+              <span *ngIf="pageDetails.seo_details?.page_title?.length"
+                class="label_hint">{{pageDetails.seo_details?.page_title?.length}} of 70 characters used</span>
+              <input type="text" name="page_title" class="form-control" [(ngModel)]="pageDetails.seo_details.page_title"
+                #page_title="ngModel" maxlength="70" required />
+            </div>
+            <div class="col-md-12 form-group mb-3">
+              <label>Meta Description</label>
+              <span *ngIf="pageDetails.seo_details?.meta_desc?.length"
+                class="label_hint">{{pageDetails.seo_details?.meta_desc?.length}} of 320 characters used</span>
+              <textarea class="form-control" aria-label="With textarea" name="meta_desc"
+                [(ngModel)]="pageDetails.seo_details.meta_desc" #meta_desc="ngModel" maxlength="320"
+                required></textarea>
+            </div>
+            <div class="col-md-12 form-group mb-3">
+              <label>Meta Keywords</label>
+              <tag-input class="w-100" name="meta_keyword_list" [(ngModel)]="pageDetails.seo_details.meta_keyword_list"
+                #meta_keyword_list="ngModel" placeholder="" [secondaryPlaceholder]="'Enter options separated by commas'"
+                [separatorKeyCodes]="[188]" required></tag-input>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+      <div *ngIf="pageDetails.errorMsg">
+        <p class="text-danger">{{ pageDetails.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+        (click)="modal.dismiss('Cross click');">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>

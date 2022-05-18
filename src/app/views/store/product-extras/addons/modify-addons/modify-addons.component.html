@@ -1,0 +1,254 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb">
+    <h1 *ngIf="!router.url.includes('modify')">New Add-On</h1>
+    <h1 *ngIf="router.url.includes('modify')">{{addonForm.name}}</h1>
+    <ul>
+      <li>{{router.url.includes('modify')? 'Edit': 'Enter'}} details and customization options for this add-on</li>
+    </ul>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <form autocomplete="off" (ngSubmit)="onSubmit();" ngNativeValidate>
+
+    <div class="row">
+      <div class="col-md-4"></div>
+      <div class="col-md-4" align="center">
+        <div *ngIf="addonForm.image" class="mb-3">
+          <span (click)="addonForm.img_change=null; addonForm.image=null" class="material-icons item-close float-right" aria-hidden="true">close</span>
+          <img *ngIf="addonForm.image && addonForm?.img_change" [src]="addonForm.image" height="100px;" width="auto;">
+          <img *ngIf="addonForm.image && !addonForm?.img_change" [src]="imgBaseUrl+addonForm.image" height="100px;" width="auto;">
+        </div>
+        <div *ngIf="!addonForm.image">
+          <label>
+            <div>
+              <i class="material-icons add-img">add_photo_alternate</i>
+              <p>Click to upload image</p>
+            </div>
+            <input type="file" name="image" style="display: none;" (change)="mainFileChangeListener($event)" accept="image/jpeg, image/png"
+            />
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-4 form-group mb-3">
+        <label>Name</label>
+        <input type="text" name="addon_name" class="form-control" [(ngModel)]="addonForm.name" #name="ngModel" required
+        />
+      </div>
+      <div class="col-md-3 form-group mb-3">
+        <label>Price</label>
+        <input type="text" name="addon_price" class="form-control" [(ngModel)]="addonForm.price" #price="ngModel" appNumberOnly
+          required />
+      </div>
+      <div class="col-md-3 form-group mb-3">
+        <label>Min Stock Requirement</label>
+        <input type="text" name="min_stock" class="form-control" [(ngModel)]="addonForm.min_stock" #min_stock="ngModel"
+          appNumberOnly required />
+      </div>
+      <div class="col-md-2 form-group mb-3">
+        <label>Rank</label>
+        <input type="number" name="rank" class="form-control" [(ngModel)]="addonForm.rank" #rank="ngModel" min="1" max="{{maxRank}}"
+          appNumberOnly required />
+      </div>
+    </div>
+
+    <!-- customization notes -->
+    <div [ngClass]="addonForm.notes_status? 'card p-3 mb-3': ''">
+      <div class="row">
+        <div class="form-group mb-3 col-md-12">
+          <label class="checkbox checkbox-primary">
+            <input class="form-check-input" type="checkbox" name="notes_status" [(ngModel)]="addonForm.notes_status" (change)="(!addonForm.notes_list?.length)? addonForm.notes_list=[{}]: '';" #notes_status="ngModel">
+            <span>Include Customization Notes</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+      <div class="card mb-3 p-3" *ngIf="addonForm.notes_status && addonForm.notes_list">
+        <div class="row">
+          <div class="col-md-6 form-group mb-3">
+            <label>Title</label>
+            <input type="text" name="notes_title" class="form-control" [(ngModel)]="addonForm.notes_title" #notes_title="ngModel" required />
+          </div>
+          <div class="col-md-6 mb-3 mt-3">
+            <button type="button" class="btn btn-wide btn-primary float-right" (click)="addonForm.notes_list.push({});">ADD NEW OPTION</button>
+          </div>
+          <div class="col-md-12">
+            <p><b class="add-another">Note:</b> Please select the checkbox, if the option was mandatory</p>
+          </div>
+          <div *ngFor="let x of addonForm.notes_list; let i=index;" class="col-md-6">
+            <div class="card card-in-card mb-3 p-3">
+              <span *ngIf="addonForm.notes_list.length>1" (click)="addonForm.notes_list.splice(i, 1);" class="material-icons item-close absolute-item-close float-right" aria-hidden="true">close</span>
+              <div class="row">
+                <div class="col-md-11">
+                  <label>{{i+1}}) Option Name</label>
+                  <input type="text" name="notes_option{{i}}" class="form-control" [(ngModel)]="x.name" #notes_option="ngModel" required />
+                </div>
+                <div class="col-md-1">
+                  <br>
+                  <label class="checkbox checkbox-primary mt-2">
+                    <input class="form-check-input" type="checkbox" name="notes_req{{i}}" [(ngModel)]="x.required" #notes_req="ngModel">
+                    <span class="checkmark"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- measurement -->
+    <ng-container *ngIf="commonService.ys_features.indexOf('measurements')!=-1 && measurementList?.length">
+      <div [ngClass]="addonForm.mm_status? 'card p-3 mb-3': ''">
+        <div class="row">
+          <div class="form-group mb-3 col-md-12">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="mm_status" [(ngModel)]="addonForm.mm_status" #mm_status="ngModel">
+              <span>Include Measurements</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+        </div>
+        <div class="card card-in-card mb-3 p-3" *ngIf="addonForm.mm_status">
+          <div class="row">
+            <div class="form-group col-md-12 mt-1 mb-1">
+              <label class="checkbox checkbox-primary">
+                <input class="form-check-input" type="checkbox" name="select_all" [(ngModel)]="addonForm.select_all" (change)="selectAllmmSets(addonForm.select_all);"
+                  #select_all="ngModel">
+                <span>Select All</span>
+                <span class="checkmark"></span>
+              </label>
+            </div>
+            <div class="form-group col-md-3 mt-1 mb-1" *ngFor="let x of measurementList | orderAsc:'rank'; let i=index;">
+              <label class="checkbox checkbox-success">
+                <input class="form-check-input" type="checkbox" name="mm_checked{{i+1}}" [(ngModel)]="x.mm_checked" #mm_checked="ngModel">
+                <span>{{x.name}}</span>
+                <span class="checkmark"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Customization List -->
+    <div class="card mb-3 p-3" *ngFor="let x of addonForm.custom_list; let i=index;">
+
+      <div>
+        <span (click)="addonForm.custom_list.splice(i, 1);" class="material-icons item-close absolute-item-close float-right " aria-hidden="true">close</span>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 form-group mb-3">
+          <label>Customization Title</label>
+          <input type="text" name="custom_name{{i+1}}" class="form-control" [(ngModel)]="x.name" #name="ngModel" required
+          />
+        </div>
+        <div class="form-group mb-3" [ngClass]="x.type=='mandatory' || x.type=='limited'? 'col-md-3': 'col-md-6'">
+          <label>Choice Type</label>
+          <select name="type{{i+1}}" class="form-control" (change)="x.limit=0;" [(ngModel)]="x.type" #type="ngModel" required>
+            <option value="either_or">Choose One</option>
+            <option value="multiple">Unlimited Choice</option>
+            <option value="limited">Limited Choice</option>
+            <option value="mandatory">Mandatory Choice</option>
+          </select>
+        </div>
+        <div *ngIf="x.type=='mandatory' || x.type=='limited'" class="col-md-3 form-group mb-3">
+          <label>Limit <span *ngIf="x.limit"> ({{x.limit}} out of {{x.option_list.length}})</span> </label>
+          <input type="number" name="limit{{i+1}}" class="form-control" [(ngModel)]="x.limit" #limit="ngModel" max="{{x.option_list.length}}"
+            required />
+        </div>
+        <!-- Option List -->
+        <div class="col-md-6 col-lg-4" *ngFor="let y of x.option_list; let j=index;">
+          <div class="card card-in-card p-3 mb-3">
+
+            <ng-container *ngIf="x.option_list.length > 1">
+              <span (click)="x.option_list.splice(j, 1);" class="material-icons item-close absolute-item-close float-right " aria-hidden="true">close</span>
+            </ng-container>
+
+            <div class="mb-2" align="center">
+              <label>
+                <div *ngIf="!y.image">
+                  <i class="material-icons add-img">add_photo_alternate</i>
+                  <p>Click to upload image (Resolution: 150 x 150)</p>
+                </div>
+                <img *ngIf="y.image && y?.img_change" [src]="y.image" height="100px;" width="auto;">
+                <img *ngIf="y.image && !y?.img_change" [src]="imgBaseUrl+y.image" height="100px;" width="auto;">
+                <input type="file" name="y.image{{i+1}}{{j+1}}" style="display: none;" (change)="fileChangeListener(i, j, $event)" accept="image/jpeg, image/png"
+                />
+              </label>
+            </div>
+
+            <div class="row">
+              <div [ngClass]="(i>0)? 'col-md-6': 'col-md-12'">
+                <div class="form-group">
+                  <label>Option Title</label>
+                  <input type="text" name="option_name{{i+1}}{{j+1}}" class="form-control" [(ngModel)]="y.name" #name="ngModel" required />
+                </div>
+              </div>
+              <div *ngIf="i>0" class="col-md-6 form-group">
+                <label>Option Link To</label>
+                <select name="link_to{{i+1}}{{j+1}}" class="form-control" [(ngModel)]="y.link_to" #link_to="ngModel" required>
+                  <option value="all">All</option>
+                  <option *ngFor="let z of addonForm.custom_list[i-1].option_list; let k=index;" [ngValue]="z.name">{{z.name}}</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>Price</label>
+                  <input type="text" name="option_price{{i+1}}{{j+1}}" class="form-control" [(ngModel)]="y.price" #price="ngModel" required
+                  />
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>Extra Stock Requirement</label>
+                  <input type="text" name="additional_qty{{i+1}}{{j+1}}" class="form-control" [(ngModel)]="y.additional_qty" #additional_qty="ngModel"
+                    appNumberOnly required />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12 p-0">
+          <div class="col-md-6 col-lg-4 z-i-0">
+            <div class="add-another-opt" (click)="x.option_list.push({ price: 0, additional_qty: 0 });">
+              <p class="w-100 x-close">ADD ANOTHER OPTION</p>
+            </div>
+          </div>
+        </div>
+        <!-- #Option List -->
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <span class="add-another  x-close" (click)="addonForm.custom_list.push({ option_list: [{ price: 0, additional_qty: 0 }] });">
+          <b>{{ (addonForm?.custom_list?.length)? 'ADD ANOTHER CUSTOMIZATION': 'ADD CUSTOMIZATION' }}</b>
+        </span>
+      </div>
+    </div>
+    <!-- #Customization List -->
+
+    <div class="separator-breadcrumb border-top mt-5"></div>
+    <div class="row">
+      <div *ngIf="addonForm.errorMsg" class="col-md-12 mt-3 mb-3">
+        <p class="text-danger" align="center">{{ addonForm.errorMsg }}</p>
+      </div>
+      <div align="center" class="col-md-12 z-i-0">
+        <button type="button" routerLink="/product-extras/addons" class="btn btn-wide black-outline-btn">
+          <span class="black-outline-txt">Cancel</span>
+        </button>&nbsp; &nbsp; &nbsp;
+        <button type="submit" class="btn btn-wide btn-primary ladda-button m-1" [disabled]="btnLoader" [ladda]="btnLoader">
+            {{router.url.includes('modify')? 'Update': 'Save'}}
+        </button>
+      </div>
+    </div>
+  </form>
+
+</div>

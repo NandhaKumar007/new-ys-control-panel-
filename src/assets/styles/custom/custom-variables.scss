@@ -1,0 +1,165 @@
+// you need to change font in _variable.scss
+$primary-font: "Jost", sans-serif;
+
+$body-bg: #fff;
+$data-list-body-bg: #f7f7f7;
+$primary-card-bg:#fff;
+
+// common colors
+$white: #fff;
+$black: #000;
+
+// theme colors
+$primary-theme-clr: #ec848b;
+$secondary-theme-clr: blue;
+$primary-theme-gradient: #ec848b;
+$primary-link:rgb(0, 174, 255);
+$primary-theme-bdr-rds:14px;
+
+// theme border colors
+$theme-bdr: #ec848b;
+$primary-bdr: rgba(0, 0, 0, 0.1);
+$secondary-bdr: rgba(0, 0, 0, 0.3);
+
+// gradient-icons
+$gradient-icons: #ec848b;
+
+// accent color
+$accent-bg: #ec848b;
+$accent-txt-clr: #fff;
+
+// text colors
+$primary-heading-clr: #3d3d3d;
+$primary-txt-clr: #3d3d3d;
+$secondary-txt-clr: #3d3d3d;
+$mute-txt-clr: #3d3d3d;
+$highlighted-txt-clr: #ec848b;
+
+// input borders
+$input-bdr-rds: 14px;
+$input-clr: #3d3d3d;
+$input-bdr-clr: #ced4da;
+// input on focus colors
+$input-fcs-clr: #ec848b;
+$input-fcs-bdr-clr: #ec848b;
+$input-fcs-bx-sdw: 0 0 0 0.2rem rgba(216, 57, 103, 0.25);
+
+// button icons like edit icons
+$btn-icon-bg:#d8d8d8;
+$btn-icon-txt:#ec848b;
+$btn-icon-hvr-bg:#ec848b;
+$btn-icon-hvr-txt:#fff;
+// button icons like Close btn icons
+$btn-close-icon-bg:#ec848b;
+$btn-close-icon-txt:#fff;
+
+// btn-borders
+$btn-bdr-rds: 14px;
+
+// buttons colors
+// $btn-disabled-bg: #6f6f6f;
+// $btn-disabled-bdr: #6f6f6f;
+// $btn-disabled-clr: #fff;
+
+$primary-btn-bg: #fdf3f3;
+$primary-btn-bdr: #ec848b;
+$primary-btn-txt-clr: #ec848b;
+$primary-btn-hvr-bg: #ec848b;
+$primary-btn-hvr-bdr: #ec848b;
+$primary-btn-hvr-txt: #fff;
+
+$secondary-btn-bg: #f7f7f7;
+$secondary-btn-bdr: #b1b1b1;
+$secondary-btn-txt-clr: #b1b1b1;
+$secondary-btn-hvr-bg: #b1b1b1;
+$secondary-btn-hvr-bdr: #b1b1b1;
+$secondary-btn-hvr-txt: #fff;
+
+$blue-btn-bg: #f1fcfd;
+$blue-btn-bdr: #B5D3D5;
+$blue-btn-txt-clr: #b5d3d5;
+$blue-btn-hvr-bg: #B5D3D5;
+$blue-btn-hvr-bdr: #B5D3D5;
+$blue-btn-hvr-txt: #fff;
+
+$gray-btn-bg: #efefef;
+$gray-btn-bdr: #787878;
+$gray-btn-txt-clr: #787878;
+$gray-btn-hvr-bg: #787878;
+$gray-btn-hvr-bdr: #787878;
+$gray-btn-hvr-txt: #fff;
+
+$orng-btn-bg: #f7e0d6;
+$orng-btn-bdr:  #f1ad90;
+$orng-btn-txt-clr:  #f1ad90;
+$orng-btn-hvr-bg: #f1ad90;
+$orng-btn-hvr-bdr:  #f1ad90;
+$orng-btn-hvr-txt:  #fff;
+
+$danger-btn-bg: #ffccd0;
+$danger-btn-bdr:  #EC848B;
+$danger-btn-txt-clr:  #EC848B;
+$danger-btn-hvr-bg: #EC848B;
+$danger-btn-hvr-bdr:  #EC848B;
+$danger-btn-hvr-txt:  #fff;
+
+$success-btn-bg: #F0FFFC;
+$success-btn-bdr:  #79E0C9 ;
+$success-btn-txt-clr:  #79E0C9;
+$success-btn-hvr-bg: #79E0C9 ;
+$success-btn-hvr-bdr:  #79E0C9 ;
+$success-btn-hvr-txt:  #fff;
+
+// checkbox and radio
+//  common bdr
+$common-check-bdr: #dee2e6;
+$common-check-bg: transparent;
+// primary check and radio
+$primary-checked-bdr: #ec848b;
+$primary-checked-bg: #ec848b;
+// success check and radio
+$success-checked-bdr: #79E0C9;
+$success-checked-bg: #79E0C9;
+// warning check and radio
+$warning-checked-bdr: #f5783d;
+$warning-checked-bg: #f5783d;
+
+// Badge-radius
+$badge-rds:8px;
+// badge colors
+$primary-badge-bg: #ec848b;
+$primary-badge-txt-clr: #fff;
+// sucess badge and green badge color
+$success-badge-bg: #79E0C9;
+$success-badge-txt-clr: #fff;
+// sucess ouline badge and green outline badge color
+$success-badge-outline-bdr: #79E0C9;
+$success-badge-outline-txt-clr: #79E0C9;
+
+// disabled badge
+$disabled-badge-bg: #f1f1f1;
+$disabled-badge-txt-clr: #545454;
+// red badge
+$red-badge-bg: #ec848b;
+$red-badge-txt-clr: #fff;
+// red badge-outlined
+$red-badge-outline-bdr: #ec848b;
+$red-badge-outline-txt-clr: #ec848b;
+// blue badge
+$blue-badge-bg: #b5d3d5;
+$blue-badge-txt-clr: #fff;
+
+// alerts
+$success-bg: #79E0C9;
+$success-text: #fff;
+$error-bg: red;
+$error-txt: #fff;
+
+// Shadow
+$card-primary-shadow:0px 0px 10px rgba(0, 0, 0, 0.1);
+$card-secondary-shadow: 0 5px 20px 0 rgba(0, 0, 0, .1);
+
+// gray btn for round navigation btns
+$gray-btn-bdr: gray;
+$gray-btn-bg: rgba(249,249,249,1);
+$gray-btn-txt: gray;

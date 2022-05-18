@@ -1,0 +1,358 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-md-8">
+        <h1>Footer Configuration</h1>
+        <ul><li>Manage your footer</li></ul>
+      </div>
+      <div *ngIf="commonService.deployInProgress" class="col-md-4 d-flex align-items-center justify-content-end mt-sm-15">
+        <button type="button" class="btn btn-primary" (click)="commonService.goBack();">Go Back</button>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="row" class="list-horizontal">
+
+    <!-- Address -->
+    <div class="card p-3 mb-3">
+      <div class="row mb-3">
+        <div class="col-8">
+          <h4 class="add-another">{{footer_config.address_config.title? footer_config.address_config.title: 'Primary'}}</h4>
+        </div>
+        <div class="col-4 d-flex justify-content-end align-items-center">
+          <i class="material-icons edit-icon" (click)="onEditDetails('address', detailsModal);">edit</i>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card card-in-card mb-4 d-flex flex-row">
+            <div class="flex-grow-1 d-flex">
+              <div class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                <p *ngIf="!footer_config.address_config.content" class="mt-1 mb-0">NA</p>
+                <p *ngIf="footer_config.address_config.content" class="mt-2 mb-0" style="line-height: 5px;" [innerHtml]="footer_config.address_config.content"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact -->
+    <div class="card p-3 mb-3">
+      <div class="row mb-3">
+        <div class="col-8">
+          <h4 class="add-another">{{footer_config.contact_config.title? footer_config.contact_config.title: 'Secondary'}}</h4>
+        </div>
+        <div class="col-4 d-flex justify-content-end align-items-center">
+          <i class="material-icons edit-icon" (click)="onEditDetails('contact', detailsModal);">edit</i>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card card-in-card mb-4 d-flex flex-row">
+            <div class="flex-grow-1 d-flex">
+              <div class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                <p *ngIf="!footer_config.contact_config.content" class="mt-1 mb-0">NA</p>
+                <p *ngIf="footer_config.contact_config.content" class="mt-2 mb-0" style="line-height: 5px;" [innerHtml]="footer_config.contact_config.content"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Social Media -->
+    <div class="card p-3 mb-3">
+      <div class="row mb-3">
+        <div class="col-8">
+          <h4 class="add-another">{{footer_config.social_media_title? footer_config.social_media_title: 'SOCIAL MEDIA'}}</h4>
+        </div>
+        <div class="col-4 d-flex justify-content-end align-items-center">
+          <i class="material-icons edit-icon" (click)="onEditSocialMedia(socialMediaModal);">edit</i>
+        </div>
+      </div>
+      <div class="row">
+        <div *ngFor="let x of footer_config.social_media_links;" class="col-md-12">
+          <div class="card card-in-card mb-4 d-flex flex-row">
+            <div class="flex-grow-1 d-flex">
+              <div class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                <p class="w-30 w-sm-100 m-b-0">{{x.type | titlecase}}</p>
+                <p class="m-0 text-muted text-small w-30 w-sm-100">{{x.url}}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!footer_config.social_media_links.length" class="col-md-12">
+          <div class="card card-in-card mb-4 d-flex flex-row">
+            <div class="flex-grow-1 d-flex">
+              <div
+                class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                <p class="w-100 w-sm-100 m-b-0" align="center">No records found.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Methods -->
+    <div class="card p-3 mb-3">
+      <div class="row mb-3">
+        <div class="col-8">
+          <h4 class="add-another">Payment Methods</h4>
+        </div>
+        <div class="col-4 d-flex justify-content-end align-items-center">
+          <i class="material-icons edit-icon" (click)="onEditPayment(paymentModal);">edit</i>
+        </div>
+      </div>
+      <div class="row">
+        <div *ngFor="let x of footer_config.payment_methods;" class="col-md-3">
+          <div class="card card-in-card mb-4 d-flex flex-row">
+            <div class="flex-grow-1 d-flex">
+              <div class="card-body d-flex flex-column">
+                <img src="assets/images/payment/{{x}}.svg" height="40px;" alt="{{x}}">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!footer_config.payment_methods.length" class="col-md-12">
+          <div class="card card-in-card mb-4 d-flex flex-row">
+            <div class="flex-grow-1 d-flex">
+              <div
+                class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                <p class="w-100 w-sm-100 m-b-0" align="center">No records found.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Links -->
+    <div class="card p-3 mb-3">
+      <div class="row mb-3">
+        <div class="col-8">
+          <h4 class="add-another">Footer Links</h4>
+        </div>
+        <div class="col-4 d-flex justify-content-end align-items-center">
+          <i class="material-icons edit-icon" (click)="onEditFooterLink(linkModal);">edit</i>
+        </div>
+      </div>
+      <div class="row">
+        <div *ngFor="let x of footer_config.other_links;" class="col-md-6">
+          <div class="card card-in-card mb-4 d-flex flex-row">
+            <div class="flex-grow-1 d-flex">
+              <div class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                <p class="w-30 w-sm-100 m-b-0">{{x.name}}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!footer_config.other_links.length" class="col-md-12">
+          <div class="card card-in-card mb-4 d-flex flex-row">
+            <div class="flex-grow-1 d-flex">
+              <div
+                class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                <p class="w-100 w-sm-100 m-b-0" align="center">No records found.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Edit address & contact modal -->
+<ng-template #detailsModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">{{editForm.title}}</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdateDetails();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12 form-group mb-3">
+            <label>Title</label>
+            <input type="text" name="title" class="form-control" [(ngModel)]="editForm.title" #title="ngModel" />
+          </div>
+          <div class="col-md-12 form-group mb-3 quill-mb-5">
+            <label>Content</label>
+            <quill-editor class="rounded" [placeholder]="null" [(ngModel)]="editForm.content" [ngModelOptions]="{standalone: true}"></quill-editor>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="editForm.errorMsg">
+        <p class="text-danger">{{ editForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- Social Media modal -->
+<ng-template #socialMediaModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">{{editForm.social_media_title}}</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdateSocialMedia();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-6 form-group mb-3">
+            <label>Title</label>
+            <input type="text" name="social_media_title" class="form-control" [(ngModel)]="editForm.social_media_title" #social_media_title="ngModel" />
+          </div>
+          <div class="col-md-12 mb-3 border-top"></div>
+          <div class="col-md-6 form-group mb-3" *ngFor="let x of editForm.social_media_links; let i=index;">
+            <div class="card p-2">
+              <span (click)="editForm.social_media_links.splice(i, 1);" class="material-icons item-close absolute-item-close float-right" aria-hidden="true">close</span>
+              <div class="row">
+                <div class="col-md-12 form-group mb-3">
+                  <label>Type</label>
+                  <select name="type{{i}}" class="form-control" [(ngModel)]="x.type" #type="ngModel" required>
+                    <option [ngValue]="x" *ngFor="let x of commonService.socialTypes;">{{x | titlecase}}</option>
+                  </select>
+                </div>
+                <div class="col-md-12 form-group mb-3">
+                  <label>Link</label>
+                  <input type="text" name="url{{i}}" class="form-control" [(ngModel)]="x.url" #url="ngModel" required />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-12">
+            <p class="add-another" (click)="editForm.social_media_links.push({});">ADD NEW</p>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="editForm.errorMsg">
+        <p class="text-danger">{{ editForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- Payment Methods modal -->
+<ng-template #paymentModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Payment Methods</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdatePayment();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-6 form-group mb-3" *ngFor="let x of editForm.payment_methods; let i=index;">
+            <div class="card p-2">
+              <span (click)="editForm.payment_methods.splice(i, 1);" class="material-icons item-close absolute-item-close float-right" aria-hidden="true">close</span>
+              <div class="row">
+                <div class="col-md-8 form-group mb-3">
+                  <label>Type</label>
+                  <select name="type{{i}}" class="form-control" [(ngModel)]="x.type" #type="ngModel" required>
+                    <option [ngValue]="x" *ngFor="let x of paymentTypes;">{{x | titlecase}}</option>
+                  </select>
+                </div>
+                <div class="col-md-4 form-group mb-3">
+                  <div *ngIf="x.type" class="pull-right">
+                    <img src="assets/images/payment/{{x.type}}.svg" class="mt-4" height="30px;" alt="{{x.type}}">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-12">
+            <p class="add-another" (click)="editForm.payment_methods.push({});">ADD NEW</p>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="editForm.errorMsg">
+        <p class="text-danger">{{ editForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- Footer link modal -->
+<ng-template #linkModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Footer Links</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdateFooterLink();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-6" *ngFor="let x of editForm.other_links; let i=index;">
+            <div class="card w-100 p-3 mb-3">
+              <span (click)="editForm.other_links.splice(i, 1);" class="material-icons item-close absolute-item-close float-right" aria-hidden="true">close</span>
+              <div class="row">
+                <div class="col-md-12 form-group mb-3">
+                  <label>Name</label>
+                  <input type="text" name="name{{i}}" class="form-control" [(ngModel)]="x.name" #name="ngModel" required />
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                  <label class="radio radio-primary">
+                    <input type="radio" name="link_type{{i}}" [(ngModel)]="x.link_type" value="internal">
+                    <span>Link to Internal Link</span>
+                    <span class="checkmark"></span>
+                  </label>
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                  <label class="radio radio-primary">
+                    <input type="radio" name="link_type{{i}}" [(ngModel)]="x.link_type" value="external">
+                    <span>Link to External Link</span>
+                    <span class="checkmark"></span>
+                  </label>
+                </div>
+                <div class="col-md-12 form-group mb-3">
+                  <label *ngIf="x.link_type=='internal'">{{commonService.store_details?.base_url}}{{x.link}}</label>
+                  <label *ngIf="x.link_type=='external'">External Link</label>
+                  <input type="text" name="link{{i}}" class="form-control" [(ngModel)]="x.link" #int_link="ngModel" required />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-12">
+            <p class="add-another" (click)="editForm.other_links.push({link_type: 'internal'});">ADD NEW</p>
+          </div>
+        </div>
+            
+      </div>
+      <div *ngIf="editForm.errorMsg">
+        <p class="text-danger">{{ editForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>

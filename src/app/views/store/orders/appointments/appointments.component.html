@@ -1,0 +1,90 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb">
+    <h1>Appointments</h1>
+    <ul>
+      <li>View and manage your appointments</li>
+    </ul>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="top-filter-sec">
+    <div class="row mb-4">
+      <!-- from date -->
+      <div class="col-md-3 col-6">
+        <div class="form-group">
+          <input type="text" placeholder="Select Date" class="form-control" name="from_date"
+            [(ngModel)]="filterForm.from_date" (ngModelChange)="getList();" bsDatepicker
+            [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }" />
+        </div>
+      </div>
+      <!-- to date -->
+      <div class="col-md-3 col-6">
+        <div class="form-group">
+          <input type="text" placeholder="Select Date" class="form-control" name="to_date"
+            [(ngModel)]="filterForm.to_date" (ngModelChange)="getList();" bsDatepicker [minDate]="filterForm.from_date"
+            [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }" />
+        </div>
+      </div>
+      <!-- search -->
+      <div class="col-md-6 col-6">
+        <div class="form-group">
+          <input type="text" name="search_bar" placeholder="Search" class="form-control" autocomplete="off"
+            [(ngModel)]="search_bar" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <!-- DATA LIST -->
+  <div class="list-horizontal">
+
+    <div class="data-list-card-wrapper">
+      <div class="data-list-card-inner">
+        <div class="row m-0">
+
+          <div
+          *ngFor="let x of list | orderAsc:'booking_date' | gridSearch: { customer_name: search_bar, customer_email: search_bar, contact_no: search_bar, service_name: search_bar } | paginate: { itemsPerPage: pageSize, currentPage: page }; let i = index;"
+          class="list-item data-list-card col-md-12 p-0" [ngClass]="x.order_by=='admin' ? 'has-find-band': ''" [@animate]="{value:'*',params:{delay: (i*100)+'ms', y:'50px'}}">
+    
+          <div class="d-flex flex-row">
+            <div *ngIf="x.order_by=='admin'" class="find-band"></div>
+            <div class="flex-grow-1 pl-2 d-flex">
+              <div
+                class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                <p class="m-0 c-w-15 w-md-100">#{{x.order_number}}</p>
+                <p class="m-0 c-w-15 w-md-100">{{x.service_name}}</p>
+                <p class="m-0 c-w-15 w-md-100">{{x.booking_date | date: "dd MMM y"}} - {{x.booking_date | date: "hh:mm a"}}</p>
+                <p class="m-0 c-w-15 w-md-100">{{x.customer_name}}</p>
+                <p class="m-0 c-w-15 w-md-100">{{x.contact_no}}</p>
+              </div>
+            </div>
+          </div>
+    
+        </div>
+        
+        </div>
+      </div>
+    </div>
+  
+    <!-- PAGINATION CONTROL -->
+    <div class="row" *ngIf="list?.length">
+      <div class="col-md-12 mt-3">
+        <pagination-controls (pageChange)="page=$event; commonService.pageTop(0);" autoHide="true" responsive="true"
+          maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+      </div>
+    </div>
+   
+  </div>
+
+  <div *ngIf="!list?.length" class="row">
+    <div class="col-md-12 d-flex flex-column align-items-center justify-content-center no-rec-found-wrapper">
+      <img class="no-rec-found" src="assets/images/no_records_found.png" alt="no-records">
+      <p align="center">No data to display.</p>
+    </div>
+  </div>
+</div>

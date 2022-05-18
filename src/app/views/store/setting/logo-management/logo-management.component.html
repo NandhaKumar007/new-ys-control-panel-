@@ -1,0 +1,250 @@
+<div>
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-md-8">
+        <h1>Logo Management</h1>
+        <ul><li>Manage your store logos</li></ul>
+      </div>
+      <div class="col-md-4 d-flex align-items-center justify-content-end mt-sm-15">
+        <button type="button" class="btn btn-primary" (click)="commonService.goBack();">Go Back</button>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="row">
+    <div class="col-md-4 d-flex"></div>
+    <div class="col-md-4 d-flex">
+      <div class="card setting-card w-100 p-3 mt-3 mb-3 cursor">
+        <div class="d-flex align-items-center justify-content-center flex-column">
+          <img *ngIf="!commonService.deploy_stages?.logo" src="assets/images/store.svg">
+          <img *ngIf="logoForm.img_change" [src]="logoForm.image" height="150px;" width="auto;">
+          <img *ngIf="commonService.deploy_stages?.logo && !logoForm.img_change" [src]="storeLogo" height="150px;" width="auto;">
+        </div>
+        <div class="h-100 d-flex align-items-end mt-3">
+          <div class="custom-file mt-2">
+            <input type="file" name="store_logo" class="custom-file-input" (change)="fileChangeListener($event, colorModal);" accept="image/jpeg, image/png" required>
+            <label class="custom-file-label">Choose file</label>
+          </div>
+        </div>
+        <div>
+          <button *ngIf="logoForm.submit" type="button" class="btn btn-wide btn-primary ladda-button mt-3 w-100"
+          disabled [ladda]="logoForm.submit">Uploading</button>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 d-flex align-items-center">
+      <div class="card setting-card w-100 p-3">
+        <div class="d-flex align-item-center justify-content-between">
+          <div class="d-flex">
+            <span class="material-icons mr-1">palette</span>
+            <p class="m-0"><b>Don't have a logo?</b></p>
+          </div>
+          <div class=" d-flex align-items-center justify-content-end">
+            <a href="https://yourstore.io/tools/logo-maker/create" target="_blank" class="btn btn-wide btn-primary">Create your logo</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-container *ngIf="commonService.deploy_stages.logo">
+    <div class="separator-breadcrumb border-top mb-3 mt-4"></div>
+    <div class="row">
+      <div class="col-md-8">
+        <h4 class="mt-3">Theme Colors</h4>
+      </div>
+      <div class="col-md-4 d-flex align-items-center justify-content-end mt-sm-15">
+        <button type="button" class="btn btn-wide btn-primary ladda-button m-1" [disabled]="btnLoader" [ladda]="btnLoader" (click)="findColors(colorModal);">
+          {{ colorSections.length? 'Change': 'Set' }} Theme Colors
+        </button>
+      </div>
+      <!-- theme colors -->
+      <ng-container *ngIf="colorSections.length && !colorList.length">
+        <ng-container *ngFor="let sec of colorSections; let i=index;">
+          <div *ngIf="sec.name!='vendor_bg'" class="col-md-12 mt-3">
+            <div class="card card-in-card p-3">
+              <h5 class="mb-0">{{sec.name | titlecase}} Color - <span class="color-span" [ngStyle]="{'background': sec.value}"></span></h5>
+            </div>
+          </div>
+        </ng-container>
+      </ng-container>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="commonService.deploy_stages.logo">
+    <div class="separator-breadcrumb border-top mb-3 mt-4"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <h4>Store Logos</h4>
+      </div>
+      <div class="col-md-3 d-flex">
+        <div class="card setting-card w-100 p-3 mt-3 mb-3 cursor">
+          <div class="d-flex align-items-center justify-content-center flex-column">
+            <img [src]="imgBaseUrl+'uploads/'+commonService.store_details._id+'/favicon.png?v='+verNum" height="100px;" width="auto;">
+            <label class="text-title d-flex align-items-center justify-content-center mt-3">
+              Favicon 
+              <i class="material-icons edit-icon ml-2" (click)="btnLoader=false; uploadForm={ root_path: 'uploads/'+commonService.store_details._id, small_image: false, file_name: 'favicon', file_type: 'png', resolution: '50x50' }; modalService.open(imageModal);">create</i>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 d-flex">
+        <div class="card setting-card w-100 p-3 mt-3 mb-3 cursor">
+          <div class="d-flex align-items-center justify-content-center flex-column">
+            <img [src]="imgBaseUrl+'uploads/'+commonService.store_details._id+'/logo.png?v='+verNum" height="100px;" width="auto;">
+            <label class="text-title d-flex align-items-center justify-content-center mt-3">
+              Site Logo 
+              <i class="material-icons edit-icon ml-2" (click)="btnLoader=false; uploadForm={ root_path: 'uploads/'+commonService.store_details._id, small_image: true, file_name: 'logo', file_type: 'png', resolution: 'autox100' }; modalService.open(imageModal);">create</i>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 d-flex">
+        <div class="card setting-card w-100 p-3 mt-3 mb-3 cursor">
+          <div class="d-flex align-items-center justify-content-center flex-column">
+            <img [src]="imgBaseUrl+'uploads/'+commonService.store_details._id+'/social_logo.jpg?v='+verNum" height="100px;" width="auto;">
+            <label class="text-title d-flex align-items-center justify-content-center mt-3">
+              Social Logo 
+              <i class="material-icons edit-icon ml-2" (click)="btnLoader=false; uploadForm={ root_path: 'uploads/'+commonService.store_details._id, small_image: false, file_name: 'social_logo', file_type: 'jpg', resolution: '200x200' }; modalService.open(imageModal);">create</i>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 d-flex">
+        <div class="card setting-card w-100 p-3 mt-3 mb-3 cursor">
+          <div class="d-flex align-items-center justify-content-center flex-column">
+            <img [src]="imgBaseUrl+'uploads/'+commonService.store_details._id+'/mail_logo.png?v='+verNum" height="100px;" width="auto;">
+            <label class="text-title d-flex align-items-center justify-content-center mt-3">
+              Mail Logo 
+              <i class="material-icons edit-icon ml-2" (click)="btnLoader=false; uploadForm={ root_path: 'uploads/'+commonService.store_details._id, small_image: false, file_name: 'mail_logo', file_type: 'png', resolution: 'autox80' }; modalService.open(imageModal);">create</i>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<!-- Image Modal -->
+<ng-template #imageModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Update Image</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdate();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12" align="center">
+            <p>Photo Resolution: {{uploadForm?.resolution}}</p>
+            <div *ngIf="uploadForm.image">
+              <img [src]="uploadForm.image" height="100px;" width="auto;">
+            </div>
+            <div *ngIf="!uploadForm.image">
+              <img [src]="imgBaseUrl+uploadForm?.root_path+'/'+uploadForm?.file_name+'.'+uploadForm?.file_type+'?v='+verNum" height="100px;" width="auto;">
+              <div class="h-100 d-flex align-items-end">
+                <div class="custom-file mt-2">
+                  <input class="custom-file-input" *ngIf="uploadForm?.file_type=='jpg'" type="file" name="image" (change)="uploadChangeListener($event);" accept="image/jpeg" />
+                  <input class="custom-file-input" *ngIf="uploadForm?.file_type=='png'" type="file" name="image" (change)="uploadChangeListener($event);" accept="image/png" />
+                  <input class="custom-file-input" *ngIf="uploadForm?.file_type=='any'" type="file" name="image" (change)="uploadChangeListener($event);" accept="image/jpeg, image/png" />
+                  <label class="custom-file-label">Choose file</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="uploadForm.errorMsg">
+        <p class="text-danger">{{ uploadForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+       <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary ladda-button m-1" [disabled]="btnLoader" [ladda]="btnLoader">Update</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- Color Modal -->
+<ng-template #colorModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Theme Colors</h4>
+  </div>
+  <div class="modal-body">
+    <div class="form-group">
+      <div class="row">
+        <div *ngFor="let sec of colorFields; let i=index;" class="col-md-12" [ngClass]="(i>0)? 'mt-3': ''">
+          <div class="card card-in-card z-i-unset p-3">
+            <h5>{{sec.name}}</h5>
+            <div class="row ml-3 mt-3">
+              <div class="form-group mb-3 col-md-12">
+                <button type="button" (click)="sec.manual_status? sec.manual_status=false: sec.manual_status=true;" class="btn btn-primary">
+                  Pick {{ (sec.manual_status)? 'from logo colors': 'custom color' }}
+                </button>
+              </div>
+              <div *ngIf="sec.manual_status" class="col-md-6 form-group mb-3">
+                <label>Color Picker</label>
+                <input name="color_code{{i}}" class="form-control" [colorPicker]="sec.color_code"
+                  (colorPickerChange)="sec.color_code=$event;" [style.background]="sec.color_code"
+                  [cpOKButton]="true" [cpOKButtonText]="'Save'" [cpOKButtonClass]="'btn btn-primary'"
+                  [cpSaveClickOutside]="false" [cpCancelButton]="true" [cpCancelButtonClass]="'btn black-outline-btn'" />
+              </div>
+              <ng-container *ngIf="!sec.manual_status">
+                <div class="col-lg-3 col-md-3 form-group mb-3" *ngFor="let x of colorList;">
+                  <label class="radio radio-success">
+                    <input type="radio" [(ngModel)]="sec.color_code" [value]="x" name="color_code{{i}}">
+                    <span class="color-span" [ngStyle]="{'background': x}"></span>
+                    <span class="checkmark"></span>
+                  </label>
+                </div>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="errorMsg">
+      <p class="mt-4 text-danger">{{ errorMsg }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button [hidden]="!commonService.deploy_details?.theme_colors?.primary" type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+      <span class="black-outline-txt">Cancel</span>
+    </button>
+    <button type="button" (click)="updateThemeColor(welcomeModal);" class="btn btn-wide btn-primary ladda-button"
+    [disabled]="btnLoader" [ladda]="btnLoader">Update</button>
+  </div>
+</ng-template>
+
+<!-- Welcome Modal -->
+<ng-template #welcomeModal let-modal>
+  <div class="modal-body">
+    <section class="you-dit-it-section welcome-modal-bg">
+      <div class="you-dit-it-center-section welcome-modal-sec ">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-md-6 d-flex align-items-center justify-content-center">
+              <div class="you-dit-it-message" style="display: flex; flex-direction: column; align-items: center;text-align: center;">
+                <h2>Your website is ready!</h2>
+                <div>
+                  <a href="{{commonService.store_details?.base_url}}" target="_blank" (click)="modal.dismiss('Cross click');" class="btn-primary mr-3">Preview Website</a>
+                  <button class="btn-primary" (click)="modal.dismiss('Cross click');" routerLink="/dashboard" type="button">Continue Setup</button>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 d-flex justify-content-center">
+              <div class="you-dit-it-image">
+                <img src="assets/images/others/layout.png" alt="layout-img" style="width: 575px;margin-bottom: 20px;">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</ng-template>

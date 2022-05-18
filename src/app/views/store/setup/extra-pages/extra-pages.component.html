@@ -1,0 +1,116 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb">
+    <h1>Extra Pages</h1>
+    <ul>
+      <li>Manage your extra pages</li>
+    </ul>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="top-filter-sec">
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <button type="button" class="btn btn-primary" routerLink="/setup/extra-pages/add">Add New</button>
+      </div>
+      <!-- search box -->
+      <div class="col-md-6 mt-sm-15" align="right">
+        <div class="form-group">
+          <input type="text" name="search_bar" placeholder="Search" class="form-control" [(ngModel)]="search_bar" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- DATA LIST -->
+  <div *ngIf="list?.length" class="list-horizontal">
+
+    <div class="data-list-card-wrapper">
+      <div class="data-list-card-inner">
+        <div class="row m-0">
+
+          <!-- SINGLE LIST ITEM -->
+          <div
+            *ngFor="let x of list | fieldSearch:'name':search_bar | paginate: { itemsPerPage: pageSize, currentPage: page }; let i=index;"
+            class="col-md-12 list-item data-list-card" [@animate]="{value:'*',params:{delay: (i*100)+'ms', y:'50px'}}">
+
+            <div class="">
+              <div class="">
+                <div class="card-body">
+
+                  <div class="row">
+                    <div class="col-md-4 d-flex align-items-center">
+                      <p class="m-0 w-sm-100 m-b-0">{{x.name}}</p>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-center">
+                      <p class="m-0 w-sm-100 m-b-0">{{commonService.store_details?.base_url}}/pages/{{x.page_url}}</p>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-center justify-content-end">
+                      <p class="m-0 text-muted text-small w-sm-100 d-lg-block item-actions">
+                        <button class="btn btn-wide black-outline-btn w-md-100 mr-3"
+                          routerLink="/setup/extra-pages/modify/{{x._id}}">
+                          <span class="black-outline-txt">Edit</span>
+                        </button>
+                        <button class="btn orng-outline-btn w-md-100"
+                          (click)="deleteForm=x; modalService.open(deleteModal, { centered: true });">
+                          <span class="orng-outline-txt">Remove</span>
+                        </button>
+                      </p>
+                    </div>
+                  </div>
+                 
+                  
+                  
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
+    <!-- PAGINATION CONTROL -->
+    <div class="row">
+      <div class="col-md-12 mt-3">
+        <pagination-controls (pageChange)="page=$event; commonService.pageTop(0);" autoHide="true" responsive="true"
+          maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+      </div>
+    </div>
+
+
+  </div>
+
+  <div *ngIf="!list?.length" class="row">
+    <div class="col-md-12 d-flex flex-column align-items-center justify-content-center no-rec-found-wrapper">
+      <img class="no-rec-found" src="assets/images/no_records_found.png" alt="no-records">
+      <p align="center">No data to display.</p>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE MODAL -->
+<ng-template #deleteModal let-modal>
+  <div class="modal-body">
+    <p>
+      <strong>Are you sure you want to remove
+        <span class="txt-grdint-highlight">"{{deleteForm.name}}"</span> page?</strong>
+    </p>
+    <div *ngIf="deleteForm.errorMsg">
+      <p class="text-danger">{{ deleteForm.errorMsg }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+      (click)="modal.dismiss('Cross click');">
+      <span class="black-outline-txt">No</span>
+    </button>
+    <button type="button" (click)="onDelete();" class="btn btn-wide orng-outline-btn">
+      <span class="orng-outline-txt">Yes</span>
+    </button>
+  </div>
+</ng-template>

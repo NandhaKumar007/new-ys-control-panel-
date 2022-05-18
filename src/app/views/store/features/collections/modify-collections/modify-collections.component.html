@@ -1,0 +1,115 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb">
+    <h1>{{ params.collection_id? collectionForm.name: 'New Collection' }}</h1>
+    <ul>
+      <li>Enter details and collection options</li>
+    </ul>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <form autocomplete="off" (ngSubmit)="onSubmit();" ngNativeValidate>
+    <div class="row">
+      <div class="col-md-6 form-group mb-3">
+        <label>Name</label>
+        <input type="text" name="addon_name" class="form-control" [(ngModel)]="collectionForm.name" #name="ngModel" required />
+      </div>
+      <div class="col-md-6 form-group mb-3">
+        <label>Rank</label>
+        <input type="number" name="rank" class="form-control" [(ngModel)]="collectionForm.rank" #rank="ngModel" min="1" max="{{maxRank}}" appNumberOnly required />
+      </div>
+      <!-- Options List -->
+      <div class="col-md-6 mb-3" *ngFor="let x of collectionForm.option_list; let i=index;">
+        <div class="card p-3">
+          <div class="row">
+            <div *ngIf="collectionForm.option_list?.length>1">
+              <span (click)="collectionForm.option_list.splice(i, 1);" class="material-icons item-close absolute-item-close float-right" aria-hidden="true">close</span>
+            </div>
+            <div class="col-md-12 form-group mb-3">
+              <label>{{i+1}}) Option Name</label>
+              <input type="text" name="custom_name{{i}}" class="form-control" [(ngModel)]="x.name" #name="ngModel" required />
+            </div>
+            <div class="col-md-12 form-group mb-3">
+              <label class="checkbox checkbox-primary">
+                <input class="form-check-input" type="checkbox" name="link_status{{i}}" [(ngModel)]="x.link_status" (change)="x.link_type='category';" #link_status="ngModel">
+                <span>Enable Link</span>
+                <span class="checkmark"></span>
+              </label>
+            </div>
+            <ng-container *ngIf="x.link_status">
+              <div class="col-md-6 form-group mb-3">
+                <label class="radio radio-primary">
+                  <input type="radio" name="link_type{{i}}" [(ngModel)]="x.link_type" value="category">
+                  <span>Link to Catalog</span>
+                  <span class="checkmark"></span>
+                </label>
+              </div>
+              <div class="col-md-6 form-group mb-3">
+                <label class="radio radio-primary">
+                  <input type="radio" name="link_type{{i}}" [(ngModel)]="x.link_type" value="product">
+                  <span>Link to Product</span>
+                  <span class="checkmark"></span>
+                </label>
+              </div>
+              <div class="col-md-6 form-group mb-3">
+                <label class="radio radio-primary">
+                  <input type="radio" name="link_type{{i}}" [(ngModel)]="x.link_type" value="internal">
+                  <span>Link to Internal Link</span>
+                  <span class="checkmark"></span>
+                </label>
+              </div>
+              <div class="col-md-6 form-group mb-3">
+                <label class="radio radio-primary">
+                  <input type="radio" name="link_type{{i}}" [(ngModel)]="x.link_type" value="external">
+                  <span>Link to External Link</span>
+                  <span class="checkmark"></span>
+                </label>
+              </div>
+              <div *ngIf="x.link_type=='category' || x.link_type=='product'" class="col-md-12 form-group mb-3">
+                <label>{{x.link_type=='category'? 'Link to Catalog': 'Catalogs'}}</label>
+                <select name="category_id{{i}}" class="form-control select-arrow" [(ngModel)]="x.category_id" #category_id="ngModel" required>
+                  <option [ngValue]="x._id" *ngFor="let x of commonService.catalog_list">{{x.name}}</option>
+                </select>
+              </div>
+              <div *ngIf="x.link_type=='product'" class="col-md-12 form-group mb-3">
+                <label>Link to Product</label>
+                <select [disabled]="!x.category_id" name="product_id{{i}}" class="form-control select-arrow" [(ngModel)]="x.product_id" #product_id="ngModel" required>
+                  <option [ngValue]="x._id" *ngFor="let x of productList | productFilter:'category_id':x.category_id;">{{x.name}}</option>
+                </select>
+              </div>
+              <div *ngIf="x.link_type=='internal' || x.link_type=='external'" class="col-md-12 form-group mb-3">
+                <label *ngIf="x.link_type=='internal'">{{commonService.store_details?.base_url}}{{x.link}}</label>
+                <label *ngIf="x.link_type=='external'">External Link</label>
+                <input type="text" name="link{{i}}" class="form-control" [(ngModel)]="x.link" #int_link="ngModel" required />
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+      <!-- #Options List -->
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <span class="add-another  x-close" (click)="collectionForm.option_list.push({});">
+          <b>ADD ANOTHER OPTION</b>
+        </span>
+      </div>
+    </div>
+    <div class="separator-breadcrumb border-top mt-5"></div>
+    <div class="row">
+      <div *ngIf="collectionForm.errorMsg" class="col-md-12 mt-3 mb-3">
+        <p class="text-danger" align="center">{{ collectionForm.errorMsg }}</p>
+      </div>
+      <div align="center" class="col-md-12 z-i-0">
+        <button type="button" routerLink="/features/collections" class="btn btn-wide black-outline-btn">
+         <span class="black-outline-txt">Cancel</span>
+        </button>&nbsp; &nbsp; &nbsp;
+        <button type="submit" class="btn btn-wide btn-primary ladda-button m-1" [disabled]="btnLoader" [ladda]="btnLoader">{{ params.collection_id? 'Update': 'Save' }}</button>
+      </div>
+    </div>
+  </form>
+
+</div>

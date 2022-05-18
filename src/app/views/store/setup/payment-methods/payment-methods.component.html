@@ -1,0 +1,663 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-md-8">
+        <h1>Payment Gateway</h1>
+        <ul><li>Manage your payment types</li></ul>
+      </div>
+      <div *ngIf="commonService.deployInProgress" class="col-md-4 d-flex align-items-center justify-content-end mt-sm-15">
+        <button type="button" class="btn btn-primary" (click)="commonService.goBack();">Go Back</button>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="top-filter-sec">
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <button type="button" class="btn btn-primary" (click)="onOpenAddModal({form_type: 'add', store_name: commonService.store_details?.name}, payModal);">
+          Add New
+        </button>
+      </div>
+      <!-- search box -->
+      <div class="col-md-6 mt-sm-15" align="right">
+        <div class="form-group">
+          <input type="text" name="search_bar" placeholder="Search" class="form-control" [(ngModel)]="search_bar" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- DATA LIST -->
+  <div *ngIf="list?.length" class="list-horizontal">
+
+    <div class="data-list-card-wrapper">
+      <div class="data-list-card-inner">
+        <div class="row m-0">
+
+          <!-- SINGLE LIST ITEM -->
+          <div
+            *ngFor="let x of list | orderAsc:'rank' | fieldSearch:'name':search_bar | paginate: { itemsPerPage: pageSize, currentPage: page }; let i=index;"
+            class="col-md-12 list-item data-list-card" [@animate]="{value:'*',params:{delay: (i*100)+'ms', y:'50px'}}">
+
+            <div class="d-flex flex-row">
+              <div class="flex-grow-1 d-flex">
+                <div
+                  class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                  <p class="m-0 w-15 w-sm-100 m-b-0">{{x.name}}</p>
+                  <p class="m-0 text-muted text-small w-15 w-sm-100 d-lg-block item-actions">
+                    <button class="btn btn-wide black-outline-btn w-md-100 mr-3" (click)="onEdit(x, payModal, false);">
+                      <span class="black-outline-txt">Edit</span>
+                    </button>
+                    <button (click)="onChangeStatus(x, statusModal, payModal);" class="btn btn-wide w-md-100 mr-3"
+                      [ngClass]="(x.status=='active')? 'orng-outline-btn': 'blue-outline-btn'">
+                      <span [ngClass]="(x.status=='active')? 'orng-outline-txt': 'blue-outline-txt'">
+                        {{ (x.status=='active')? 'Disable': 'Enable' }}
+                      </span>
+                    </button>
+                    <button class="btn orng-outline-btn w-md-100" (click)="onOpenDelteModal(x, deleteModal);">
+                      <span class="orng-outline-txt">Remove</span>
+                    </button>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
+    <!-- PAGINATION CONTROL -->
+    <div class="row">
+      <div class="col-md-12 mt-3">
+        <pagination-controls (pageChange)="page=$event; commonService.pageTop(0);" autoHide="true" responsive="true"
+          maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+      </div>
+    </div>
+ 
+
+  </div>
+
+  <div *ngIf="!list?.length" class="row">
+    <div class="col-md-12 d-flex flex-column align-items-center justify-content-center no-rec-found-wrapper">
+      <img class="no-rec-found" src="assets/images/no_records_found.png" alt="no-records">
+      <p align="center">No data to display. Add a new currency to improve international customer convenience.</p>
+    </div>
+  </div>
+</div>
+
+<!-- PAY MODAL -->
+<ng-template #payModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">{{ (payForm.form_type=='add')? 'Add Payment Gateway': payForm.name }}</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="(payForm.form_type=='add')? onAdd(): onUpdate();" ngNativeValidate>
+    <div class="modal-body payment-steps-modal-body slim-scroll">
+      <div class="form-group">
+        <div class="row">
+          <div *ngIf="payForm.form_type=='add'" class="col-md-6 form-group mb-3">
+            <label>Payment Types</label>
+            <select name="name" class="form-control" [(ngModel)]="payForm.name" (change)="changeOption(payForm.name);" #name="ngModel" required>
+              <option value="COD">Cash on Delivery</option>
+              <ng-container *ngIf="commonService.store_details?.country=='India'">
+                <option value="Razorpay">Razorpay</option>
+                <option value="CCAvenue">CCAvenue</option>
+              </ng-container>
+              <option value="PayPal">PayPal</option>
+              <option value="Gpay">Gpay</option>
+              <option *ngIf="commonService.store_details?.country=='Ghana'" value="Flutterwave">Flutter Wave</option>
+              <option *ngIf="commonService.store_details?.country=='United States of America'" value="Square">Square</option>
+              <ng-container *ngIf="commonService.store_details?.country=='United Arab Emirates'">
+                <option value="Fatoorah">Fatoorah</option>
+                <option value="Telr">Telr</option>
+                <option value="Foloosi">Foloosi</option>
+              </ng-container>
+              <option value="Bank Payment">Bank Payment</option>
+            </select>
+          </div>
+          <div class="col-md-6 form-group mb-3">
+            <label>Button Name</label>
+            <input type="text" name="btn_name" class="form-control" [(ngModel)]="payForm.btn_name" #btn_name="ngModel"
+              required />
+          </div>
+          <div *ngIf="payForm.form_type!='add'" class="col-md-6 form-group mb-3">
+            <label>Rank</label>
+            <input type="number" name="rank" class="form-control" [(ngModel)]="payForm.rank" #rank="ngModel" min="1"
+              max="{{maxRank}}" appNumberOnly required />
+          </div>
+          <!-- COD -->
+          <ng-container *ngIf="payForm.name=='COD' && payForm.cod_config">
+            <div class="col-md-6 form-group mb-3">
+              <label>COD Charges</label>
+              <input type="number" name="cod_charges" class="form-control" [(ngModel)]="payForm.cod_config.cod_charges"
+                #cod_charges="ngModel" appNumberOnly required />
+            </div>
+            <div class="col-md-6 form-group mb-3">
+              <label>Maximum Order Amount</label>
+              <input type="number" name="max_amount" class="form-control" [(ngModel)]="payForm.cod_config.max_amount"
+                #max_amount="ngModel" appNumberOnly required />
+            </div>
+            <ng-container *ngIf="commonService.store_details?.country=='India'">
+              <div class="col-md-12 form-group mb-3">
+                <label class="checkbox checkbox-primary">
+                  <input class="form-check-input" type="checkbox" name="sms_status"
+                    (change)="(!payForm.sms_config)? payForm.sms_config={}: ''"
+                    [(ngModel)]="payForm.cod_config.sms_status">
+                  <span>Enable SMS Validation</span>
+                  <span class="checkmark"></span>
+                </label>
+              </div>
+              <!-- sms config -->
+              <ng-container *ngIf="payForm.cod_config.sms_status && payForm.sms_config">
+                <div class="col-md-6 form-group mb-3">
+                  <label>Provider</label>
+                  <select name="provider" class="form-control" [(ngModel)]="payForm.sms_config.provider" required>
+                    <option value="24x7SMS">24x7SMS</option>
+                  </select>
+                </div>
+                <div class="col-md-6"></div>
+                <!-- 24x7SMS -->
+                <ng-container *ngIf="payForm.sms_config.provider=='24x7SMS'">
+                  <div class="col-md-6 form-group mb-3">
+                    <label>API Key</label>
+                    <input type="text" name="api_key" class="form-control" [(ngModel)]="payForm.sms_config.api_key"
+                      required />
+                  </div>
+                  <div class="col-md-6 form-group mb-3">
+                    <label>Sender ID</label>
+                    <input type="text" name="sender_id" class="form-control" [(ngModel)]="payForm.sms_config.sender_id"
+                      required />
+                  </div>
+                  <div class="col-md-6 form-group mb-3">
+                    <label>Service Name</label>
+                    <input type="text" name="service_name" class="form-control"
+                      [(ngModel)]="payForm.sms_config.service_name" required />
+                  </div>
+                  <div class="col-md-6 form-group mb-3">
+                    <label>Template ID</label>
+                    <input type="text" name="template_id" class="form-control"
+                      [(ngModel)]="payForm.sms_config.template_id" required />
+                  </div>
+                  <div class="col-md-12 form-group mb-3">
+                    <label>Message (Use <strong>#OTP#</strong> keyword)</label>
+                    <textarea name="msg_content" class="form-control" [(ngModel)]="payForm.sms_config.msg_content"
+                      required></textarea>
+                  </div>
+                </ng-container>
+              </ng-container>
+            </ng-container>
+          </ng-container>
+          <!-- razorpay -->
+          <ng-container *ngIf="payForm.name=='Razorpay'">
+            <div class="col-md-6 form-group mb-3">
+              <label>Store Name</label>
+              <input type="text" name="store_name" class="form-control" [(ngModel)]="payForm.store_name"
+                #store_name="ngModel" required />
+            </div>
+            <div class="col-md-6 form-group mb-3">
+              <label>Business Tagline</label>
+              <input type="text" name="description" class="form-control" [(ngModel)]="payForm.description"
+                #description="ngModel" required />
+            </div>
+            <div class="col-md-6 form-group mb-3">
+              <label>Key Id</label>
+              <input type="text" name="key_id" class="form-control" [(ngModel)]="payForm.key_id" #key_id="ngModel"
+                required />
+            </div>
+            <div class="col-md-6 form-group mb-3">
+              <label>Key Secret</label>
+              <input type="text" name="key_secret" class="form-control" [(ngModel)]="payForm.key_secret"
+                #key_secret="ngModel" required />
+            </div>
+            <div class="col-md-12 border-top"></div>
+            <div class="col-md-12">
+              <b class="add-another mt-2 mb-3">WEBHOOK SETUP</b>
+              <p style="word-break: break-all;"><strong>Webhook URL:</strong>
+                https://yourstore.io/api/store_details/razorpay_webhook/{{commonService.store_details._id}}</p>
+              <p><strong>Secret:</strong> {{commonService.store_details._id}}</p>
+              <p><strong>Active Events:</strong> order.paid</p>
+            </div>
+          </ng-container>
+          <!-- ccavenue -->
+          <ng-container *ngIf="payForm.name=='CCAvenue'">
+            <div class="col-md-6 form-group mb-3">
+              <label>Merchant Id</label>
+              <input type="text" name="merchant_id" class="form-control" [(ngModel)]="payForm.merchant_id"
+                #merchant_id="ngModel" required />
+            </div>
+            <div class="col-md-6 form-group mb-3">
+              <label>Working Key</label>
+              <input type="text" name="working_key" class="form-control" [(ngModel)]="payForm.working_key"
+                #working_key="ngModel" required />
+            </div>
+            <div class="col-md-6 form-group mb-3">
+              <label>Access Code(Payment Status)</label>
+              <input type="text" name="ap_access_code" class="form-control" [(ngModel)]="payForm.ap_access_code"
+                #ap_access_code="ngModel" required />
+            </div>
+            <div class="col-md-6 form-group mb-3">
+              <label>Working Key(Payment Status)</label>
+              <input type="text" name="ap_working_key" class="form-control" [(ngModel)]="payForm.ap_working_key"
+                #ap_working_key="ngModel" required />
+            </div>
+            <div class="col-md-6 form-group mb-3">
+              <label>Access Code(Application)</label>
+              <input type="text" name="ac_access_code" class="form-control" [(ngModel)]="payForm.ac_access_code"
+                #ac_access_code="ngModel" required />
+            </div>
+          </ng-container>
+          <!-- paypal -->
+          <ng-container *ngIf="payForm.name=='PayPal'">
+            <div class="col-md-6 form-group mb-3">
+              <label>Client Id</label>
+              <input type="text" name="client_id" class="form-control" [(ngModel)]="payForm.client_id"
+                #client_id="ngModel" required />
+            </div>
+            <div class="col-md-6 form-group mb-3">
+              <label>Client Secret</label>
+              <input type="text" name="client_secret" class="form-control" [(ngModel)]="payForm.client_secret"
+                #client_secret="ngModel" required />
+            </div>
+          </ng-container>
+          <!-- square -->
+          <ng-container *ngIf="payForm.name=='Square'">
+            <div class="col-md-6 form-group mb-3">
+              <label>Store Name</label>
+              <input type="text" name="store_name" class="form-control" [(ngModel)]="payForm.store_name"
+                #store_name="ngModel" required />
+            </div>
+            <div class="col-md-6 form-group mb-3">
+              <label>Access Token</label>
+              <input type="text" name="access_token" class="form-control" [(ngModel)]="payForm.access_token"
+                #access_token="ngModel" required />
+            </div>
+            <div class="col-md-6 form-group mb-3">
+              <label>App Id</label>
+              <input type="text" name="app_id" class="form-control" [(ngModel)]="payForm.app_id" #app_id="ngModel"
+                required />
+            </div>
+            <div class="col-md-6 form-group mb-3">
+              <label>Location Id</label>
+              <input type="text" name="location_id" class="form-control" [(ngModel)]="payForm.location_id"
+                #location_id="ngModel" required />
+            </div>
+          </ng-container>
+          <!-- fatoorah -->
+          <div *ngIf="payForm.name=='Fatoorah'" class="col-md-12 form-group mb-3">
+            <label>Token</label>
+            <textarea class="form-control" aria-label="With textarea" name="token" [(ngModel)]="payForm.token"
+              #token="ngModel" required></textarea>
+          </div>
+          <!-- flutter wave -->
+          <div *ngIf="payForm.name=='Flutterwave'" class="col-md-12 form-group mb-3">
+            <label>Token</label>
+            <input type="text" name="token" class="form-control" [(ngModel)]="payForm.token" required />
+          </div>
+          <!-- telr -->
+          <ng-container *ngIf="payForm.name=='Telr'">
+            <div class="col-md-6 form-group mb-3">
+              <label>Key</label>
+              <input type="text" name="key" class="form-control" [(ngModel)]="payForm.key" #key="ngModel" required />
+            </div>
+            <div class="col-md-6 form-group mb-3">
+              <label>IVP Store</label>
+              <input type="text" name="ivp_store" class="form-control" [(ngModel)]="payForm.ivp_store"
+                #ivp_store="ngModel" required />
+            </div>
+          </ng-container>
+          <!-- foloosi -->
+          <ng-container *ngIf="payForm.name=='Foloosi'">
+            <div class="col-md-6 form-group mb-3">
+              <label>Merchant Key</label>
+              <input type="text" name="merchant_key" class="form-control" [(ngModel)]="payForm.merchant_key"
+                #merchant_key="ngModel" required />
+            </div>
+            <div class="col-md-6 form-group mb-3">
+              <label>Secret Key</label>
+              <input type="text" name="secret_key" class="form-control" [(ngModel)]="payForm.secret_key"
+                #secret_key="ngModel" required />
+            </div>
+            <div class="col-md-12 mt-3">
+              <p><strong class="add-another">Domain Name:</strong> {{ commonService.store_details?.base_url }}</p>
+              <p><strong class="add-another">Authorization Callback URL:</strong>
+                https://yourstore.io/api/store_details/foloosi_payment/{{commonService.store_details._id}}</p>
+            </div>
+          </ng-container>
+          <!-- gpay -->
+          <ng-container *ngIf="payForm.name=='Gpay'">
+            <div class="col-md-6 form-group mb-3">
+              <label>Merchant Name</label>
+              <input type="text" name="merchant_name" class="form-control" [(ngModel)]="payForm.merchant_name" #merchant_name="ngModel" required />
+            </div>
+            <div class="col-md-6 form-group mb-3">
+              <label>Merchant Code</label>
+              <input type="text" name="merchant_code" class="form-control" [(ngModel)]="payForm.merchant_code" #merchant_code="ngModel" required />
+            </div>
+            <div class="col-md-6 form-group mb-3">
+              <label>UPI ID (Only Google Pay UPI ID is valid)</label>
+              <input type="text" name="upi_id" id="upi_id" class="form-control" [(ngModel)]="payForm.upi_id" #upi_id="ngModel" required />
+            </div>
+          </ng-container>
+          <!-- Bank Payment -->
+          <ng-container *ngIf="payForm.name=='Bank Payment'">
+            <div *ngFor="let x of payForm.field_list; let i=index;" class="col-md-6 form-group mb-3">
+              <div class="card p-2">
+                <span *ngIf="payForm.field_list.length>2" (click)="payForm.field_list.splice(i, 1);" class="material-icons item-close absolute-item-close float-right" aria-hidden="true">close</span>
+                <label>Title</label>
+                <input type="text" name="field_title{{i}}" class="form-control" [(ngModel)]="x.title" #field_title="ngModel" required />
+                <label>Value</label>
+                <input type="text" name="field_value{{i}}" class="form-control" [(ngModel)]="x.value" #field_value="ngModel" required />
+              </div>
+            </div>
+            <div class="col-md-12 mb-1">
+              <span class="add-another x-close" (click)="payForm.field_list.push({});"><b>ADD ANOTHER FIELD</b></span>
+            </div>
+            <div class="col-md-12 form-group mb-3">
+              <label>Message</label>
+              <textarea class="form-control" aria-label="With textarea" name="message" [(ngModel)]="payForm.message" #message="ngModel" required></textarea>
+            </div>
+            <div class="form-group mb-3 col-md-12">
+              <label class="checkbox checkbox-primary">
+                <input class="form-check-input" type="checkbox" name="pay_id_field_status" [(ngModel)]="payForm.pay_id_field_status" #pay_id_field_status="ngModel">
+                <span>Enable Payment ID Field</span>
+                <span class="checkmark"></span>
+              </label>
+            </div>
+          </ng-container>
+          <!-- mode -->
+          <ng-container *ngIf="payForm.name=='PayPal' || payForm.name=='Square' || payForm.name=='Fatoorah' || payForm.name=='Telr'">
+            <div class="col-md-6 form-group mb-3">
+              <label>Payment Mode</label>
+              <select name="mode" class="form-control" [(ngModel)]="payForm.mode" #mode="ngModel" required>
+                <option value="sandbox">Sandbox</option>
+                <option value="production">Production</option>
+              </select>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+      <div *ngIf="payForm.errorMsg">
+        <p class="text-danger">{{ payForm.errorMsg }}</p>
+      </div>
+      <!-- Razorpay Steps -->
+      <div *ngIf="payForm.name=='Razorpay'" class="whats-new-acc card">
+        <div id="accordionTwo">
+          <div class="acc-card">
+            <div class="card-header mb-3" style="border-bottom:1px solid #dee2e6;" id="headingTwo">
+              <h5 class="mb-0">
+                <button type="button" class="btn btn-link collapsed w-100 p-0 m-0" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                  <div class="breadcrumb home-breadcrumb mb-0">
+                    <img src="assets/images/razorpay_logo.png" style="width:120px;height:auto">
+                  </div>
+                  <div class="d-flex align-items-center">
+                    <span class="learn-more-text">View Steps</span>
+                    <span class="gray-icon-btn ml-3">
+                      <i class="material-icons">expand_more</i>
+                    </span>
+                  </div>
+                </button>
+              </h5>
+            </div>
+            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionTwo">
+              <div class="card-body pt-0" style="border: none;">
+                <div class="row">
+                  <div class="col-md-12 p-0">
+                    <div class="col-md-12">
+                      <h4 class="modal-title mb-3">Payment Steps</h4>
+                      <div class="row">
+                        <!-- Step 1 -->
+                        <div class="col-md-12 d-flex">
+                          <div class="payment-steps w-100 card p-3 mb-3">
+                            <h4 class="payment-steps-count">Step 1:</h4>
+                            <p class="mb-0">
+                              <a href="https://dashboard.razorpay.com/#/access/signup?coupon_code=YOURSTORE" target="blank">
+                                Click here to Create Account
+                              </a>
+                            </p>
+                          </div>
+                        </div>
+                        <!-- Step 2 -->
+                        <div class="col-md-12 d-flex">
+                          <div class="payment-steps w-100 card p-3 mb-3">
+                            <h4 class="payment-steps-count">Step 2:</h4>
+                            <p class="mb-0">Submit details based on your business type.</p>
+                          </div>
+                        </div>
+                        <!-- Step 3 -->
+                        <div class="col-md-12 d-flex">
+                          <div class="payment-steps w-100 card p-3 mb-3">
+                            <h4 class="payment-steps-count">Step 3:</h4>
+                            <p>Click on <strong>Activate your account</strong> and fill in the details requested</p>
+                            <figure class="mb-0">
+                              <img src="assets/images/payment-gateway/razorpay-integration/Step_4.png" alt="steps_img">
+                            </figure>
+                          </div>
+                        </div>
+                        <!-- Step 4 -->
+                        <div class="col-md-12 d-flex">
+                          <div class="payment-steps w-100 card p-3 mb-3">
+                            <h4 class="payment-steps-count">Step 4:</h4>
+                            <p>Please fillup the requested details and click on <strong>Submit and Verify</strong></p>
+                            <figure class="mb-0">
+                              <img src="assets/images/payment-gateway/razorpay-integration/Step_5.png" alt="steps_img">
+                            </figure>
+                          </div>
+                        </div>
+                        <!-- Step 5 -->
+                        <div class="col-md-12 d-flex">
+                          <div class="payment-steps w-100 card p-3 mb-3">
+                            <h4 class="payment-steps-count">Step 5:</h4>
+                            <p>Now Click on <strong>Complete KYC
+                              </strong></p>
+                            <figure class="mb-0">
+                              <img src="assets/images/payment-gateway/razorpay-integration/Step_6.png" alt="steps_img">
+                            </figure>
+                          </div>
+                        </div>
+                        <!-- Step 6 -->
+                        <div class="col-md-12 d-flex">
+                          <div class="payment-steps w-100 card p-3 mb-3">
+                            <h4 class="payment-steps-count">Step 6:</h4>
+                            <p>Complete KYC by uploading the requested documents and <strong>Submit Form
+                              </strong></p>
+                            <figure class="mb-0">
+                              <img src="assets/images/payment-gateway/razorpay-integration/Step_7.png" alt="steps_img">
+                            </figure>
+                          </div>
+                        </div>
+                        <!-- Step 7 -->
+                        <div class="col-md-12 d-flex">
+                          <div class="payment-steps w-100 card p-3 mb-3">
+                            <h4 class="payment-steps-count">Step 7:</h4>
+                            <p>In your Razorpay Dashboard go to <strong>Settings
+                              </strong></p>
+                            <figure>
+                              <img src="assets/images/payment-gateway/razorpay-integration/Step_8.1.png" alt="steps_img">
+                            </figure>
+                            <p>Select <strong>API Keys
+                              </strong></p>
+                            <figure class="mb-0">
+                              <img src="assets/images/payment-gateway/razorpay-integration/Step_8.2.png" alt="steps_img">
+                            </figure>
+                          </div>
+                        </div>
+                        <!-- Step 8 -->
+                        <div class="col-md-12 d-flex">
+                          <div class="payment-steps w-100 card p-3 mb-3">
+                            <h4 class="payment-steps-count">Step 8:</h4>
+                            <p>Click on <strong>Generate Live Key
+                              </strong></p>
+                            <figure>
+                              <img src="assets/images/payment-gateway/razorpay-integration/Step_9.1.png" alt="steps_img">
+                            </figure>
+                            <p> <strong>Copy</strong> the generated <strong>Key ID</strong> & <strong>Key Secret</strong></p>
+                            <figure class="mb-0">
+                              <img src="assets/images/payment-gateway/razorpay-integration/Step_9.2.png" alt="steps_img">
+                            </figure>
+                          </div>
+                        </div>
+                        <!-- Step 9 -->
+                        <div class="col-md-12 d-flex">
+                          <div class="payment-steps w-100 card p-3 mb-3">
+                            <h4 class="payment-steps-count">Step 9:</h4>
+                            <p>
+                              <strong>Paste the Key ID and Key Secret</strong> in <strong>yourstore</strong> backend <strong>Settings> Payment Gateway > Add New > Razorpay
+                              </strong>
+                            </p>
+                            <figure class="mb-0">
+                              <img src="assets/images/payment-gateway/razorpay-integration/Step_10.png" alt="steps_img">
+                            </figure>
+                          </div>
+                        </div>
+                        <!-- Step 10 -->
+                        <div class="col-md-12 d-flex">
+                          <div class="payment-steps w-100 card p-3 mb-3">
+                            <h4 class="payment-steps-count">Step 10:</h4>
+                            <p>In your
+                              <strong>Razorpay</strong>
+                              account go to <strong>Settings > Webhooks</strong>
+                            </p>
+                            <figure>
+                              <img src="assets/images/payment-gateway/razorpay-integration/Step_11.1.png" alt="steps_img">
+                            </figure>
+                            <p>Select
+                              <strong>Add New Webhook</strong>
+                            </p>
+                            <figure class="mb-0">
+                              <img src="assets/images/payment-gateway/razorpay-integration/Step_11.2.png" alt="steps_img">
+                            </figure>
+                          </div>
+                        </div>
+                        <!-- Step 11 -->
+                        <div class="col-md-12 d-flex">
+                          <div class="payment-steps w-100 card p-3 mb-3">
+                            <h4 class="payment-steps-count">Step 11:</h4>
+                            <p>
+                              <strong>Copy-paste</strong>
+                              the webhook <strong>URL</strong> and <strong>Secret</strong> from <strong>yourstore backend</strong>
+                            </p>
+                            <figure>
+                              <img src="assets/images/payment-gateway/razorpay-integration/Step_12.1.png" alt="steps_img">
+                            </figure>
+                            <p>
+                              <strong>Paste</strong>
+                              the webhook <strong>URL</strong> and <strong>Secret</strong> in <strong>Razorpay</strong>
+                            </p>
+                            <figure class="mb-0">
+                              <img src="assets/images/payment-gateway/razorpay-integration/Step_12.2.png" alt="steps_img">
+                            </figure>
+                          </div>
+                        </div>
+                        <!-- Step 12 -->
+                        <div class="col-md-12 d-flex">
+                          <div class="payment-steps w-100 card p-3 mb-3">
+                            <h4 class="payment-steps-count">Step 12:</h4>
+                            <p>In Active Events select
+                              <strong>"order.paid"</strong>
+                              and click <strong>create Webhook</strong>
+                            </p>
+                            <figure class="mb-0">
+                              <img src="assets/images/payment-gateway/razorpay-integration/Step_13.png" alt="steps_img">
+                            </figure>
+                          </div>
+                        </div>
+                        <!-- Step 13 -->
+                        <div class="col-md-12 d-flex">
+                          <div class="payment-steps w-100 card p-3">
+                            <h4 class="payment-steps-count">Step 13:</h4>
+                            <p>Click on
+                              <strong>Add</strong>
+                              in <strong>yourstore backend</strong> to complete the setup
+                            </p>
+                            <figure class="mb-0">
+                              <img src="assets/images/payment-gateway/razorpay-integration/Step_14.png" alt="steps_img">
+                            </figure>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>  
+              </div>
+            </div>
+            <div class="col-md-12 ml-2 mb-3">
+              <a class="btn btn-outline-primary" href="https://dashboard.razorpay.com/#/access/signup?coupon_code=YOURSTORE" target="blank">
+                <span class="outline-primary-txt">Create Razorpay Account</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- ## Razorpay Steps ## -->
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+        (click)="modal.dismiss('Cross click');">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">{{ (payForm.form_type=='add')? 'Add': 'Update' }}</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- DELETE MODAL -->
+<ng-template #deleteModal let-modal>
+  <div class="modal-body">
+    <p>
+      <strong>Are you sure you want to remove
+        <span class="txt-grdint-highlight">"{{deleteForm.name}}"</span> payment?</strong>
+    </p>
+    <div *ngIf="deleteForm.errorMsg">
+      <p class="text-danger">{{ deleteForm.errorMsg }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+      (click)="modal.dismiss('Cross click');">
+      <span class="black-outline-txt">No</span>
+    </button>
+    <button type="button" (click)="onDelete();" class="btn btn-wide orng-outline-btn">
+      <span class="orng-outline-txt">Yes</span>
+    </button>
+  </div>
+</ng-template>
+
+<!-- STATUS MODAL -->
+<ng-template #statusModal let-modal>
+  <div class="modal-body">
+    <p><strong>Are you sure you want to {{ (payForm.prev_status=='active')? 'Disable': 'Enable' }} the <span
+          class="txt-grdint-highlight">"{{payForm.name}}"</span> payment?</strong></p>
+    <div *ngIf="payForm.errorMsg">
+      <p class="text-danger">{{ payForm.errorMsg }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide black-outline-btn"
+      (click)="modal.dismiss('Cross click');">
+      <span class="black-outline-txt">No</span>
+    </button>
+    <button type="button" (click)="onUpdateStatus();" class="btn btn-wide btn-primary">Yes</button>
+  </div>
+</ng-template>
+
+<!-- INFO MODAL -->
+<button type="button" class="d-none" id="openInfoModal" (click)="modalService.open(infoModal, { size: 'md', centered: true});"></button>
+<ng-template #infoModal let-modal>
+  <div class="modal-body">
+    <h6>Default policies have been added to your website. Review and edit the policies under <b>Website > Policy</b></h6>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+      <span class="black-outline-txt">Close</span>
+    </button>
+    <button type="button" class="btn btn-wide orng-outline-btn" (click)="onAgree(); modal.dismiss('Cross click');">
+      <span class="orng-outline-txt">I Agree</span>
+    </button>
+  </div>
+</ng-template>

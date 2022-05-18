@@ -1,0 +1,123 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div class="apps-section" *ngIf="!pageLoader">
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-md-12">
+        <h1>Apps</h1>
+        <ul><li style="padding: 0px;">Make payment for your apps</li></ul>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="apps-cards-section mt-3">
+    <div *ngIf="list?.length" class="row">
+      <div *ngFor="let x of list;" class="col-md-12 d-flex">
+        <div class="card apps-card w-100 p-3 mb-4">
+          <span (click)="formData=x; openModal(confirmModal);" class="material-icons item-close absolute-item-close float-right" aria-hidden="true">close</span>
+          <div class="app-image">
+            <span *ngIf="!x.image_list.length" class="material-icons-outlined">widgets</span>
+            <img *ngIf="x.image_list.length" [src]="imgBaseUrl+x.image_list[0].image" alt="app-icons">
+          </div>
+          <div class="app-content">
+            <h5>{{x.name}}</h5>
+            <div class="app-description">
+              <p class="two-line-txt-ellipsis" [innerHTML]="x.description"></p>
+            </div>
+            <p>{{x.price | currency:commonService.store_currency?.country_code:'symbol':'1.0'}}</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 offset-md-6">
+        <!-- CGST -->
+        <div class="row" *ngIf="paymentData.cgst">
+          <div class="col-6 d-flex justify-content-end">
+            <p>CGST({{paymentData.cgst.percentage}}%)</p>
+          </div>
+          <div class="col-6 d-flex justify-content-end">
+            <p>{{paymentData.cgst.amount |
+              currency:commonService.store_currency?.country_code:'symbol':'1.0'}}</p>
+          </div>
+        </div>
+        <!-- SGST -->
+        <div class="row" *ngIf="paymentData.sgst">
+          <div class="col-6 d-flex justify-content-end">
+            <p>SGST({{paymentData.sgst.percentage}}%)</p>
+          </div>
+          <div class="col-6 d-flex justify-content-end">
+            <p>{{paymentData.sgst.amount |
+              currency:commonService.store_currency?.country_code:'symbol':'1.0'}}</p>
+          </div>
+        </div>
+        <!-- IGST -->
+        <div class="row" *ngIf="paymentData.igst">
+          <div class="col-6 d-flex justify-content-end">
+            <p>IGST({{paymentData.igst.percentage}}%)</p>
+          </div>
+          <div class="col-6 d-flex justify-content-end">
+            <p>{{paymentData.igst.amount |
+              currency:commonService.store_currency?.country_code:'symbol':'1.0'}}</p>
+          </div>
+        </div>
+        <!-- Payable Amount -->
+        <div class="row" *ngIf="paymentData.igst">
+          <div class="col-6 d-flex justify-content-end">
+            <p>Payable Amount:</p>
+          </div>
+          <div class="col-6 d-flex justify-content-end">
+            <p>{{paymentData.amount |
+              currency:commonService.store_currency?.country_code:'symbol':'1.0'}}</p>
+          </div>
+        </div>
+        <div class="row" *ngFor="let x of payment_types;">
+          <div class="col-6 offset-6">
+            <button class="pull-right btn btn-primary w-100" (click)="makePayment(x);">{{x.btn_name}}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!list?.length" class="row">
+      <div class="col-md-12 d-flex flex-column align-items-center justify-content-center no-rec-found-wrapper">
+        <img class="no-rec-found" src="assets/images/no_records_found.png" alt="no-records">
+        <p align="center">No data to display.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<ng-template #confirmModal let-modal>
+  <div class="modal-body">
+    <p><strong>Are you sure you want to uninstall the <span class="txt-grdint-highlight">"{{formData.name}}"</span> app?</strong></p>
+    <div *ngIf="formData.errorMsg">
+      <p class="text-danger">{{formData.errorMsg}}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('cancel')">
+      <span class="black-outline-txt">No</span>
+    </button>
+    <button type="button" class="btn btn-wide orng-outline-btn ladda-button m-1" [disabled]="formData.submit" [ladda]="formData.submit" (click)="onUninstall(formData);">
+      <span class="orng-outline-txt">Yes</span>
+    </button>
+  </div>
+</ng-template>
+
+<!-- razorpay form -->
+<form #razorpayForm method="POST" action="{{environment.razorpay_payment_url}}">
+  <input type="hidden" name="key_id" value="{{razorpayOptions.key}}">
+  <input type="hidden" name="order_id" value="{{razorpayOptions.razorpay_order_id}}">
+  <input type="hidden" name="name" value="{{razorpayOptions.store_name}}">
+  <input type="hidden" name="description" value="{{razorpayOptions.description}}">
+  <input type="hidden" name="prefill[name]" value="{{razorpayOptions.customer_name}}">
+  <input type="hidden" name="prefill[email]" value="{{razorpayOptions.customer_email}}">
+  <input type="hidden" name="prefill[contact]" value="{{razorpayOptions.customer_mobile}}">
+  <input type="hidden" name="notes[my_order_id]" value="{{razorpayOptions.my_order_id}}">
+  <input type="hidden" name="notes[my_order_type]" value="{{razorpayOptions.my_order_type}}">
+  <input type="hidden" name="callback_url" value="{{environment.razorpay_redirect_url}}">
+  <input type="hidden" name="cancel_url" value="{{environment.base_url+router.url}}">
+</form>

@@ -1,0 +1,292 @@
+<div class="breadcrumb with-back-btn">
+  <div class="row">
+    <div class="col-md-12">
+      <h1>Dashboard</h1>
+    </div>
+  </div>
+</div>
+<div class="separator-breadcrumb border-top"></div>
+
+<div class="row mt-4">
+  <div class="col-md-12">
+    <div class="card p-3 mb-4">
+      <h5 class="card-title">Filter</h5>
+      <div class="top-filter-sec">
+      <div class="row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <input type="text" placeholder="Select From Date" class="form-control" name="from_date" autocomplete="off" [(ngModel)]="filterForm.from_date"
+              (ngModelChange)="filterForm.type='custom'; getDashboardData();" bsDatepicker [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }"
+            />
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <input type="text" placeholder="Select To Date" class="form-control" name="to_date" autocomplete="off" [(ngModel)]="filterForm.to_date"
+              (ngModelChange)="filterForm.type='custom'; getDashboardData();" bsDatepicker [minDate]="filterForm.from_date"
+              [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }" />
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <select name="type" class="form-control select-arrow" [(ngModel)]="filterForm.type" (change)="filterForm.type!='custom' ? onFilterChange(filterForm.type): ''">
+              <option value="today">Today</option>
+              <option value="yesterday">Yesterday</option>
+              <option value="last_7_days">Last 7 days</option>
+              <option value="last_30_days">Last 30 days</option>
+              <option value="current_month">Current month</option>
+              <option value="last_month">Last month</option>
+              <option value="current_year">Current year</option>
+              <option value="last_year">Last year</option>
+              <option value="current_fin_year">Current financial year</option>
+              <option value="last_fin_year">Last financial year</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6 col-md-12">
+    <!-- CARD ICON -->
+    <div class="row m-0">
+      <div class="col-lg-4 col-md-6 col-sm-6 d-flex">
+        <div class="card card-icon w-100 mb-4">
+          <div class="card-body text-center">
+            <i class="material-icons">cloud_upload</i>
+            <p class="text-muted text-gradient mt-2 mb-2">New Signups</p>
+            <p class="text-primary text-18 line-height-1 m-0">
+              <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+              <span *ngIf="!preLoader">{{card_details?.signup_list?.length}}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6 col-sm-6 d-flex">
+        <div class="card card-icon w-100 mb-4">
+          <div class="card-body text-center">
+            <i class="material-icons">person_pin_circle</i>
+            <p class="text-muted text-gradient mt-2 mb-2">Activated Stores</p>
+            <p class="text-primary text-18 line-height-1 m-0">
+              <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+              <span *ngIf="!preLoader">{{card_details?.activated_list?.length}}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6 col-sm-6 d-flex">
+        <div class="card card-icon w-100 mb-4">
+          <div class="card-body text-center">
+            <i class="material-icons">monetization_on</i>
+            <p class="text-muted text-gradient mt-2 mb-2">Plan Selected</p>
+            <p class="text-primary text-18 line-height-1 m-0">
+              <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+              <span *ngIf="!preLoader">{{card_details?.plan_selected}}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6 col-sm-6 d-flex">
+        <div class="card card-icon w-100 mb-4">
+          <div class="card-body text-center">
+            <i class="material-icons">settings_backup_restore</i>
+            <p class="text-muted text-gradient mt-2 mb-2">Revenue</p>
+            <p class="line-height-1 text-title text-18 mt-2 mb-0">
+              <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+              <span *ngIf="!preLoader">{{ card_details?.revenue | number : '1.0-0' }}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6 col-sm-6 d-flex">
+        <div class="card card-icon w-100 mb-4">
+          <div class="card-body text-center">
+            <i class="material-icons">all_out</i>
+            <p class="text-muted text-gradient mt-2 mb-2">Transaction</p>
+            <p class="line-height-1 text-title text-18 mt-2 mb-0">
+              <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+              <span *ngIf="!preLoader">0</span>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6 col-sm-6 d-flex">
+        <div class="card card-icon w-100 mb-4">
+          <div class="card-body text-center">
+            <i class="material-icons">remove_shopping_cart</i>
+            <p class="text-muted text-gradient mt-2 mb-2">Product Uploaded</p>
+            <p class="line-height-1 text-title text-18 mt-2 mb-0">
+              <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+              <span *ngIf="!preLoader">{{card_details?.products}}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6 col-sm-6 d-flex"></div>
+      <div class="col-lg-4 col-md-6 col-sm-6 d-flex">
+        <div class="card card-icon w-100 mb-4">
+          <div class="card-body text-center">
+            <i class="material-icons">remove_shopping_cart</i>
+            <p class="text-muted text-gradient mt-2 mb-2">Total Orders</p>
+            <p class="line-height-1 text-title text-18 mt-2 mb-0">
+              <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+              <span *ngIf="!preLoader">{{card_details?.order_list?.length}}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6 col-md-12 d-flex">
+    <div class="card w-100 mb-4">
+      <div class="card-body">
+        <h5 class="card-title">Signup Volume</h5>
+        <div *ngIf="preLoader" class="d-flex justify-content-center">
+          <i class="fa fa-circle-o-notch fa-spin load-spin"></i>
+        </div>
+        <div *ngIf="!preLoader && card_details?.signup_list?.length" echarts [options]="chartLine" style="height: 300px"></div>
+        <div class="d-flex align-items-center justify-content-center" *ngIf="!preLoader && !card_details?.signup_list?.length">
+          <p>No signups found</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6 col-md-12 d-flex">
+    <div class="card w-100 mb-4">
+      <div class="card-body">
+        <div class="card-title">Top Categories</div>
+        <div class="row">
+          <div class="col-md-12">
+            <table class="table">
+              <thead class="thead-light">
+                <tr>
+                  <th scope="col">Name</th>
+                  <th scope="col">Stores</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let x of commonService.store_categories | paginate: { id: 'pagination1', itemsPerPage: 6, currentPage: page };">
+                  <td>{{x.display}}</td>
+                  <td class="text-success font-weight-bold">{{x.count}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- PAGINATION CONTROL -->
+        <div class="row">
+          <div class="col-md-12 mt-3">
+            <pagination-controls id="pagination1" (pageChange)="page=$event;" autoHide="true" responsive="true" maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6 col-md-12 d-flex">
+    <div class="card w-100 mb-4">
+      <div class="card-body">
+        <div class="card-title">Plans</div>
+        <div class="row">
+          <div class="col-md-12">
+            <table class="table">
+              <thead class="thead-light">
+                <tr>
+                  <th scope="col">Name</th>
+                  <th scope="col">Stores</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let x of card_details.package_list;">
+                  <td>{{x.name}}</td>
+                  <td class="text-success font-weight-bold">{{x.count}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6 col-md-12 d-flex">
+    <div class="card w-100 mb-4">
+      <div class="card-body">
+        <div class="card-title">Top Store Orders</div>
+        <div class="row">
+          <div class="col-md-12">
+            <table class="table">
+              <thead class="thead-light">
+                <tr>
+                  <th scope="col">Name</th>
+                  <th scope="col">Orders</th>
+                </tr>
+              </thead>
+              <tbody *ngIf="card_details.store_orders?.length">
+                <tr *ngFor="let x of card_details.store_orders | orderDesc:'orders' | paginate: { id: 'pagination2', itemsPerPage: 5, currentPage: orderPage };">
+                  <td>{{x.name}}</td>
+                  <td class="text-success font-weight-bold">{{x.orders}}</td>
+                </tr>
+              </tbody>
+              <tbody *ngIf="!card_details.store_orders?.length">
+                <tr>
+                  <td colspan="2"><p align="center" class="pt-5">No stores found</p></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- PAGINATION CONTROL -->
+        <div class="row">
+          <div class="col-md-12 mt-3">
+            <pagination-controls id="pagination2" (pageChange)="orderPage=$event;" autoHide="true" responsive="true" maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6 col-md-12 d-flex">
+    <div class="card w-100 mb-4">
+      <div class="card-body">
+        <div class="card-title">Top Store Revenue</div>
+        <div class="row">
+          <div class="col-md-12">
+            <table class="table">
+              <thead class="thead-light">
+                <tr>
+                  <th scope="col">Name</th>
+                  <th scope="col">Revenue</th>
+                </tr>
+              </thead>
+              <tbody *ngIf="card_details.store_revenues?.length">
+                <tr *ngFor="let x of card_details.store_revenues | orderDesc:'revenue' | paginate: { id: 'pagination3', itemsPerPage: 5, currentPage: revenuePage };">
+                  <td>{{x.name}}</td>
+                  <td class="text-success font-weight-bold">{{x.revenue | currency:x.currency?.country_code:'symbol':'1.0'}}</td>
+                </tr>
+              </tbody>
+              <tbody *ngIf="!card_details.store_revenues?.length">
+                <tr>
+                  <td colspan="2"><p align="center" class="pt-5">No stores found</p></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- PAGINATION CONTROL -->
+        <div class="row">
+          <div class="col-md-12 mt-3">
+            <pagination-controls id="pagination3" (pageChange)="revenuePage=$event;" autoHide="true" responsive="true" maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

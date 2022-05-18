@@ -1,0 +1,589 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-md-12 p-0">
+        <div class="row">
+          <div class="col-md-8 col-md-8 d-flex justify-content-end align-items-start flex-column">
+            <h1>{{formType=='add'? 'Create' : 'Update'}} Offer</h1>
+            <ul>
+              <li>{{formType=='add'? 'Add' : 'Update'}} your offer details</li>
+            </ul>
+          </div>
+          <div *ngIf="formType!='add'" class="col-md-4 mt-2 d-flex align-items-end justify-content-end" align="right">
+            <b class="primary-color">Redeemed Count: {{offerForm.redeemed_count}}</b>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <form autocomplete="off" (ngSubmit)="onSubmit();" ngNativeValidate>
+    <div class="row">
+      <label class="ml-3 mb-4 checkbox checkbox-primary">
+        <input class="form-check-input" type="checkbox" name="enable_status" [(ngModel)]="offerForm.enable_status" #enable_status="ngModel">
+        <span>Enable</span>
+        <span class="checkmark"></span>
+      </label>
+    </div>
+
+    <div class="row">
+      <!-- code type -->
+      <ng-container *ngIf="commonService.ys_features.indexOf('basic_discount')==-1">
+        <div class="col-md-12 col-lg-6 d-flex">
+          <div class="card w-100 p-3 mb-3">
+            <div class="ml-3 mt-3 mb-2">
+              <label class="radio radio-primary">
+                <input type="radio" name="code_type" value="discount" [(ngModel)]="offerForm.code_type" />
+                <span><b>Manual discount</b><br>Customers will get a discount if they enter a code at checkout.</span>
+                <span class="checkmark"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12 col-lg-6 d-flex">
+          <div class="card w-100 p-3 mb-3">
+            <div class="ml-3 mt-3 mb-2">
+              <label class="radio radio-primary">
+                <input type="radio" name="code_type" value="auto_discount" [(ngModel)]="offerForm.code_type" />
+                <span><b>Automatic discount</b><br>Customers will get a discount automatically on checkout.</span>
+                <span class="checkmark"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- discount code -->
+      <div class="col-md-12 col-lg-6 d-flex">
+        <div class="card w-100 p-3 mb-3">
+          <div>
+            <label>Discount Code</label>
+            <input type="text" name="code" class="form-control" [(ngModel)]="offerForm.code" #code="ngModel" (keydown.space)="$event.preventDefault()"
+              appUppercase required />
+            <label>Customers will get a discount with these code.</label>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <button type="button" class="btn btn-primary w-md-100 pull-right" (click)="offerForm.code = getRandomCode();">Generate Code</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- discount type -->
+      <div class="col-md-12 col-lg-6 d-flex">
+        <div class="card w-100 p-3 mb-3">
+          <p>
+            <b>Types</b>
+          </p>
+          <div class="ml-3">
+            <label class="radio radio-primary">
+              <input type="radio" name="discount_type" value="percentage" (change)="offerForm.restrict_discount=false; offerForm.discount_upto=0; offerForm.discount_value='';"
+                [(ngModel)]="offerForm.discount_type" />
+              <span>Discount by percentage</span>
+              <span class="checkmark"></span>
+            </label>
+            <label class="radio radio-primary">
+              <input type="radio" name="discount_type" value="amount" (change)="offerForm.restrict_discount=false; offerForm.discount_upto=0; offerForm.discount_value='';"
+                [(ngModel)]="offerForm.discount_type" />
+              <span>Discount by amount</span>
+              <span class="checkmark"></span>
+            </label>
+            <label *ngIf="commonService.ys_features.indexOf('basic_discount')==-1" class="radio radio-primary">
+              <input type="radio" name="discount_type" value="buy_x_get_y" (change)="offerForm.buy_properties={type: 'quantity'}; offerForm.get_properties={discount_type: 'quantity'}; offerForm.restrict_discount=false; offerForm.discount_upto=0; offerForm.discount_value='';"
+                [(ngModel)]="offerForm.discount_type" />
+              <span>Buy X Get Y</span>
+              <span class="checkmark"></span>
+            </label>
+            <div *ngIf="offerForm.discount_type!='buy_x_get_y'" class="form-group mb-3">
+              <label>Discount Value</label>
+              <input type="text" name="discount_value" class="form-control" [(ngModel)]="offerForm.discount_value" #discount_value="ngModel"
+                appNumberOnly required />
+              <label class="delivery-days" [innerHTML]="offerForm.discount_type=='percentage'? '%': commonService.store_currency.html_code"></label>
+            </div>
+            <ng-container *ngIf="offerForm.discount_type=='percentage'">
+              <div class="form-group mb-3 mt-3">
+                <label class="checkbox checkbox-primary">
+                  <input class="form-check-input" type="checkbox" name="restrict_discount" (change)="offerForm.discount_upto=0;" [(ngModel)]="offerForm.restrict_discount"
+                    #restrict_discount="ngModel">
+                  <span>Discount Upto</span>
+                  <span class="checkmark"></span>
+                </label>
+              </div>
+              <div *ngIf="offerForm.restrict_discount" class="form-group mb-3 mt-2">
+                <input type="text" name="discount_upto" class="form-control" [(ngModel)]="offerForm.discount_upto" #discount_upto="ngModel"
+                  appNumberOnly required />
+                <label class="delivery-days" style="top: 9px;" [innerHTML]="commonService.store_currency.html_code"></label>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+
+      <!-- Buy x Get Y -->
+      <ng-container *ngIf="offerForm.discount_type=='buy_x_get_y'">
+        <div *ngIf="offerForm.buy_properties" class="col-md-12 col-lg-6 d-flex">
+          <div class="card w-100 p-3 mb-3">
+            <p><b>Customer buys</b></p>
+
+            <div class="ml-3">
+              <label class="radio radio-primary">
+                <input type="radio" name="buy_type" value="quantity" [(ngModel)]="offerForm.buy_properties.type" />
+                <span>Minimum quantity of items</span>
+                <span class="checkmark"></span>
+              </label>
+              <label class="radio radio-primary">
+                <input type="radio" name="buy_type" value="amount" [(ngModel)]="offerForm.buy_properties.type" />
+                <span>Minimum purchase amount</span>
+                <span class="checkmark"></span>
+              </label>
+            </div>
+
+            <div class="row ml-3">
+              <div class="col-md-4 form-group pl-0 mb-3">
+                <label>{{ (offerForm.buy_properties.type=='quantity')? 'Quantity': 'Amount' }}</label>
+                <input type="text" name="buy_value" class="form-control" [(ngModel)]="offerForm.buy_properties.value" appNumberOnly required />
+              </div>
+              <div class="col-md-8 form-group pl-0 mb-3">
+                <label>Any items from</label>
+                <select name="buy_apply_to" class="form-control select-arrow" (change)="offerForm.buy_properties.category_list=[]; offerForm.buy_properties.product_list=[];" [(ngModel)]="offerForm.buy_properties.apply_to" required>
+                  <option value="category">Specific Catalog</option>
+                  <option value="product">Specific Products</option>
+                  <option value="all_product">All Products</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- category -->
+            <div *ngIf="offerForm.buy_properties.apply_to=='category'" class="form-group mb-3 ml-3">
+              <button type="button" class="btn btn-wide btn-primary" (click)="offerForm.bx_gy_type='buy'; page=1; openCatListModal(categoryListModal);">Browse Catalogs</button>
+            </div>
+
+            <ng-container *ngIf="offerForm.buy_properties.category_list?.length">
+              <div class="card card-in-card p-3 mb-3 ml-3" *ngFor="let x of offerForm.buy_properties.category_list; let i=index;">
+                <ng-container>
+                  <span (click)="offerForm.buy_properties.category_list.splice(i, 1);" class="material-icons item-close absolute-item-close float-right "
+                    aria-hidden="true">close</span>
+                </ng-container>
+                <p class="m-0">{{x.name}}</p>
+              </div>
+            </ng-container>
+
+            <!-- product -->
+            <div *ngIf="offerForm.buy_properties.apply_to=='product'" class="form-group mb-3 ml-3">
+              <button type="button" class="btn btn-wide btn-primary" (click)="offerForm.bx_gy_type='buy'; page=1; category_id='all'; getProductList('all'); openProdListModal(productListModal);">Browse Products
+              </button>
+            </div>
+
+            <div class="col-md-12" *ngIf="offerForm.buy_properties.product_list?.length">
+              <div class="row list-horizontal">
+                <div class="col-md-12 list-item" *ngFor="let x of offerForm.buy_properties.product_list; let i=index;">
+                  <div class="card card-in-card mb-3 d-flex flex-row">
+                    <ng-container>
+                      <span (click)="offerForm.buy_properties.product_list.splice(i, 1);" class="material-icons item-close absolute-item-close float-right " aria-hidden="true">close</span>
+                    </ng-container>
+                    <div class="list-thumb d-flex mtb-20">
+                      <img [src]="imgBaseUrl+x.image" alt="">
+                    </div>
+                    <div class="flex-grow-1 pl-2 d-flex mtb-20">
+                      <div class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                        <p class="m-0">{{x.name}}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="offerForm.get_properties" class="col-md-12 col-lg-6 d-flex">
+          <div class="card w-100 p-3 mb-3">
+            <p><b>Customer gets</b></p>
+            <p class="ml-3">Customer must add the quantity of items specified below to their cart.</p>
+
+            <div class="row ml-3">
+              <div class="col-md-4 form-group pl-0 mb-3">
+                <label>Quantity</label>
+                <input type="text" name="get_quantity" class="form-control" [(ngModel)]="offerForm.get_properties.quantity" appNumberOnly required />
+              </div>
+              <div class="col-md-8 form-group pl-0 mb-3">
+                <label>Any items from</label>
+                <select name="get_apply_to" class="form-control select-arrow" (change)="offerForm.get_properties.category_list=[]; offerForm.get_properties.product_list=[];" [(ngModel)]="offerForm.get_properties.apply_to" required>
+                  <option value="category">Specific Catalog</option>
+                  <option value="product">Specific Products</option>
+                  <option value="all_product">All Products</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- category -->
+            <div *ngIf="offerForm.get_properties.apply_to=='category'" class="form-group mb-3 ml-3">
+              <button type="button" class="btn btn-wide btn-primary" (click)="offerForm.bx_gy_type='get'; page=1; openCatListModal(categoryListModal);">Browse Catalogs</button>
+            </div>
+
+            <ng-container *ngIf="offerForm.get_properties.category_list?.length">
+              <div class="card card-in-card p-3 mb-3 ml-3" *ngFor="let x of offerForm.get_properties.category_list; let i=index;">
+                <ng-container>
+                  <span (click)="offerForm.get_properties.category_list.splice(i, 1);" class="material-icons item-close absolute-item-close float-right "
+                    aria-hidden="true">close</span>
+                </ng-container>
+                <p class="m-0">{{x.name}}</p>
+              </div>
+            </ng-container>
+
+            <!-- product -->
+            <div *ngIf="offerForm.get_properties.apply_to=='product'" class="form-group mb-3 ml-3">
+              <button type="button" class="btn btn-wide btn-primary" (click)="offerForm.bx_gy_type='get'; page=1; category_id='all'; getProductList('all'); openProdListModal(productListModal);">Browse Products
+              </button>
+            </div>
+
+            <div class="col-md-12" *ngIf="offerForm.get_properties.product_list?.length">
+              <div class="row list-horizontal">
+                <div class="col-md-12 list-item" *ngFor="let x of offerForm.get_properties.product_list; let i=index;">
+                  <div class="card card-in-card mb-3 d-flex flex-row">
+                    <ng-container>
+                      <span (click)="offerForm.get_properties.product_list.splice(i, 1);" class="material-icons item-close absolute-item-close float-right " aria-hidden="true">close</span>
+                    </ng-container>
+                    <div class="list-thumb d-flex mtb-20">
+                      <img [src]="imgBaseUrl+x.image" alt="">
+                    </div>
+                    <div class="flex-grow-1 pl-2 d-flex mtb-20">
+                      <div class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                        <p class="m-0">{{x.name}}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <p class="ml-3"><b>At a discounted value</b></p>
+
+            <div class="ml-3">
+              <label class="radio radio-primary">
+                <input type="radio" name="get_discount_type" value="quantity" [(ngModel)]="offerForm.get_properties.discount_type" />
+                <span>Free</span>
+                <span class="checkmark"></span>
+              </label>
+              <label class="radio radio-primary">
+                <input type="radio" name="get_discount_type" value="percentage" [(ngModel)]="offerForm.get_properties.discount_type" />
+                <span>Percentage</span>
+                <span class="checkmark"></span>
+              </label>
+              <input *ngIf="offerForm.get_properties.discount_type=='percentage'" type="text" name="get_discount_value" class="form-control"
+              [(ngModel)]="offerForm.get_properties.discount_value" appNumberOnly required />
+            </div>
+
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="offerForm.discount_type!='buy_x_get_y'">
+        <!-- Applies To -->
+        <div class="col-md-12 col-lg-6 d-flex">
+          <div class="card w-100 p-3 mb-3">
+            <p>
+              <b>Applies To</b>
+            </p>
+
+            <div class="ml-3">
+              <label class="radio radio-primary">
+                <input type="radio" name="apply_to" value="order" (change)="offerForm.category_list=[]; offerForm.product_list=[];" [(ngModel)]="offerForm.apply_to" />
+                <span>Entire Order</span>
+                <span class="checkmark"></span>
+              </label>
+              <ng-container *ngIf="commonService.ys_features.indexOf('basic_discount')==-1">
+                <label class="radio radio-primary">
+                  <input type="radio" name="apply_to" value="shipping" (change)="offerForm.category_list=[]; offerForm.product_list=[];" [(ngModel)]="offerForm.apply_to" />
+                  <span>Shipping</span>
+                  <span class="checkmark"></span>
+                </label>
+                <label class="radio radio-primary">
+                  <input type="radio" name="apply_to" value="category" (change)="offerForm.category_list=[]; offerForm.product_list=[];" [(ngModel)]="offerForm.apply_to" />
+                  <span>Specific Catalogs</span>
+                  <span class="checkmark"></span>
+                </label>
+                <label class="radio radio-primary">
+                  <input type="radio" name="apply_to" value="product" (change)="offerForm.category_list=[]; offerForm.product_list=[];" [(ngModel)]="offerForm.apply_to" />
+                  <span>Specific Products</span>
+                  <span class="checkmark"></span>
+                </label>
+              </ng-container>
+            </div>
+
+            <!-- shipping -->
+            <div *ngIf="offerForm.apply_to=='shipping'" class="form-group mb-3">
+              <label>Shipping Type</label>
+              <select name="shipping_type" class="form-control" [(ngModel)]="offerForm.shipping_type" #shipping_type="ngModel" required>
+                <option value="domestic">Domestic</option>
+                <option value="international">International</option>
+                <option value="all">Both</option>
+              </select>
+            </div>
+
+            <!-- category -->
+            <div *ngIf="offerForm.apply_to=='category'" class="form-group mb-3 ml-3">
+              <button type="button" class="btn btn-wide btn-primary" (click)="page=1; openCatListModal(categoryListModal);">Browse Catalogs</button>
+            </div>
+
+            <ng-container *ngIf="offerForm.category_list?.length">
+              <div class="card card-in-card p-3 mb-3 ml-3" *ngFor="let x of offerForm.category_list; let i=index;">
+                <ng-container>
+                  <span (click)="offerForm.category_list.splice(i, 1);" class="material-icons item-close absolute-item-close float-right "
+                    aria-hidden="true">close</span>
+                </ng-container>
+                <p class="m-0">{{x.name}}</p>
+              </div>
+            </ng-container>
+
+            <!-- product -->
+            <div *ngIf="offerForm.apply_to=='product'" class="form-group mb-3 ml-3">
+              <button type="button" class="btn btn-wide btn-primary" (click)="page=1; category_id='all'; getProductList('all'); openProdListModal(productListModal);">Browse Products
+              </button>
+            </div>
+
+            <div class="col-md-12" *ngIf="offerForm.product_list?.length">
+              <div class="row list-horizontal">
+                <div class="col-md-12 list-item" *ngFor="let x of offerForm.product_list; let i=index;">
+                  <div class="card card-in-card mb-3 d-flex flex-row">
+                    <ng-container>
+                      <span (click)="offerForm.product_list.splice(i, 1);" class="material-icons item-close absolute-item-close float-right " aria-hidden="true">close</span>
+                    </ng-container>
+                    <div class="list-thumb d-flex mtb-20">
+                      <img [src]="imgBaseUrl+x.image" alt="">
+                    </div>
+                    <div class="flex-grow-1 pl-2 d-flex mtb-20">
+                      <div class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                        <p class="m-0">{{x.name}}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Minimum Requirements -->
+        <div class="col-md-12 col-lg-6 d-flex">
+          <div class="card w-100 p-3 mb-3">
+            <p>
+              <b>Minimum Requirements</b>
+            </p>
+            <div class="row ml-3">
+              <div class="col-md-12 form-group pl-0 mb-3">
+                <label>Minimum Purchase Amount (<span [innerHTML]="commonService.store_currency.html_code"></span>)</label>
+                <input type="text" name="min_order_amt" class="form-control" [(ngModel)]="offerForm.min_order_amt" #min_order_amt="ngModel"
+                  appNumberOnly required />
+              </div>
+              <div class="col-md-12 form-group pl-0 mb-3">
+                <label>Minimum quantity of items</label>
+                <input type="text" name="min_order_qty" class="form-control" [(ngModel)]="offerForm.min_order_qty" #min_order_qty="ngModel"
+                  appNumberOnly required />
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- usage limits -->
+      <div class="col-md-12 col-lg-6 d-flex">
+        <div class="card w-100 p-3 mb-3">
+          <p>
+            <b>Usage Limits</b>
+          </p>
+          <div class="ml-3">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="onetime_usage" [(ngModel)]="offerForm.onetime_usage" #onetime_usage="ngModel">
+              <span>Limit to one use per customer</span>
+              <span class="checkmark"></span>
+            </label>
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="restrict_usage" (change)="offerForm.usage_limit=0;" [(ngModel)]="offerForm.restrict_usage" #restrict_usage="ngModel">
+              <span>Limit number of times can be used</span>
+              <span class="checkmark"></span>
+            </label>
+            <div *ngIf="offerForm.restrict_usage" class="mb-3">
+              <input type="text" name="usage_limit" class="form-control" [(ngModel)]="offerForm.usage_limit" #usage_limit="ngModel" appNumberOnly required />
+            </div>
+            <ng-container *ngIf="offerForm.discount_type=='buy_x_get_y'">
+              <label class="checkbox checkbox-primary">
+                <input class="form-check-input" type="checkbox" name="buy_x_get_y_usage_status" (change)="offerForm.buy_x_get_y_usage_limit=0;" [(ngModel)]="offerForm.buy_x_get_y_usage_status">
+                <span>Set a maximum number of uses per order</span>
+                <span class="checkmark"></span>
+              </label>
+              <div *ngIf="offerForm.buy_x_get_y_usage_status">
+                <input type="text" name="buy_x_get_y_usage_limit" class="form-control" [(ngModel)]="offerForm.buy_x_get_y_usage_limit" appNumberOnly required />
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+
+      <!-- active dates -->
+      <div class="col-md-12 col-lg-6 d-flex">
+        <div class="card w-100 p-3 mb-3">
+          <p>
+            <b>Active Dates</b>
+          </p>
+
+          <div class="row ml-3">
+            <div class="col-md-6 form-group pl-0 mb-3">
+              <label>Start Date</label>
+              <input type="text" class="form-control" name="start_date" autocomplete="off" [(ngModel)]="offerForm.start_date" bsDatepicker
+                [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }" required />
+            </div>
+            <div class="col-md-6 form-group pl-0 mb-3">
+              <label>Start Time</label>
+              <input type="text" name="start_time" class="form-control" [(ngModel)]='offerForm.start_time' (click)="timePicker('start_time');"
+                required />
+            </div>
+            <div class="col-md-12 form-group pl-0 mb-3">
+              <label class="checkbox checkbox-primary">
+                <input class="form-check-input" type="checkbox" name="enable_end_date" [(ngModel)]="offerForm.enable_end_date" #enable_end_date="ngModel">
+                <span>Set End Date</span>
+                <span class="checkmark"></span>
+              </label>
+            </div>
+            <ng-container *ngIf="offerForm.enable_end_date">
+              <div class="col-md-6 form-group pl-0 mb-3">
+                <label>End Date</label>
+                <input type="text" class="form-control" name="end_date" autocomplete="off" [(ngModel)]="offerForm.end_date" bsDatepicker
+                  [minDate]="offerForm.start_date" [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }" required
+                />
+              </div>
+              <div class="col-md-6 form-group pl-0 mb-3">
+                <label>End Time</label>
+                <input type="text" name="end_time" class="form-control" [(ngModel)]="offerForm.end_time" (click)="timePicker('end_time');"
+                  required />
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="separator-breadcrumb border-top mt-5"></div>
+    <div class="row">
+      <div class="col-md-12 mt-3 mb-3" *ngIf="offerForm.errorMsg">
+        <p class="text-danger" align="center">{{ offerForm.errorMsg }}</p>
+      </div>
+      <div align="center" class="col-md-12 z-i-0">
+        <button type="button" routerLink="/features/coupon-codes" class="btn btn-wide black-outline-btn">
+         <span class="black-outline-txt">Cancel</span>
+        </button>&nbsp; &nbsp; &nbsp;
+        <button type="submit" class="btn btn-wide btn-primary">{{formType=='add'? 'Add' : 'Update'}}</button>
+      </div>
+    </div>
+
+  </form>
+
+</div>
+
+<!-- CATEGORY LIST MODAL -->
+<ng-template #categoryListModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Add Catalogs</h4>
+  </div>
+  <div class="modal-body scroll-modal slim-scroll">
+    <div class="form-group">
+      <div class="row">
+        <div class="form-group mb-3 col-md-12">
+          <input type="text" name="search_bar" placeholder="Search" class="form-control" [(ngModel)]="search_bar" />
+        </div>
+      </div>
+      <div class="row" *ngFor="let x of commonService.catalog_list | fieldSearch:'name':search_bar | paginate: { itemsPerPage: pageSize, currentPage: page };">
+        <div class="form-group mb-3 col-md-12">
+          <label class="checkbox checkbox-primary">
+            <input type="checkbox" [(ngModel)]="x.checked">
+            <span>{{ x.name }}</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+      <!-- PAGINATION CONTROL -->
+      <div class="row">
+        <div class="col-md-12 mt-3">
+          <pagination-controls (pageChange)="page=$event;" autoHide="true" responsive="true" maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+     <span class="black-outline-txt">Cancel</span>
+    </button>
+    <button type="button" (click)="onSubmitCategory();" class="btn btn-wide btn-primary">Add</button>
+  </div>
+</ng-template>
+
+<!-- PRODUCT LIST MODAL -->
+<ng-template #productListModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Add Products</h4>
+  </div>
+  <div class="modal-body scroll-modal slim-scroll">
+    <div class="form-group">
+      <div class="row">
+        <div class="form-group mb-3 col-md-6">
+          <select name="category_id" class="form-control select-arrow" [(ngModel)]="category_id" (change)="getProductList(category_id);">
+            <option value="all">All Catalogs</option>
+            <option [ngValue]="x._id" *ngFor="let x of commonService.catalog_list;">{{x.name}}</option>
+          </select>
+        </div>
+        <div class="form-group mb-3 col-md-6">
+          <input type="text" name="search_bar" placeholder="Search" class="form-control" [(ngModel)]="search_bar" />
+        </div>
+      </div>
+
+      <div *ngIf="productListLoader" class="row">
+        <app-spinner></app-spinner>
+      </div>
+
+      <div *ngIf="!productListLoader" class="row list-horizontal">
+        <div *ngFor="let x of productList | fieldSearch:'name':search_bar | paginate: { itemsPerPage: pageSize, currentPage: page };" class="list-item col-md-12">
+
+          <div class="card o-hidden mb-4 d-flex flex-row">
+            <div class="list-thumb d-flex mtb-20">
+              <img [src]="imgBaseUrl+x.image_list[0].image" alt="">
+            </div>
+            <div class="flex-grow-1 pl-2 d-flex mtb-20">
+              <div class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                <p class="m-0">{{x.name}}</p>
+                <p *ngIf="x.stock>0" class="m-0 text-muted text-small w-15 w-sm-100">{{x.stock}} in Stock</p>
+                <p *ngIf="x.stock==0" class="m-0 text-muted text-small w-15 w-sm-100">Out of Stock</p>
+                <p class="m-0 text-muted text-small w-15 w-sm-100">
+                  {{x?.discounted_price | currency:commonService.store_currency?.country_code}}</p>
+              </div>
+            </div>
+            <div class="align-self-center pl-3 pb-2 pr-3 item-select">
+              <label class="checkbox checkbox-primary">
+                <input type="checkbox" [(ngModel)]="x.checked">
+                <span></span>
+                <span class="checkmark"></span>
+              </label>
+            </div>
+          </div>
+
+        </div>
+        <!-- PAGINATION CONTROL -->
+        <div class="col-md-12 mt-3">
+          <pagination-controls (pageChange)="page=$event;" autoHide="true" responsive="true" maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+     <span class="black-outline-txt">Cancel</span>
+    </button>
+    <button type="button" (click)="onSubmitProduct();" class="btn btn-wide btn-primary">Add</button>
+  </div>
+</ng-template>

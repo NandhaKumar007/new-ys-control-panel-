@@ -1,0 +1,50 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader" class="card o-hidden" [@animate]="{value:'*',params:{y:'120px',opacity:'0',delay:'100ms', duration: '400ms'}}">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="p-4">
+        <div class="auth-logo text-center mb-4">
+          <img src="assets/images/yourstore_logo.svg" alt="">
+        </div>
+        <h1 class="mb-3 text-18" align="center">Password Recovery</h1>
+        <form *ngIf="recoveryStatus" autocomplete="off" (ngSubmit)="onPwdUpdate();" ngNativeValidate>
+          <div class="form-group">
+            <label>New Password</label>
+            <input [type]="pwdForm.input_txt? 'text': 'password'" name="new_pwd" class="form-control form-control-rounded" [(ngModel)]="pwdForm.new_pwd" #new_pwd="ngModel"
+            pattern=".{6,}" title="Six or more characters" required />
+            <i class="material-icons visibility_icon" *ngIf="!pwdForm.input_txt" (click)="pwdForm.input_txt = !pwdForm.input_txt" aria-hidden="true">visibility</i>
+            <i class="material-icons visibility_icon" *ngIf="pwdForm.input_txt" (click)="pwdForm.input_txt = !pwdForm.input_txt" aria-hidden="true">visibility_off</i>
+          </div>
+          <div class="form-group">
+            <label>Confirm New Password</label>
+            <input type="password" name="confirm_pwd" class="form-control form-control-rounded" [(ngModel)]="pwdForm.confirm_pwd" #confirm_pwd="ngModel" required />
+            <i *ngIf="pwdForm.confirm_pwd && pwdForm.new_pwd==pwdForm.confirm_pwd" class="material-icons visibility_icon" aria-hidden="true">check_circle_outline</i>
+          </div>
+          <p *ngIf="pwdForm.confirm_pwd && pwdForm.new_pwd!=pwdForm.confirm_pwd" class="text-danger">Passwords don't match.</p>
+          <div class="row">
+            <div class="col-md-12 d-flex align-items-center">
+              <div class="forgot-password-link mt-3 mb-3">
+                <a class="text-muted cursor" routerLink="/session/signin">Back to Sign In</a>
+              </div>
+            </div>
+            <div class="col-md-12">
+              <btn-loading btnClass="btn-primary btn-rounded btn-block" [loadingText]="loadingText" [loading]="loading">
+                Reset Password
+              </btn-loading>
+            </div>
+          </div>
+        </form>
+
+        <div *ngIf="!recoveryStatus" class="row">
+          <div align="center" class="col-md-12" style="margin-top: 30px;">
+            <img src="assets/images/link_expired.png" class="img-responsive" />
+            <h5 style="margin-top:30px;">{{ responseData }}</h5>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

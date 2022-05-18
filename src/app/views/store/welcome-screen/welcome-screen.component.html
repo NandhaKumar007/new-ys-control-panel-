@@ -1,0 +1,55 @@
+<section *ngIf="params.type=='activated'" class="you-dit-it-section">
+  <div class="you-dit-it-vector-top">
+    <img src="assets/images/others/top.png" alt="image-top">
+  </div>
+  <div class="you-dit-it-center-section">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-6 d-flex align-items-center justify-content-center">
+          <div class="you-dit-it-message">
+            <h2>Hurrah!</h2>
+            <h6>You have successfully activated your store.</h6>
+            <h6 class="ready-sell">Ready to sell?</h6>
+            <h6>Redirecting in <span class="highlighted-text">{{timer}}</span> seconds</h6>
+          </div>
+        </div>
+        <div class="col-md-6 d-flex justify-content-center">
+          <div class="you-dit-it-image">
+            <img src="assets/images/others/lock.png" alt="lock-img">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="you-dit-it-vector-bottom">
+    <img src="assets/images/others/bottom.png" alt="image-bottom">
+  </div>
+</section>
+
+<section *ngIf="params.type=='created'" class="you-dit-it-section">
+  <div class="you-dit-it-vector-top">
+    <img src="assets/images/others/top.png" alt="image-top">
+  </div>
+  <div class="you-dit-it-center-section">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-6 d-flex align-items-center justify-content-center">
+          <div class="you-dit-it-message">
+            <h2>You did it!</h2>
+            <h6>Congratulations, you are one step away from accessing your store.</h6>
+            <h6>Check the email sent to <span class="highlighted-text">{{formData?.email}}</span> to activate <span class="highlighted-text">{{formData?.name}}</span>.</h6>
+            <button type="button" routerLink="/session/signin" Class="btn btn-primary" style="width:160px;">Login</button>
+          </div>
+        </div>
+        <div class="col-md-6 d-flex justify-content-center">
+          <div class="you-dit-it-image">
+            <img src="assets/images/others/cart.png" alt="cart-img">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="you-dit-it-vector-bottom">
+    <img src="assets/images/others/bottom.png" alt="image-bottom">
+  </div>
+</section>

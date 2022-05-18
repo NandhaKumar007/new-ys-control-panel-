@@ -1,0 +1,61 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb">
+    <h1>Currencies</h1>
+    <ul>
+      <li>View and manage your currency types</li>
+    </ul>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <!-- DATA LIST -->
+  <div *ngIf="commonService.currency_types?.length" class="list-horizontal">
+
+
+    <div class="data-list-card-wrapper">
+      <div class="data-list-card-inner">
+        <div class="row m-0">
+
+          <!-- SINGLE LIST ITEM -->
+          <div
+            *ngFor="let x of commonService.currency_types | paginate: { itemsPerPage: pageSize, currentPage: page }; let i=index;"
+            class="col-md-12 p-0 list-item data-list-card" [ngClass]="x.store_base ? 'has-find-band': ''" [@animate]="{value:'*',params:{delay: (i*100)+'ms', y:'50px'}}">
+
+            <div class="d-flex flex-row">
+              <div [ngClass]="x.store_base? 'find-band': ''"></div>
+              <div class="flex-grow-1 d-flex">
+                <div
+                  class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                  <!-- OTHER DATA -->
+                  <p class="m-0 w-15 w-sm-100 m-b-0">{{x.country_code}}</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
+    <!-- PAGINATION CONTROL -->
+    <div class="row">
+      <div class="col-md-12 mt-3">
+        <pagination-controls (pageChange)="page=$event; commonService.pageTop(0);" autoHide="true" responsive="true"
+          maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+      </div>
+    </div>
+   
+
+  </div>
+
+  <div *ngIf="!commonService.currency_types?.length" class="row">
+    <div class="col-md-12">
+      <p align="center">No data to display.</p>
+    </div>
+  </div>
+</div>

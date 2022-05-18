@@ -1,0 +1,66 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-md-9">
+        <h1 *ngIf="params?.type=='privacy'">Privacy Policy</h1>
+        <h1 *ngIf="params?.type=='shipping'">Shipping Policy</h1>
+        <h1 *ngIf="params?.type=='cancellation'">Cancellation Policy</h1>
+        <h1 *ngIf="params?.type=='terms-conditions'">Terms and Conditions</h1>
+        <ul>
+          <li *ngIf="params?.type=='privacy'">View and manage your privacy policy</li>
+          <li *ngIf="params?.type=='shipping'">View and manage your shipping policy</li>
+          <li *ngIf="params?.type=='cancellation'">View and manage your cancellation policy</li>
+          <li *ngIf="params?.type=='terms-conditions'">View and manage your terms and conditions</li>
+        </ul>
+      </div>
+      <div *ngIf="!editForm?.title" class="col-md-3 d-flex align-items-center justify-content-end mt-sm-15">
+        <button type="button" (click)="onEdit();" class="btn btn-primary">Edit</button>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="row">
+    <div class="col-md-1"></div>
+    <!-- details -->
+    <div *ngIf="!editForm?.title" class="col-md-10">
+      <div class="card p-3">
+        <h5 align="center" class="mt-2" [ngClass]="formData.content? 'mb-5': ''">{{ formData?.title }}</h5>
+        <p *ngIf="formData.content" [innerHtml]="formData.content"></p>
+      </div>
+    </div>
+    <!-- form -->
+    <div *ngIf="editForm?.title" class="col-md-10">
+      <form autocomplete="off" (ngSubmit)="onUpdate();" ngNativeValidate>
+        <div class="row">
+          <div class="col-md-12 form-group mb-3">
+            <label>Title</label>
+            <input type="text" name="title" class="form-control" [(ngModel)]="editForm.title" #title="ngModel" required />
+          </div>
+          <div class="col-md-12 form-group mb-3 quill-mb-5">
+            <label>Content</label>
+            <quill-editor class="rounded" [placeholder]="null" [(ngModel)]="editForm.content" [ngModelOptions]="{standalone: true}"></quill-editor>
+          </div>
+        </div>
+        <div class="separator-breadcrumb border-top mt-5"></div>
+        <div class="row">
+          <div class="col-md-12 mt-3 mb-3" *ngIf="editForm.errorMsg">
+            <p class="text-danger" align="center">{{ editForm.errorMsg }}</p>
+          </div>
+          <div align="center" class="col-md-12 z-i-0">
+            <button type="button" (click)="cancel();" class="btn btn-wide black-outline-btn">
+            <span class="black-outline-txt">Cancel</span>
+            </button>&nbsp; &nbsp; &nbsp;
+            <button type="submit" class="btn btn-wide btn-primary">Update</button>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="col-md-1"></div>
+  </div>
+
+</div>

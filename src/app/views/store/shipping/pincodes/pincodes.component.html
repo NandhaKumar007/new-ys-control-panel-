@@ -1,0 +1,77 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-md-8">
+        <h1>Pincodes</h1>
+        <ul><li>Manage your pincodes for delivery service</li></ul>
+      </div>
+
+      <div class="col-md-4 d-flex align-items-center justify-content-end mt-sm-15">
+        <button type="button" class="btn btn-primary" (click)="addForm={}; modalService.open(addModal);">Import</button>
+        <button type="button" (click)="exportAsXLSX();" class="btn btn-primary ladda-button ml-3" [disabled]="exportLoader" [ladda]="exportLoader">Export</button>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div *ngIf="pincodes" class="row" class="list-horizontal">
+    <div class="col-md-12 list-item">
+      <div class="card mb-4 d-flex flex-row">
+        <div class="flex-grow-1 d-flex">
+          <div class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+            <p class="w-100 w-md-100 m-b-0" style="word-spacing: 30px; line-height: 400%;">{{ pincodes }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!pincodes" class="row">
+    <div class="col-md-12">
+      <p align="center">No data found</p>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<ng-template #addModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Pincodes</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onAdd();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12 form-group mb-3">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="import" [(ngModel)]="addForm.import" #import="ngModel">
+              <span>Use Excel</span><span class="checkmark"></span>
+            </label>
+          </div>
+          <div *ngIf="addForm.import" class="col-md-12 form-group mb-3">
+            <div class="custom-file mt-2">
+              <input type="file" name="excel" class="custom-file-input" (change)="onFileChange($event);" accept=".xlsx" required>
+              <label class="custom-file-label">Choose file</label>
+            </div>
+          </div>
+          <div *ngIf="!addForm.import" class="col-md-12 form-group mb-3">
+            <tag-input class="w-100" name="options" [(ngModel)]="addForm.options" #options="ngModel" placeholder="" [secondaryPlaceholder]="'Enter options separated by commas'"
+            [separatorKeyCodes]="[188]" required></tag-input>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="addForm.errorMsg"><p class="text-danger">{{ addForm.errorMsg }}</p></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click')">
+       <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" (click)="addForm.type='add'" class="btn btn-wide btn-primary" [disabled]="addForm.submit">Add</button>
+      <button type="submit" (click)="addForm.type='update'" class="btn btn-wide btn-primary" [disabled]="addForm.submit">Update</button>
+    </div>
+  </form>
+</ng-template>

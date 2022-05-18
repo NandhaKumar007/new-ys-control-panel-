@@ -1,0 +1,73 @@
+.input-success {
+    border: 2px solid lightgreen !important;
+}
+.input-error {
+    border: 2px solid lightcoral !important;
+}
+
+.day-slot {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+.time-slots {
+  /* display: inline-block; */
+  padding: 10px 8px;
+  font-size: .9em;
+  text-align: center;
+  margin: 5px;
+  border-radius: 5px;
+}
+.time-slots p {
+  margin-bottom: 0;
+}
+.delivery-time-card {
+  padding: 10px 20px;
+}
+.card-active{
+    visibility: visible;
+    transition: visibility .5s 0s;
+}
+
+.day-slot label {
+  width: 100%;
+  font-size: 1rem;
+  margin: 0;
+}
+.card-input-element+.card {
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  color: #fff;
+  background-color: #131314;
+}
+.card-input-element+.card p{
+  color:#ffffff !important;
+}
+.card-input-element:disabled+.card p{
+  color:#cacaca !important;
+}
+.card-input-element+.card:hover {
+  cursor: pointer;
+}
+.card-input-element:checked+.card {
+  background-color: rgb(12, 170, 78);
+  -webkit-transition: border .3s;
+  -o-transition: border .3s;
+  transition: border .3s;
+  color:#fff;
+}
+.card-input-element:disabled+.card{
+  border: 1px solid #d4d4d4;
+  color: #000;
+  background-color: transparent;
+}
+.card-input-element:checked+.card::after {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: rgb(12, 170, 78);
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+}

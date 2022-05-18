@@ -1,0 +1,125 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-md-8">
+        <ng-container *ngIf="params?.type=='live'">
+          <h1>
+            <ng-container *ngIf="params?.customer_id!='all' && commonService.selected_customer?.name">{{commonService.selected_customer?.name}} -
+            </ng-container>Live Requests
+          </h1>
+          <ul>
+            <li style="padding: 0px;">View and manage your ongoing requests</li>
+          </ul>
+        </ng-container>
+        <ng-container *ngIf="params?.type=='confirmed'">
+          <h1>
+            <ng-container *ngIf="params?.customer_id!='all' && commonService.selected_customer?.name">{{commonService.selected_customer?.name}} -
+            </ng-container>Confirmed Requests
+          </h1>
+          <ul>
+            <li style="padding: 0px;">View and manage your confirmed requests</li>
+          </ul>
+        </ng-container>
+        <ng-container *ngIf="params?.type=='cancelled'">
+          <h1>
+            <ng-container *ngIf="params?.customer_id!='all' && commonService.selected_customer?.name">{{commonService.selected_customer?.name}} -
+            </ng-container>Cancelled Requests
+          </h1>
+          <ul>
+            <li style="padding: 0px;">View and manage your cancelled requests</li>
+          </ul>
+        </ng-container>
+      </div>
+      <div class="col-md-4 d-flex align-items-center justify-content-end" align="right">
+        <button *ngIf="commonService.store_details?.login_type=='admin'" type="button" (click)="exportAsXLSX();" class="btn btn-primary ladda-button mr-2" [disabled]="exportLoader" [ladda]="exportLoader">Export</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="row mb-4">
+    <div *ngIf="params?.type=='live'" class="col-md-3">
+      <div class="form-group">
+        <select name="type" class="form-control select-arrow" [(ngModel)]="filterForm.type" (change)="getQuotationList();">
+          <option value="all">All Requests</option>
+          <option value="placed">New Requests</option>
+          <option value="processing">Processing Requests</option>
+        </select>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="form-group">
+        <input type="text" placeholder="Select Date" class="form-control" name="from_date" [(ngModel)]="filterForm.from_date" (ngModelChange)="getQuotationList();"
+          bsDatepicker [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }" />
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="form-group">
+        <input type="text" placeholder="Select Date" class="form-control" name="to_date" [(ngModel)]="filterForm.to_date" (ngModelChange)="getQuotationList();"
+          bsDatepicker [minDate]="filterForm.from_date" [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }"
+        />
+      </div>
+    </div>
+    <!-- search box -->
+    <div [ngClass]="params.type=='live'? 'col-md-3': 'col-md-6'">
+      <div class="form-group">
+        <input type="text" name="search_bar" placeholder="Search" class="form-control" [(ngModel)]="search_bar" />
+      </div>
+    </div>
+  </div>
+
+  <!-- DATA LIST -->
+  <div *ngIf="list?.length" class="row" class="list-horizontal">
+
+    <!-- SINGLE LIST ITEM -->
+    <div *ngFor="let x of list | gridSearch: { quot_number: search_bar, customer_name: search_bar, customer_email: search_bar, customer_mobile: search_bar, shipping_customer_name: search_bar, billing_customer_name: search_bar } | paginate: { itemsPerPage: pageSize, currentPage: page }; let i=index;"
+      class="col-md-12 list-item" [@animate]="{value:'*',params:{delay: (i*100)+'ms', y:'50px'}}">
+
+      <div class="card o-hidden mb-4 d-flex flex-row">
+        <div class="flex-grow-1 pl-2 d-flex">
+          <div class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+            <p class="w-30 w-sm-100 m-b-0">#{{x.quot_number}}</p>
+            <p class="w-30 w-sm-100 m-b-0">{{x.customer_name}}</p>
+            <p *ngIf="params?.type=='live'" class="w-30 w-sm-100 m-b-0">
+              {{x.modified_on | date: "dd MMM y hh:mm a"}}</p>
+            <p *ngIf="params?.type=='confirmed'" class="w-30 w-sm-100 m-b-0">
+              {{x.confirmed_on | date: "dd MMM y hh:mm a"}}</p>
+            <p *ngIf="params?.type=='cancelled'" class="w-30 w-sm-100 m-b-0">
+              {{x.cancelled_on | date: "dd MMM y hh:mm a"}}</p>
+            <p class="w-30 w-sm-100 m-b-0">{{x.final_price | currency: commonService.store_currency?.country_code}}</p>
+            <p *ngIf="params?.type=='live'" class="w-30 w-sm-100 m-b-0">
+              <span class="badge" [ngClass]="{
+                'badge-primary badge-red': x.quot_status === 'placed',
+                'badge-info badge-blue': x.quot_status === 'processing'
+              }">{{x.quot_status}}</span>
+            </p>
+            <p class="m-0 text-muted text-small w-15 w-sm-100 d-lg-block item-actions">
+              <a class="btn btn-wide btn-outline-secondary w-100 mr-3" (click)="capturePageData();" routerLink="/quotations/{{params?.type}}/{{params?.customer_id}}/{{x._id}}">View</a>
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PAGINATION CONTROL -->
+    <div class="col-md-12 mt-3">
+      <pagination-controls (pageChange)="page=$event; commonService.pageTop(0);" autoHide="true" responsive="true" maxSize="5" previousLabel=""
+        nextLabel=""></pagination-controls>
+    </div>
+
+  </div>
+
+  <div *ngIf="!list?.length" class="row">
+    <div class="col-md-12">
+      <p align="center">No data to display.</p>
+    </div>
+  </div>
+
+</div>

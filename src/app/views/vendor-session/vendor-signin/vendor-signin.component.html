@@ -1,0 +1,54 @@
+<div [@animate]="{value:'*',params:{y:'120px',opacity:'0',delay:'100ms', duration: '400ms'}}">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="auth-card">
+        <div class="text-center mb-3">
+          <img [src]="commonService.vendor_login_info?.logo" style="height: 60px;" alt="logo">
+        </div>
+        <form autocomplete="off" (ngSubmit)="signin()" ngNativeValidate>
+          <div class="form-group mb-3">
+            <div class="custom-input-prepend-group">
+              <i class="material-icons-outlined">alternate_email</i>
+              <input placeholder="EMAIL" type="email" name="email" class="form-control" [(ngModel)]="loginForm.email" (input)="loginForm.errorMsg=null;" required />
+            </div>
+          </div>
+          <div class="form-group mb-3">
+            <div class="custom-input-prepend-append-group">
+              <div class="custom-input-prepend">
+                <i class="material-icons-outlined">lock</i>
+              </div>
+              <input placeholder="PASSWORD" [type]="loginForm.input_txt? 'text': 'password'" name="password"
+              class="form-control" [(ngModel)]="loginForm.password" (input)="loginForm.errorMsg=null;" required />
+              <div class="custom-input-append">
+                <i class="material-icons" *ngIf="!loginForm.input_txt" (click)="loginForm.input_txt = !loginForm.input_txt" aria-hidden="true">visibility</i>
+                <i class="material-icons" *ngIf="loginForm.input_txt" (click)="loginForm.input_txt = !loginForm.input_txt" aria-hidden="true">visibility_off</i>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="loginForm.errorMsg" align="center" style="margin: 20px 0 10px 0;">
+            <p style="color:red;"><strong>{{loginForm.errorMsg}}</strong></p>
+          </div>
+          <!-- <div class="form-group" style="margin: 25px 0 25px 0;">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="remember_me" [(ngModel)]="loginForm.remember_me" #remember_me="ngModel">
+              <span>Keep me logged in</span><span class="checkmark"></span>
+            </label>
+          </div> -->
+          <!-- <br> -->
+          <div class="row">
+            <div class="col-sm-12 d-flex align-items-center justify-content-end">
+              <div class="forgot-password-link mt-2 mb-3">
+                <a class="text-muted cursor" routerLink="/vendor/forgot-password/{{commonService.vendor_login_info?.id}}">Forgot Password</a>
+              </div>
+            </div>
+            <div class="col-md-12">
+              <btn-loading btnClass="btn-primary btn-rounded btn-block w-100" [loadingText]="loadingText" [loading]="loading">
+                Sign In
+              </btn-loading>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

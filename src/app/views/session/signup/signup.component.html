@@ -1,0 +1,290 @@
+<div class="signup-section-wrapper" [@animate]="{value:'*',params:{y:'120px',opacity:'0',delay:'100ms', duration: '400ms'}}">
+
+  <!-- SIGNUP STEP 1 -->
+  <div *ngIf="step===1" class="sign-up-sec">
+    <div class="container d-flex justify-content-center">
+      <div class="signup-form-wrap ys-signup-section">
+        <div class="row no-gutters">
+          <div class="signup-form-left">
+            <img src="assets/images/ecommerce-account-creation.jpg" data-rjs="2" alt="">
+          </div>
+          <div class="signup-form-right">
+            <div class="signup-form-title text-left">
+              <h2>Get Started</h2>
+              <p>Take your business online</p>
+            </div>
+            <div class="signup-form">
+              <form autocomplete="off" (ngSubmit)="validateEmail(signupForm.email);" ngNativeValidate>
+                <div class="row">
+                  <div class="col-lg-1"></div>
+                  <div class="col-lg-10">
+                    <div class="form-group">
+                      <input type="text" name="contact_person" class="theme-input-style" placeholder="Your full name" [(ngModel)]="signupForm.company_details.contact_person" required>
+                    </div>
+                    <div class="form-group">
+                      <div class="input-group mobile-num-container">
+                        <div class="input-group-prepend">
+                          <span class="input-group-text">
+                            <select name="dial_code" [(ngModel)]="signupForm.company_details.dial_code" class="mobileno_list" required>
+                              <option *ngFor="let x of commonService.country_list | orderAsc: 'name';" [ngValue]="x.dial_code">{{x.dial_code}}</option>
+                            </select>
+                          </span>
+                        </div>
+                        <input type="tel" name="mobile" [(ngModel)]="signupForm.company_details.mobile" class="form-control theme-input-style"
+                        placeholder="Mobile" title="Please fill the valid mobile number" pattern=".{10,100}" appNumberOnly required>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div class="input-group mobile-num-container mb-3">
+                        <input type="email" name="email" [(ngModel)]="signupForm.email" class="form-control theme-input-style" placeholder="Email" required>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div class="input-group mb-3">
+                        <input placeholder="Password" [type]="signupForm.input_txt? 'text': 'password'" name="password"
+                        class="form-control theme-input-style" [(ngModel)]="signupForm.password" required>
+                        <div class="input-group-append">
+                          <span class="input-group-text">
+                            <i class="material-icons" *ngIf="!signupForm.input_txt" (click)="signupForm.input_txt = !signupForm.input_txt" aria-hidden="true">visibility</i>
+                            <i class="material-icons" *ngIf="signupForm.input_txt" (click)="signupForm.input_txt = !signupForm.input_txt" aria-hidden="true">visibility_off</i>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div *ngIf="signupForm.errorMsg" class="col-lg-12">
+                      <div class="form-group invalid-category">
+                        <p class="email-exist m-0 d-flex align-items-center justify-content-center">
+                          <i class="material-icons mr-2">error_outline</i>
+                          <span>{{signupForm.errorMsg}}</span>
+                        </p>
+                      </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 ladda-button m-1" [disabled]="signupForm.submit"
+                    [ladda]="signupForm.submit">Create Account</button>
+                    <span class="login-text forgot-link d-inline-block mt-3">
+                      Already Have An Account?
+                      <a routerLink="/session/signin" class="s-btn"><strong> Signin</strong></a>
+                    </span>
+                  </div>
+                  <!-- <div class="col-lg-2">
+                    <div class="signup-or-divider">
+                      <span>OR</span>
+                    </div>
+                  </div>
+                  <div class="col-lg-5">
+                    <div class="signup-social-login-wrapper">
+                      <div class="social-login-inner">
+                        <div class="social-login-btn-wrapper">
+                          <button class="social-login-btn w-100 mb-3" type="button">
+                            <img src="assets/images/facebook-filled.png" alt="social-icon"> Login with Facebook
+                          </button>
+                          <button class="social-login-btn w-100" type="button">
+                            <img src="assets/images/google-filled.png" alt="social-icon"> Login with Google
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div> -->
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIGNUP STEP 2 -->
+  <div *ngIf="step===2" class="create-store-sec">
+    <div class="container d-flex justify-content-center">
+      <div class="ys-create-store-section">
+        <div class="row no-gutters">
+          <div class="step-form-left">
+            <div (click)="prevStep();" class="step-back-wrapper create-store-sec-back">
+              <i class="material-icons">arrow_back</i>
+            </div>
+            <div class="step-form-inner">
+              <h3>Complete registration</h3>
+              <p>Step 1 of 3</p>
+              <div class="step-progress-wrapper">
+                <div class="step-progress-inner step-one"></div>
+              </div>
+            </div>
+          </div>
+          <div class="step-form-right">
+            <div class="signup-form-wrap">
+              <div class="signup-form">
+                <div class="signup-form-title">
+                  <h3 class="black">Setup your profile</h3>
+                  <p>Launch your store quickly</p>
+                </div>
+                <form autocomplete="off" (ngSubmit)="nextStep();" ngNativeValidate>
+                  <div class="row">
+                    <div class="col-lg-12">
+                      <label class="col-form-label black"><strong>What's your store name?</strong></label>
+                      <input type="text" name="store_name" [(ngModel)]="signupForm.name" class="theme-input-style" placeholder="Store name" pattern="([^\s][A-z0-9À-ž\s]+)" title="Special characters not accepted" required>
+                    </div>
+                    <div class="col-lg-12">
+                      <label class="col-form-label black"><strong>What's your country and currency?</strong></label>
+                      <div class="row">
+                        <div class="col-md-6 mb-3">
+                          <div class="input-group signup-icon-container">
+                            <select name="country" [(ngModel)]="signupForm.country" (change)="onCountryChange(signupForm.country);" class="select-country" required>
+                              <option *ngFor="let x of commonService.country_list | orderAsc: 'name';" [ngValue]="x.name">{{x.name}}</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <select name="currency_types" [(ngModel)]="signupForm.currency_types" class="country-currencies" required>
+                            <option *ngFor="let x of currencyList;" [ngValue]="x">{{x.country_code}}</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-lg-6 text-center mt-3">
+                      <button type="submit" class="btn btn-primary w-100">Next</button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIGNUP STEP 3 -->
+  <div *ngIf="step===3" class="create-address-sec">
+    <div class="container d-flex justify-content-center">
+      <div class="ys-create-store-section">
+        <div class="row no-gutters">
+          <div class="step-form-left">
+            <div (click)="prevStep();" class="step-back-wrapper create-address-sec-back">
+              <i class="material-icons">arrow_back</i>
+            </div>
+            <div class="step-form-inner">
+              <h3>Complete registration</h3>
+              <p>Step 2 of 3</p>
+              <div class="step-progress-wrapper">
+                <div class="step-progress-inner step-two"></div>
+              </div>
+            </div>
+          </div>
+          <div class="step-form-right">
+            <div class="signup-form-wrap">
+              <div class="signup-form">
+                <div class="signup-form-title">
+                  <h3 class="black">Add store Address</h3>
+                  <p>Start receiving payments and setup delivery</p>
+                </div>
+                <form autocomplete="off" (ngSubmit)="nextStep();" ngNativeValidate>
+                  <div class="row">
+                    <div class="col-lg-12">
+                      <label class="col-form-label black"><strong>What's your store address?</strong></label>
+                      <div class="row">
+                        <div class="col-md-12">
+                          <textarea class="theme-input-style" name="address" [(ngModel)]="signupForm.company_details.address" placeholder="Store address" required></textarea>
+                        </div>
+                        <div class="col-md-6">
+                          <input type="text" class="theme-input-style" name="city" [(ngModel)]="signupForm.company_details.city" placeholder="City" required>
+                        </div>
+                        <div class="col-md-6 mb-3 select-state-wrapper">
+                          <select *ngIf="stateList.length" name="state" [(ngModel)]="signupForm.company_details.state" class="selectbox-state" required>
+                            <option value="">-- Select State --</option>
+                            <option *ngFor="let x of stateList;" [ngValue]="x.name">{{x.name}}</option>
+                          </select>
+                          <input *ngIf="!stateList.length" type="text" class="theme-input-style" name="state" [(ngModel)]="signupForm.company_details.state" placeholder="State" required>
+                        </div>
+                        <div class="col-md-6">
+                          <input type="text" class="theme-input-style" name="pincode" [(ngModel)]="signupForm.company_details.pincode" placeholder="Zip / Postal Code" required>
+                        </div>
+                        <div class="col-md-6">
+                          <input type="text" class="theme-input-style" name="gst_no" [(ngModel)]="signupForm.gst_no" placeholder="GST (If available)">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6 text-center mt-3">
+                      <button type="submit" class="btn btn-primary w-100">Next</button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIGNUP STEP 4 -->
+  <div *ngIf="step===4" class="project-category-select">
+    <div class="container d-flex justify-content-center">
+      <div class="ys-create-store-section">
+        <div class="row no-gutters">
+          <div class="step-form-left">
+            <!-- back btn -->
+            <div (click)="prevStep();" class="step-back-wrapper project-category-select-sec-back">
+              <i class="material-icons">
+                arrow_back
+              </i>
+            </div>
+            <!--## back btn ##-->
+            <div class="step-form-inner">
+              <h3>Complete registration</h3>
+              <p>Step 3 of 3</p>
+              <div class="step-progress-wrapper">
+                <div class="step-progress-inner step-three"></div>
+              </div>
+            </div>
+          </div>
+          <div class="step-form-right">
+            <div class="signup-form-wrap">
+              <div class="signup-form">
+                <div class="signup-form-title">
+                  <h3 class="black">Take your business online</h3>
+                  <p>You're almost done</p>
+                </div>
+                <form autocomplete="off" (ngSubmit)="onSubmit();" ngNativeValidate>
+                  <div class="row">
+                    <div class="col-lg-12">
+                      <div class="mb-3">
+                        <label class="black mb-1"><strong>Business Category</strong></label>
+                        <select *ngIf="router.url.indexOf('/pro')!=-1 && !params?.service" name="service_type" [(ngModel)]="signupForm.type" class="mb-3 project-category" required>
+                          <option value="">-- Select Type --</option>
+                          <option *ngFor="let x of commonService.ys_services;" [ngValue]="x.name">{{x.display}}</option>
+                        </select>
+                        <select name="category" [(ngModel)]="signupForm.category" class="project-category" required>
+                          <option value="">-- Select Category --</option>
+                          <option *ngFor="let x of commonService.store_categories;" [ngValue]="x.name">{{x.display}}</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-lg-12">
+                      <div class="mb-3">
+                        <textarea name="description" [(ngModel)]="signupForm.description" placeholder="A description about your brand, products and pricing in less than 200 characters" required></textarea>
+                      </div>
+                    </div>
+                    <div *ngIf="signupForm.errorMsg" class="col-lg-12">
+                      <div class="form-group invalid-category">
+                        <p class="email-exist m-0 d-flex align-items-center justify-content-center">
+                          <i class="material-icons mr-2">error_outline</i>
+                          <span>{{signupForm.errorMsg}}</span>
+                        </p>
+                      </div>
+                    </div>
+                    <div class="col-md-6 text-center mt-3">
+                      <button type="submit" class="btn btn-primary w-100 ladda-button m-1" [disabled]="signupForm.submit"
+                      [ladda]="signupForm.submit">Finish Setup</button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

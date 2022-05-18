@@ -1,0 +1,28 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<section *ngIf="!pageLoader" class="payment-alert-section">
+  <div class="payment-alert-vector-top">
+    <img src="assets/images/payment-gateway/payment-success-top.png" alt="payment-image-top">
+  </div>
+  <div class="payment-center-section">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="payment-center-section-inner">
+          <img src="assets/images/payment-gateway/payment-success.png" alt="payment-img">
+          <div class="payment-message">
+            <h2>Woo hoooo!</h2>
+            <h6>Your payment was successfull</h6>
+            <button type="button" routerLink="/session/signin" class="btn success-outline-btn w-100">
+              <span class="success-outline-txt">Login</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="payment-alert-vector-bottom">
+    <img src="assets/images/payment-gateway/payment-success-bottom.png" alt="payment-image-bottom">
+  </div>
+</section>

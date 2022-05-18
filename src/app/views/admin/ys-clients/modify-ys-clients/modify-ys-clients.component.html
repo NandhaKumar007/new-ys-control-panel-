@@ -1,0 +1,283 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb">
+    <h1>
+      {{ (clientForm.formType=='add')? 'Add Client': clientForm.name }}
+      <span class="breadcrumb-steps">(Step {{step_num}} of 2)</span>
+    </h1>
+    <ul *ngIf="clientForm.formType=='add'">
+      <li *ngIf="step_num==1">Add client details</li>
+      <li *ngIf="step_num==2">Choose rental package</li>
+    </ul>
+    <ul *ngIf="clientForm.formType=='update'">
+      <li *ngIf="step_num==1">Update client details</li>
+      <li *ngIf="step_num==2">Update rental package</li>
+    </ul>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <form *ngIf="step_num==1" autocomplete="off" (ngSubmit)="clientForm.package_details? '': clientForm.package_details={}; step_num=2; onChoosePackage();" ngNativeValidate>
+    <div class="row">
+      <!-- <div class="col-md-1"></div> -->
+      <div class="col-md-10 offset-md-1">
+        <div class="">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="card p-3">
+                <div class="row">
+                  <div class="col-md-6 form-group mb-3">
+                    <label>Store Name</label>
+                    <input type="text" name="name" class="form-control" [(ngModel)]="clientForm.name" #name="ngModel" required />
+                  </div>
+                  <div class="col-md-3 form-group mb-3">
+                    <label>Account Type</label>
+                    <select name="account_type" class="form-control" [(ngModel)]="clientForm.account_type" #account_type="ngModel" required>
+                      <option value="client">Client</option>
+                      <option value="demo">Demo</option>
+                    </select>
+                  </div>
+                  <div class="col-md-3 form-group mb-3">
+                    <label>Store Type</label>
+                    <select name="type" class="form-control" [(ngModel)]="clientForm.type" #type="ngModel" required>
+                      <option *ngFor="let x of commonService.ys_services;" value="{{x.name}}">{{x.display}}</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6 form-group mb-3">
+                    <label>Email</label>
+                    <input type="email" name="email" class="form-control" [(ngModel)]="clientForm.email" #email="ngModel" required readonly />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- company details -->
+            <div class="mt-4 mb-2 col-md-12">
+              <span class="access-inner-head">Company Details</span>
+            </div>
+            <div class="col-md-12">
+              <div class="card p-3">
+              <div class="row">
+                <div class="col-md-6 form-group mb-3">
+                  <label>Company Name</label>
+                  <input type="text" name="company_name" class="form-control" [(ngModel)]="clientForm.company_details.name" #company_name="ngModel" required />
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                  <label>GST Number</label>
+                  <input type="text" name="gst_no" class="form-control" [(ngModel)]="clientForm.gst_no" #gst_no="ngModel" />
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                  <label>Contact Person</label>
+                  <input type="text" name="contact_person" class="form-control" [(ngModel)]="clientForm.company_details.contact_person" #contact_person="ngModel" required />
+                </div>
+                <div class="col-lg-6 form-group mb-3">
+                  <div class="input-group">
+                    <div class="input-group-prepend flex-column w-40 w-sm-100 mr-3 c-sm-m-0 c-sm-mb-3">
+                      <label>Dial Code</label>
+                      <select name="dial_code" class="form-control" [(ngModel)]="clientForm.company_details.dial_code" #dial_code="ngModel" required>
+                        <option *ngFor="let x of commonService.country_list | orderAsc: 'name';" [ngValue]="x.dial_code">
+                          {{x.dial_code}}
+                        </option>
+                      </select>
+                    </div>
+                    <div class="flex-column w-55 w-sm-100">
+                      <label>Mobile</label>
+                      <input type="text" name="mobile" class="form-control" [(ngModel)]="clientForm.company_details.mobile" #mobile="ngModel" appNumberOnly required />
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-12 form-group mb-3">
+                  <label>Complete Address</label>
+                  <textarea name="address" [(ngModel)]="clientForm.company_details.address" #address="ngModel" class="form-control" required></textarea>
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                  <label>Country</label>
+                  <select name="country" class="form-control" [(ngModel)]="clientForm.country" (change)="onCountryChange(clientForm.country);" #country="ngModel" disabled required>
+                    <option *ngFor="let x of commonService.country_list | orderAsc: 'name';" [ngValue]="x.name">{{x.name}}</option>
+                  </select>
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                  <label>Currency</label>
+                  <input type="text" name="currency_types" class="form-control" [(ngModel)]="clientForm.currency_types.country_code" readonly />
+                </div>
+                <div *ngIf="state_list.length" class="col-md-3 form-group mb-3">
+                  <label>State</label>
+                  <select name="state" class="form-control" [(ngModel)]="clientForm.company_details.state" #state="ngModel" required>
+                    <option *ngFor="let x of state_list | orderAsc: 'name';" [ngValue]="x.name">{{x.name}}</option>
+                  </select>
+                </div>
+                <div class="form-group mb-3" [ngClass]="state_list.length? 'col-md-3': 'col-md-6'">
+                  <label>City</label>
+                  <input type="text" name="city" class="form-control" [(ngModel)]="clientForm.company_details.city" #city="ngModel" />
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                  <label>Pincode</label>
+                  <input type="text" name="pincode" class="form-control" [(ngModel)]="clientForm.company_details.pincode" #pincode="ngModel" />
+                </div>
+              </div>
+              </div>
+            </div>
+            <!-- end company details -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="separator-breadcrumb border-top mt-5"></div>
+    <div class="row">
+      <div align="center" class="col-md-12">
+        <button type="button" routerLink="/admin/clients" class="btn btn-wide btn-outline-secondary">Cancel</button>&nbsp; &nbsp; &nbsp;
+        <button type="submit" class="btn btn-primary">Next</button>
+      </div>
+    </div>
+  </form>
+
+  <form *ngIf="step_num==2" autocomplete="off" (ngSubmit)="onSubmit();" ngNativeValidate>
+    <div class="row">
+      <!-- abandoned cart -->
+      <div *ngIf="clientForm.type=='order_based'" class="form-group mb-3 col-md-12">
+        <label class="checkbox checkbox-primary">
+          <input class="form-check-input" type="checkbox" name="abandoned_status" [(ngModel)]="clientForm.abandoned_status" #abandoned_status="ngModel">
+          <span>Enable abandoned cart recovery email alert</span>
+          <span class="checkmark"></span>
+        </label>
+      </div>
+      <!-- package list -->
+      <div class="col-md-12 mb-3" *ngFor="let cat of commonService.package_categories;">
+        <div class="card p-3">
+          <h6>{{cat.display}}</h6>
+          <div class="row mt-3">
+            <ng-container *ngFor="let x of packages_list;">
+              <div *ngIf="cat.name==x.category" class="col-lg-3 col-md-4 mb-3">
+                <label class="radio radio-success">
+                  <input type="radio" name="package_id" [value]="x._id" [checked]="x._id==clientForm.package_details.package_id" (change)="clientForm.package_details.package_id=x._id; onChoosePackage();">
+                  <span>{{x.name}} - <b>{{ x.currency_types[clientForm.currency_types.country_code].amount | currency:clientForm.currency_types.country_code:'symbol':'1.0' }}</b></span>
+                  <span class="checkmark"></span>
+                </label>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="!clientForm.package_details?.billing_status" class="form-group mb-3 col-md-4">
+        <label>Trial Expiry On</label>
+        <input type="text" placeholder="Select Date" class="form-control" name="trial_expiry" autocomplete="off"
+        [(ngModel)]="clientForm.package_details.trial_expiry" bsDatepicker [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }" required />
+      </div>
+      <!-- billing -->
+      <div class="form-group mb-3 col-md-12">
+        <label class="checkbox checkbox-primary">
+          <input class="form-check-input" type="checkbox" name="billing_status" [(ngModel)]="clientForm.package_details.billing_status" #billing_status="ngModel"
+          (change)="(!clientForm.package_details.transaction_range)? clientForm.package_details.transaction_range={}: '';">
+          <span>Enable Billing</span>
+          <span class="checkmark"></span>
+        </label>
+      </div>
+      <div class="col-md-12 mb-3" *ngIf="clientForm.package_details.billing_status && clientForm.package_details.transaction_range">
+        <div class="card card-in-card p-3">
+          <div class="row mt-3">
+            <div class="col-md-6 form-group mb-3">
+              <label>Subscription Start Date</label>
+              <input type="text" placeholder="Select Date" class="form-control" name="start_date" autocomplete="off"
+              [(ngModel)]="clientForm.package_details.transaction_range.from" bsDatepicker [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }" required />
+            </div>
+            <div class="col-md-6 form-group mb-3">
+              <label>Subscription End Date</label>
+              <input type="text" placeholder="Select Date" class="form-control" name="end_date" autocomplete="off"
+              [(ngModel)]="clientForm.package_details.transaction_range.to" bsDatepicker [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }" required />
+            </div>
+            <div class="col-md-6 form-group mb-3">
+              <label>Credits</label>
+              <input type="text" name="credit" class="form-control" [(ngModel)]="clientForm.package_details.credit" #credit="ngModel" required appNumberOnly />
+            </div>
+            <div class="col-md-6 form-group mb-3">
+              <label>Expiry Date</label>
+              <input type="text" placeholder="Select Date" class="form-control" name="expiry_date" autocomplete="off"
+              [(ngModel)]="clientForm.package_details.expiry_date" bsDatepicker [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }" required />
+            </div>
+            <!-- Discount -->
+            <div class="col-md-6 form-group mb-3" [ngClass]="clientForm.package_details.disc_status? 'mt-4': ''">
+              <label class="checkbox checkbox-primary">
+                <input class="form-check-input" type="checkbox" name="disc_status" [(ngModel)]="clientForm.package_details.disc_status" #disc_status="ngModel">
+                <span>Apply Discount</span>
+                <span class="checkmark"></span>
+              </label>
+            </div>
+            <div *ngIf="clientForm.package_details.disc_status" class="col-md-6 form-group mb-3">
+              <label>Discount per month ({{clientForm.currency_types.country_code}})</label>
+              <input type="text" name="disc_amount" class="form-control" [(ngModel)]="clientForm.package_details.disc_amount" #disc_amount="ngModel" appNumberOnly required />
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- wallet -->
+      <div class="form-group mb-3 col-md-12">
+        <label class="checkbox checkbox-primary">
+          <input class="form-check-input" type="checkbox" name="dp_wallet_status" [(ngModel)]="clientForm.dp_wallet_status"
+          (change)="!clientForm.dp_wallet_details? clientForm.dp_wallet_details={ balance: 0 }: ''" #dp_wallet_status="ngModel">
+          <span>Enable Delivery Partner Wallet</span>
+          <span class="checkmark"></span>
+        </label>
+      </div>
+      <div class="col-md-12 mb-3" *ngIf="clientForm.dp_wallet_status && clientForm.dp_wallet_details">
+        <div class="card card-in-card p-3">
+          <div class="row mt-3">
+            <div class="col-md-4 form-group mb-3">
+              <label>Balance ({{clientForm.currency_types.country_code}})</label>
+              <input type="text" name="wallet_balance" class="form-control" [(ngModel)]="clientForm.dp_wallet_details.balance" #wallet_balance="ngModel" readonly />
+            </div>
+            <div class="col-md-4 form-group mb-3">
+              <label>Transaction Charges By</label>
+              <select name="wallet_charge_type" class="form-control" [(ngModel)]="clientForm.dp_wallet_details.charge_type" #wallet_charge_type="ngModel" required>
+                <option value="percentage">Percentage</option>
+                <option value="amount">Amount</option>
+              </select>
+            </div>
+            <div class="col-md-4 form-group mb-3">
+              <label *ngIf="!clientForm.dp_wallet_details.charge_type">Value</label>
+              <label *ngIf="clientForm.dp_wallet_details.charge_type">Value in {{ clientForm.dp_wallet_details.charge_type | titlecase }}</label>
+              <input type="text" name="wallet_charge_value" class="form-control" [(ngModel)]="clientForm.dp_wallet_details.charge_value" #wallet_charge_value="ngModel" appNumberOnly required />
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Additional Features -->
+      <div *ngIf="paid_features_list?.length" class="form-group mb-3 col-md-12">
+        <label class="checkbox checkbox-primary">
+          <input class="form-check-input" type="checkbox" name="add_features" [(ngModel)]="clientForm.add_features" #add_features="ngModel">
+          <span>Apply Additional Features</span>
+          <span class="checkmark"></span>
+        </label>
+      </div>
+      <div *ngIf="paid_features_list?.length && clientForm.add_features" class="col-md-12 mb-3">
+        <div class="card card-in-card p-3">
+          <div class="row mt-3">
+            <ng-container *ngFor="let x of paid_features_list; let i=index;">
+              <div *ngIf="x.package_pricing[clientForm.currency_types.country_code].price > 0" class="col-lg-3 col-md-4 form-group mb-3">
+                <label class="checkbox checkbox-success">
+                  <input class="form-check-input" type="checkbox" name="feature_checked{{i}}" [(ngModel)]="x.feature_checked">
+                  <span>{{x.name}} - <b>{{ x.package_pricing[clientForm.currency_types.country_code].price | currency:clientForm.currency_types.country_code:'symbol':'1.0' }}</b></span>
+                  <span class="checkmark"></span>
+                </label>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="separator-breadcrumb border-top mt-5"></div>
+    <div class="row">
+      <div class="col-md-12 mt-3 mb-3" *ngIf="clientForm.errorMsg">
+        <p class="text-danger" align="center">{{ clientForm.errorMsg }}</p>
+      </div>
+
+      <div align="center" class="col-md-12">
+        <button type="button" (click)="step_num=1;" class="btn btn-wide btn-outline-secondary">Go Back</button>&nbsp; &nbsp; &nbsp;
+        <button type="submit" class="btn btn-wide btn-primary ladda-button m-1" [disabled]="clientForm.btnLoader" [ladda]="clientForm.btnLoader">
+          Update
+        </button>
+      </div>
+    </div>
+  </form>
+</div>

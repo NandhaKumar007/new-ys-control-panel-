@@ -1,0 +1,266 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-md-12">
+        <h1>Delivery Methods</h1>
+        <ul><li>Manage your delivery times</li></ul>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <ng-container *ngIf="!params?.type">
+
+    <div class="card p-3 mb-3" *ngIf="!deliveryDetails?.available_days">
+      <div class="row">
+        <div class="col-8 d-flex align-items-center">
+          <div>
+            <p class="m-0">Time-Based Delivery</p>
+          </div>
+        </div>
+        <div class="col-4 d-flex align-items-center justify-content-end">
+          <div>
+            <div *ngIf="!params?.type" align="right">
+              <button type="button" class="btn btn-wide btn-primary" routerLink="/shipping/delivery-methods/edit">Edit</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ng-container *ngIf="deliveryDetails?.available_days">
+      <!-- days -->
+      <div class="row">
+        <div class="col-8 d-flex align-items-center">
+          <div>
+            <h5><b>AVAILABLE DAYS</b></h5>
+            <p *ngIf="deliveryDetails.available_days?.length" class="ml-3">{{ deliveryDetails.available_days.join(', ') }}</p>
+            <p *ngIf="!deliveryDetails.available_days?.length" class="ml-3">NA</p>
+          </div>
+        </div>
+        <div class="col-4 d-flex align-items-center justify-content-end">
+          <div>
+            <div *ngIf="!params?.type" align="right">
+              <button type="button" class="btn btn-wide btn-primary" routerLink="/shipping/delivery-methods/edit">Edit</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- list -->
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card p-3 mt-3" *ngFor="let x of deliveryDetails.list; let i=index;">
+            <h5 class="add-another">{{x.name}}</h5>
+            <ng-container *ngFor="let y of x.groups; let j=index;">
+              <div class="card card-in-card p-3 mt-3">
+                <h6 class="add-another">{{j+1}}) {{y.name}}</h6>
+                <div class="pt-3 pl-3">
+                    <ng-container *ngFor="let z of y.slots; let k=index;">
+                      <p><strong class="mr-3">{{z.from_time}} - {{z.to_time}}</strong><strong class="ml-3">{{z.price | currency:commonService.store_currency.country_code}}</strong></p>
+                    </ng-container>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+  </ng-container>
+
+  <div *ngIf="params?.type">
+
+    <form autocomplete="off" (ngSubmit)="onUpdate();" ngNativeValidate>
+
+      <!-- available days -->
+      <div class="card p-3 mt-3">
+        <div class="row">
+          <div class="col-md-12 mb-3">
+            <b>AVAILABLE DAYS</b>
+          </div>
+          <div class="form-group col-md-4 mt-2 mb-2" *ngFor="let x of deliveryForm.available_days; let dayIndex=index;">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="active{{dayIndex}}" [(ngModel)]="x.active" #active="ngModel">
+              <span>{{x.day}}</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <!-- ### available days ### -->
+
+      <!-- list -->
+      <ng-container *ngFor="let x of deliveryForm.list; let i=index;">
+        <div class="card p-3 mt-3 mb-3">
+
+          <ng-container *ngIf="deliveryForm.list.length > 1">
+            <span (click)="deliveryForm.list.splice(i, 1);" class="material-icons item-close absolute-item-close float-right" aria-hidden="true">close</span>
+          </ng-container>
+
+          <div class="row">
+            <div class="col-md-4 form-group mb-2">
+              <label>{{i+1}}) List Name</label>
+              <input type="text" name="name{{i}}" class="form-control" [(ngModel)]="x.name" #name="ngModel" required />
+            </div>
+            <div class="col-md-4 form-group mb-2">
+              <label>Additional Days To Display</label>
+              <input type="text" name="following_days{{i}}" class="form-control" [(ngModel)]="x.following_days" #following_days="ngModel" appNumberOnly required />
+              <label class="delivery-days">Days</label>
+            </div>
+            <div class="col-md-4 d-flex align-self-center form-group mt-4 mb-2">
+              <label class="checkbox checkbox-primary">
+                <input class="form-check-input" type="checkbox" name="checked{{i}}" (change)="x.list_checked? x.status='active': x.status='inactive'"
+                [(ngModel)]="x.list_checked" #checked="ngModel">
+                <span>Enable List</span>
+                <span class="checkmark"></span>
+              </label>
+            </div>
+
+            <!-- groups -->
+            <div class="col-md-12 mb-3">
+              <ng-container *ngFor="let y of x.groups; let j=index;">
+
+                <div class="card card-in-card p-3 mt-3">
+                  <ng-container *ngIf="x.groups.length > 1">
+                    <span (click)="x.groups.splice(j, 1);" class="material-icons item-close absolute-item-close float-right" aria-hidden="true">close</span>
+                  </ng-container>
+
+                  <div class="row">
+                    <div class="col-md-4 form-group mb-2">
+                      <label>{{j+1}}) Group Name</label>
+                      <input type="text" name="name{{i}}{{j}}" class="form-control" [(ngModel)]="y.name" #name="ngModel" required />
+                    </div>
+                    <div class="col-md-8 d-flex align-self-center form-group mt-4 mb-2">
+                      <label class="checkbox checkbox-primary">
+                        <input class="form-check-input" type="checkbox" name="group_checked{{i}}{{j}}" (change)="y.group_checked? y.status='active': y.status='inactive'"
+                          [(ngModel)]="y.group_checked" #group_checked="ngModel">
+                        <span>Enable Group</span>
+                        <span class="checkmark"></span>
+                      </label>
+                    </div>
+                    <div class="col-md-12">
+                      <div class="card p-3 mt-3 mb-3">
+                        <div class="row">
+                          <div class="col-md-2 form-group mb-3">
+                            <label class="radio radio-primary">
+                              <input type="radio" name="delay_type{{i}}{{j}}" value="hour" (change)="y.delay_duration=0; y.order_time='';" [(ngModel)]="y.delay_type" />
+                              <span>Delay by hours</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-2 form-group mb-3">
+                            <label class="radio radio-primary">
+                              <input type="radio" name="delay_type{{i}}{{j}}" value="day" (change)="y.delay_duration=0; y.order_time='';" [(ngModel)]="y.delay_type" />
+                              <span>Delay by day</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="row">
+                          <div class="col-md-4 form-group mt-2 mb-3">
+                            <label>Delay in {{y.delay_type}}s</label>
+                            <input type="text" name="delay_duration{{i}}{{j}}" class="form-control" [(ngModel)]="y.delay_duration" appNumberOnly required />
+                          </div>
+                          <div *ngIf="y.delay_type=='day'" class="col-md-4 form-group mt-2 mb-3">
+                            <label>Last Order Time</label>
+                            <input type="text" name="order_time{{i}}{{j}}" class="form-control" [(ngModel)]='y.order_time' (click)="secondaryTimePicker(i, j, 'order_time');" required />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- slots -->
+                    <div class="col-md-12 mt-2">
+                      <b>SLOTS</b>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                      <ng-container *ngFor="let z of y.slots; let k=index;">
+
+                        <div class="card card-in-card p-3 mt-3">
+                          <ng-container *ngIf="y.slots.length > 1">
+                            <span (click)="y.slots.splice(k, 1);" class="material-icons item-close absolute-item-close float-right " aria-hidden="true">close</span>
+                          </ng-container>
+
+                          <div class="row">
+                            <div class="col-md-3 d-flex align-self-center form-group mt-2 mb-2">
+                              <label class="checkbox checkbox-primary">
+                                <input class="form-check-input" type="checkbox" name="slot_checked{{i}}{{j}}{{k}}" (change)="z.slot_checked? z.status='active': z.status='inactive'"
+                                  [(ngModel)]="z.slot_checked" #slot_checked="ngModel">
+                                <span>Enable Slot</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 d-flex align-self-center flex-column form-group mt-2 mb-2">
+                              <label>From</label>
+                              <input type="text" name="from_time{{i}}{{j}}{{k}}" class="form-control" [(ngModel)]='z.from_time' [disabled]="!z.slot_checked"
+                              (click)="timePicker(i, j, k, 'from_time');" required />
+                            </div>
+                            <div class="col-md-3 d-flex align-self-center flex-column form-group mt-2 mb-2">
+                              <label>To</label>
+                              <input type="text" name="to_time{{i}}{{j}}{{k}}" class="form-control" [(ngModel)]='z.to_time' [disabled]="!z.slot_checked"
+                              (click)="timePicker(i, j, k, 'to_time');" required />
+                            </div>
+                            <div class="col-md-3 d-flex align-self-center flex-column form-group mt-2 mb-2">
+                              <label>Price</label>
+                              <input type="text" name="price{{i}}{{j}}{{k}}" class="form-control" [(ngModel)]='z.price' [disabled]="!z.slot_checked" appNumberOnly required />
+                            </div>
+                          </div>
+                        </div>
+                      </ng-container>
+
+                      <div class="row">
+                        <div class="col-md-12 mt-3 mb-3">
+                          <span class="add-another  x-close" (click)="y.slots.push({ slot_checked: true });">
+                            <b>ADD ANOTHER SLOT</b>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- ### slots ### -->
+                  </div>
+                </div>
+              </ng-container>
+
+              <div class="row">
+                <div class="col-md-12 mt-3 mb-3">
+                  <span class="add-another  x-close float-right" (click)="x.groups.push({ group_checked: true, delay_type: 'hour', slots: [{ slot_checked: true }] });">
+                    <b>ADD ANOTHER GROUP</b>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <!-- ### groups ### -->
+          </div>
+        </div>
+      </ng-container>
+      <!-- ### list ### -->
+
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <span class="add-another x-close" (click)="deliveryForm.list.push({ list_checked: true, groups:[{ group_checked: true, delay_type: 'hour', slots: [{ slot_checked: true }] }] });">
+            ADD ANOTHER LIST
+          </span>
+        </div>
+      </div>
+
+      <div class="separator-breadcrumb border-top mt-5"></div>
+      <div class="row">
+        <div class="col-md-12 mt-3 mb-3" *ngIf="deliveryForm.errorMsg">
+          <p class="text-danger" align="center">{{ deliveryForm.errorMsg }}</p>
+        </div>
+        <div align="center" class="col-md-12 z-i-0">
+          <button type="button" routerLink="/shipping/delivery-methods" class="btn btn-wide black-outline-btn">
+           <span class="black-outline-txt">Cancel</span>
+          </button>&nbsp; &nbsp; &nbsp;
+          <button type="submit" class="btn btn-wide btn-primary ladda-buatton m-1" [disabled]="btnLoader" [ladda]="btnLoader">Update</button>
+        </div>
+      </div>
+    </form>
+
+  </div>
+
+</div>

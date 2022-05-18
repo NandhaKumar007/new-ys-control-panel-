@@ -1,0 +1,131 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-md-8">
+        <h1>Offers</h1>
+        <ul><li>Create and edit offers</li></ul>
+      </div>
+      <div *ngIf="commonService.deployInProgress" class="col-md-4 d-flex align-items-center justify-content-end mt-sm-15">
+        <button type="button" class="btn btn-primary" (click)="commonService.goBack();">Go Back</button>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="top-filter-sec">
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="form-group">
+          <select name="type" class="form-control select-arrow" [(ngModel)]="list_type" (change)="filterList(list_type);">
+            <option value="all">All</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+            <option value="Expired">Expired</option>
+          </select>
+        </div>
+      </div>
+      <div class="col-md-6 mt-sm-15" align="right">
+        <div class="form-group">
+          <input type="text" name="search_bar" placeholder="Search" class="form-control" [(ngModel)]="search_bar" />
+        </div>
+      </div>
+      <div class="col-md-3">
+        <button type="button" routerLink="/features/coupon-codes/new" class="btn btn-primary w-md-100 pull-right">Create New Offer
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- DATA LIST -->
+  <div *ngIf="list?.length" class="list-horizontal">
+
+    <div class="data-list-card-wrapper">
+      <div class="data-list-card-inner">
+        <div class="row m-0">
+
+          <!-- SINGLE LIST ITEM -->
+          <div *ngFor="let x of list | orderDesc:'created_on' | fieldSearch:'code':search_bar | paginate: { itemsPerPage: pageSize, currentPage: page }; let i=index;"
+            class="col-md-12 list-item data-list-card p-0" [ngClass]="x.code_type=='auto_discount'? 'has-find-band': ''" [@animate]="{value:'*',params:{delay: (i*100)+'ms', y:'50px'}}">
+
+            <div class="d-flex flex-row">
+              <div *ngIf="x.code_type=='auto_discount'" class="find-band"></div>
+              <div class="flex-grow-1 d-flex">
+                <div class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                  <p class="w-20 w-sm-100 mb-0">{{x.code}}</p>
+                  <p class="w-20 w-sm-100 mb-0">
+                    <span class="badge" [ngClass]="{
+              'badge-warning badge-green': x.code_status === 'Active',
+              'badge-info badge-blue': x.code_status === 'Inactive',
+              'badge-primary badge-red': x.code_status === 'Expired'
+            }">{{x.code_status}}</span>
+                  </p>
+                  <p class="w-20 w-sm-100 mb-0">
+                    <ng-container *ngIf="!x.usage_limit || x.usage_limit<=0">{{x.redeemed_count}} used</ng-container>
+                    <ng-container *ngIf="x.usage_limit>0">{{x.redeemed_count}}/{{x.usage_limit}} used</ng-container>
+                  </p>
+                  <p class="w-30 w-sm-100 mb-0">
+                    From {{x.valid_from | date: "dd MMM y hh:mm a"}}
+                    <span *ngIf="x.valid_to"> To {{x.valid_to | date: "dd MMM y hh:mm a"}}</span>
+                  </p>
+                  <p class="m-0 text-muted text-small w-20 w-sm-100  d-lg-block item-actions">
+                    <button class="btn btn-wide black-outline-btn w-md-100 mr-3" routerLink="/features/coupon-codes/modify/{{x._id}}">
+                      <span class="black-outline-txt">Edit</span>
+                    </button>
+                    <button class="btn orng-outline-btn w-md-100" (click)="deleteForm = x; modalService.open(deleteModal, { centered: true });">
+                      <span class="orng-outline-txt">Remove</span>
+                    </button>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
+    <!-- PAGINATION CONTROL -->
+    <div class="row">
+      <div class="col-md-12 mt-3">
+        <pagination-controls (pageChange)="page=$event; commonService.pageTop(0);" autoHide="true" responsive="true" maxSize="5"
+          previousLabel="" nextLabel=""></pagination-controls>
+      </div>
+    </div>
+
+
+  </div>
+
+  <div *ngIf="!list?.length" class="row">
+    <div class="col-md-12 d-flex flex-column align-items-center justify-content-center no-rec-found-wrapper">
+      <img class="no-rec-found" src="assets/images/no_records_found.png" alt="no-records">
+      <p align="center">No data to display.</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- DELETE MODAL -->
+<ng-template #deleteModal let-modal>
+  <div class="modal-body">
+    <p>
+      <strong>Are you sure you want to delete
+        <span class="txt-grdint-highlight">"{{deleteForm.code}}"</span>?</strong>
+    </p>
+    <div *ngIf="deleteForm.errorMsg">
+      <p class="text-danger">{{ deleteForm.errorMsg }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-wide black-outline-btn" id="closeModal" (click)="modal.dismiss('Cross click');">
+      <span class="black-outline-txt">No</span>
+    </button>
+    <button type="button" (click)="onDelete();" class="btn btn-wide orng-outline-btn">
+      <span class="orng-outline-txt">Yes</span>
+    </button>
+  </div>
+</ng-template>

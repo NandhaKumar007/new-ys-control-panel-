@@ -1,0 +1,182 @@
+<div class="app-admin-wrap layout-sidebar-large">
+  <div>
+    <!-- Header -->
+    <div class="main-header">
+
+      <div class="menu-toggle" (click)="toggelSidebar()">
+        <i class="material-icons">menu</i>
+      </div>
+      <div class="logo">
+        <img *ngIf="!commonService.dark_theme" class="desktop-logo" src="assets/images/yourstore_logo.svg" alt="yourstore-logo">
+        <img *ngIf="commonService.dark_theme" class="desktop-logo" src="assets/images/yourstore_logo_white.svg" alt="yourstore-logo">
+        <img class="mobile-logo" src="assets/images/yourstore_logo_only.svg" alt="yourstore-logo">
+      </div>
+      <div style="margin: auto; margin-left: 0px;"></div>
+
+      <!-- notification -->
+      <!-- <div ngbDropdown [placement]="'bottom-right'">
+        <div class="badge-top-container">
+          <span class="badge badge-primary">{{notifications?.length}}</span>
+          <i ngbDropdownToggle class="material-icons text-muted header-icon" role="button">notifications</i>
+        </div>
+        <div ngbDropdownMenu class="notification-dropdown rtl-ps-none" perfectScrollbar>
+          <div class="dropdown-item d-flex" *ngFor="let item of notifications" routerLink="{{item.link}}">
+            <div class="notification-icon">
+              <i class="material-icons">settings_backup_restore</i>
+            </div>
+            <div class="notification-details flex-grow-1">
+              <p class="m-0 d-flex align-items-center">
+                <span>{{item.title}}</span>
+                <span *ngIf="item.badge" class="badge badge-pill badge-{{item.status}} ml-1 mr-1">{{item.badge}}</span>
+                <span class="flex-grow-1"></span>
+                <span class="text-small text-muted ml-auto">{{item.time | relativeTime}}</span>
+              </p>
+              <p class="text-small text-muted m-0">{{item.text | excerpt:30}}</p>
+            </div>
+          </div>
+        </div>
+      </div> -->
+      <!-- #notification -->
+
+      <div class="header-part-right">
+        <div ngbDropdown [placement]="'bottom-right'">
+          <i ngbDropdownToggle class="material-icons-outlined text-muted header-icon" role="button">
+            dashboard_customize
+          </i>
+          <div ngbDropdownMenu class="menu-icon-grid-dropdown">
+            <div class="menu-icon-grid">
+              <div class="d-flex align-items-center justify-content-center flex-column">
+                <label class="text-title">Dark Mode</label>
+                <div class="theme-switch-wrapper d-flex align-items-center justify-content-center">
+                  <label class="theme-switch m-0" for="darkSwitch">
+                    <input type="checkbox" class="custom-control-input" name="dark_theme" [(ngModel)]="commonService.dark_theme" (change)="commonService.changeTheme();" id="darkSwitch" />
+                    <!-- <div class="darkmode-switcher"></div> -->
+                    <div class="slider">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="feather feather-sun">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                      </svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="feather feather-moon">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                      </svg>
+                    </div>
+                  </label>
+                </div>
+              </div>
+              <div class="d-flex align-items-center justify-content-center flex-column">
+                <label class="text-title">Full Screen</label>
+                <i fullScreenWindow class="material-icons header-icon d-sm-inline-block" role="button">fullscreen</i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div ngbDropdown [placement]="'bottom-right'" class="user col d-flex align-self-end">
+          <div class="x-close account-circle user-account">
+            <img src="assets/images/seo_logo.jpg" alt="product-logo" id="userDropdown" ngbDropdownToggle>
+          </div>
+          <div ngbDropdownMenu aria-labelledby="userDropdown" class="header-account-dropdown">
+            <div>
+              <div class="inner-account-circle user-account-inner d-flex flex-column align-items-center justify-content-center">
+                <img src="assets/images/seo_logo.jpg" alt="product-logo">
+              </div>
+            </div>
+            <div class="profile-inner">
+              <div class="footer d-flex justify-content-center align-items-center">
+                <button class="signout-btn mr-2" routerLink="/control-panel">Control Panel</button>
+                <button class="signout-btn ml-2" (click)="commonService.signOut('/session/signin/master');">Sign Out</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <!-- #Header -->
+  </div>
+
+  <div class="side-content-wrap">
+    <!-- Sidebar -->
+    <div [ngClass]="{open: navService.sidebarState.sidenavOpen}" class="sidebar-left rtl-ps-none" [perfectScrollbar]="{suppressScrollX: true}">
+      <ul class="navigation-left">
+        <li [ngClass]="{active: item.active}" (click)="onClickChangeActiveFlag(item)" class="nav-item lvl1" *ngFor="let item of nav">
+          <div class="nav-item-hold" routerLink="{{item.state}}" (mouseenter)="closeChildNav();" (click)="closeChildNav();" *ngIf="item.type==='link'">
+            <i class="material-icons">{{item.icon}}</i>
+            <span class="nav-text">{{item.name}}</span>
+          </div>
+          <div class="nav-item-hold" (mouseenter)="selectItem(item)" *ngIf="item.type==='dropDown'">
+            <i class="material-icons">{{item.icon}}</i>
+            <span class="nav-text">{{item.name}}</span>
+          </div>
+          <div class="triangle"></div>
+        </li>
+      </ul>
+    </div>
+
+    <div [ngClass]="{open: navService.sidebarState.childnavOpen}" class="sidebar-left-secondary rtl-ps-none" [perfectScrollbar]="{suppressScrollX: true}">
+      <ng-container *ngTemplateOutlet="menuTemplate;context:{parentItem: selectedItem}"></ng-container>
+    </div>
+
+    <ng-template #menuTemplate let-parentItem="parentItem">
+      <ul class="childNav" appDropdown>
+        <li *ngFor="let item of parentItem?.sub" appDropdownLink class="nav-item sub-nav-icon">
+          <a routerLink="{{item.state}}" (click)="closeChildNav();" *ngIf="item.type==='link'" routerLinkActive="open">
+            <i class="material-icons">{{item.icon}}</i>
+            <span class="item-name lvl1">{{item.name}}</span>
+          </a>
+          <div *ngIf="item.type === 'dropDown'">
+            <a appDropdownToggle [ngClass]="{open: item.active}" routerLinkActive="open">
+              <i class="material-icons">{{item.icon}}</i>
+              <span class="item-name">{{item.name}}</span>
+              <i class="dd-arrow material-icons p-0">keyboard_arrow_down</i>
+            </a>
+            <ng-container *ngTemplateOutlet="menuTemplate;context:{parentItem: item}"></ng-container>
+          </div>
+        </li>
+      </ul>
+    </ng-template>
+
+    <div [ngClass]="{open: navService.sidebarState.childnavOpen}" class="sidebar-overlay" (click)="closeChildNav()">
+    </div>
+    <!-- #Sidebar -->
+  </div>
+
+  <div class="main-content-wrap d-flex flex-column" [ngClass]="{'sidenav-open': navService.sidebarState.sidenavOpen}">
+
+    <router-outlet></router-outlet>
+
+    <div class="flex-grow-1"></div>
+
+    <!-- Footer -->
+    <div class="app-footer">
+      <div class="footer-bottom border-top pt-3 d-flex flex-column flex-sm-row align-items-center">
+        <span class="flex-grow-1"></span>
+        <div class="footer-logo d-flex align-items-center">
+          <img class="mb-3 mb-md-0" style="width: 100px;" alt="yourstore-logo"
+          src="{{(commonService.dark_theme)? 'assets/images/yourstore_logo_white.svg': 'assets/images/yourstore_logo.svg'}}">
+          <div class="ml-md-3">
+            <p class="m-0">&copy; {{currentYear}} All Rights Reserved. Estore Mastery Systems Pvt. Ltd.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- #Footer -->
+
+    <div class="module-loader" *ngIf="moduleLoading">
+      <div class="spinner spinner-bubble spinner-bubble-primary mr-3"></div>
+    </div>
+
+  </div>
+
+</div>

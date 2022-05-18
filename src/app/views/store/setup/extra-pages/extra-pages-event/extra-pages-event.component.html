@@ -1,0 +1,53 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-md-12">
+        <h1>Privacy Policy</h1>
+        <ul>
+          <li>View and manage your privacy policy</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="row">
+    <div class="col-md-1"></div>
+    <div class="col-md-10">
+      <form autocomplete="off" (ngSubmit)="onUpdate();" ngNativeValidate>
+        <div class="row">
+          <div class="col-md-6 form-group mb-3">
+            <label>Name</label>
+            <input type="text" name="name" class="form-control" [(ngModel)]="formData.name" #name="ngModel" required />
+          </div>
+          <div class="col-md-6 form-group mb-3">
+            <label>Page URL - {{commonService.store_details?.base_url}}/pages/{{formData.page_url}}</label>
+            <input type="text" name="page_url" class="form-control" [(ngModel)]="formData.page_url" #page_url="ngModel" appNoSplChar required />
+          </div>
+          <div class="col-md-12 form-group mb-3 quill-mb-5">
+            <label>Content</label>
+            <quill-editor class="rounded" [placeholder]="null" [(ngModel)]="formData.content" [ngModelOptions]="{standalone: true}"></quill-editor>
+          </div>
+        </div>
+        <div class="separator-breadcrumb border-top mt-5"></div>
+        <div class="row">
+          <div class="col-md-12 mt-3 mb-3" *ngIf="formData.errorMsg">
+            <p class="text-danger" align="center">{{ formData.errorMsg }}</p>
+          </div>
+          <div align="center" class="col-md-12 z-i-0">
+            <button type="button" routerLink="/setup/extra-pages" class="btn btn-wide black-outline-btn">
+            <span class="black-outline-txt">Cancel</span>
+            </button>&nbsp; &nbsp; &nbsp;
+            <button type="submit" class="btn btn-wide btn-primary">Update</button>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="col-md-1"></div>
+  </div>
+
+</div>

@@ -1,0 +1,148 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-md-8">
+        <h1>Shop Assistant</h1>
+        <ul>
+          <li>Manage your shop</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="data-list-card-wrapper" *ngIf="!params?.type">
+    <div class="data-list-card-inner">
+      <div class="row" >
+        <div class="col-md-12 list-item col-md-12">
+          <div class="d-flex flex-row">
+            <div class="flex-grow-1 d-flex">
+              <div
+                class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                <p class="m-0 text-muted text-small w-15 w-sm-100">Shop Assistant</p>
+                <p class="m-0 text-muted text-small w-15 w-sm-100">
+                  {{list?.length}} {{list?.length>1? 'Sections': 'Section'}}, {{totalOptions}} {{totalOptions>1? 'Options':
+                  'Option'}}
+                </p>
+                <p class="m-0 text-muted text-small w-15 w-sm-100 d-lg-block item-actions">
+                  <button type="button" class="btn btn-wide black-outline-btn w-md-100 mr-3"
+                    routerLink="/product-extras/shop-assistant/edit">
+                    <span class="black-outline-txt">Edit</span>
+                  </button>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+  <form *ngIf="params?.type" autocomplete="off" (ngSubmit)="onUpdate();" ngNativeValidate>
+    <div class="card mb-3 p-3" *ngFor="let x of list; let i=index;">
+      <div>
+        <span (click)="list.splice(i, 1);" class="material-icons item-close absolute-item-close float-right "
+          aria-hidden="true">close</span>
+      </div>
+      <div class="row">
+        <div class="col-md-4 form-group mb-3">
+          <label>Section Heading</label>
+          <input type="text" name="section_heading{{i+1}}" class="form-control" [(ngModel)]="x.heading"
+            #section_heading="ngModel" required />
+        </div>
+        <div class="col-md-4 form-group mb-3">
+          <label>Section Sub-heading</label>
+          <input type="text" name="section_sub_heading{{i+1}}" class="form-control" [(ngModel)]="x.sub_heading"
+            #sub_heading="ngModel" />
+        </div>
+        <div class="col-md-4 form-group mb-3">
+          <label>Choice Type</label>
+          <select name="type{{i+1}}" id="type" class="form-control" [(ngModel)]="x.type" #type="ngModel" required>
+            <option value="either_or">Choose One</option>
+            <option value="multiple">Unlimited Choice</option>
+          </select>
+        </div>
+        <!-- Option List -->
+        <div class="col-md-6 col-lg-4" *ngFor="let y of x.option_list; let j=index;">
+          <div class="card card-in-card p-3 mb-3">
+
+            <ng-container *ngIf="x.option_list.length > 1">
+              <span (click)="x.option_list.splice(j, 1);"
+                class="material-icons item-close absolute-item-close float-right " aria-hidden="true">close</span>
+            </ng-container>
+
+            <div class="mb-2" align="center">
+              <label>
+                <div *ngIf="!y.image">
+                  <i class="material-icons add-img">add_photo_alternate</i>
+                  <p>Click to upload image (Resolution: 150 x 150)</p>
+                </div>
+                <img *ngIf="y.image && y?.img_change" [src]="y.image" height="100px;" width="auto;">
+                <img *ngIf="y.image && !y?.img_change" [src]="imgBaseUrl+y.image" height="100px;" width="auto;">
+                <input type="file" name="y.image{{i+1}}{{j+1}}" style="display: none;"
+                  (change)="fileChangeListener(i, j, $event)" accept="image/jpeg, image/png" />
+              </label>
+            </div>
+            <div *ngIf="i>0" class="form-group">
+              <label>Option Link To</label>
+              <select name="link_to{{i+1}}{{j+1}}" id="link_to" class="form-control" [(ngModel)]="y.link_to"
+                #link_to="ngModel" required>
+                <option value="all">All</option>
+                <option *ngFor="let z of list[i-1].option_list; let k=index;" [ngValue]="z.heading">{{z.heading}}
+                </option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Option Name</label>
+              <input type="text" name="option_heading{{i+1}}{{j+1}}" placeholder="Title your option here"
+                class="form-control" [(ngModel)]="y.heading" #option_heading="ngModel" required />
+            </div>
+            <div class="form-group">
+              <label>Option Hint</label>
+              <input type="text" name="option_sub_heading{{i+1}}{{j+1}}" placeholder="Enter the hint for this option"
+                class="form-control" [(ngModel)]="y.sub_heading" #option_sub_heading="ngModel" />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12 p-0">
+          <div class="col-md-6 col-lg-4 z-i-0">
+            <div class="add-another-opt" (click)="x.option_list.push({});">
+              <p class="w-100 x-close">ADD ANOTHER OPTION</p>
+            </div>
+          </div>
+        </div>
+        <!-- #Option List -->
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <span class="add-another  x-close" (click)="list.push({ option_list: [{}] });">
+          <b>{{ list?.length? 'ADD ANOTHER SECTION': 'ADD SECTION' }}</b>
+        </span>
+      </div>
+    </div>
+    <!-- #Customization List -->
+
+    <div class="separator-breadcrumb border-top mt-5"></div>
+    <div class="row">
+      <div *ngIf="errorMsg" class="col-md-12 mt-3 mb-3">
+        <p class="text-danger" align="center">{{ errorMsg }}</p>
+      </div>
+      <div align="center" class="col-md-12 z-i-0">
+        <button type="button" routerLink="/product-extras/shop-assistant" class="btn btn-wide black-outline-btn">
+          <span class="black-outline-txt">Cancel</span>
+        </button>&nbsp; &nbsp; &nbsp;
+        <button type="submit" class="btn btn-wide btn-primary ladda-button m-1" [disabled]="btnLoader"
+          [ladda]="btnLoader">Update</button>
+      </div>
+    </div>
+  </form>
+
+</div>

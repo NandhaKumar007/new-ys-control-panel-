@@ -1,0 +1,104 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-md-12">
+        <h1>
+          Settlement Orders
+        </h1>
+        <ul>
+          <li style="padding: 0px;">View and manage your settlement orders</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="top-filter-sec">
+    <div class="row mb-4">
+      <div *ngIf="commonService.store_details?.login_type=='admin'" class="col-md-3 col-6">
+        <div class="form-group">
+          <select name="vendor_id" class="form-control select-arrow" [(ngModel)]="filterForm.vendor_id" (change)="getOrderList();">
+            <option value="all">All Vendors</option>
+            <option [ngValue]="x._id" *ngFor="let x of commonService.vendor_list">{{x.company_details.brand}}</option>
+          </select>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <!-- <div class="form-group">
+          <select name="list_type" class="form-control select-arrow" [(ngModel)]="filterForm.list_type" (change)="getOrderList();">
+            <option value="all">All</option>
+            <option value="pending">Settlement Pending</option>
+            <option value="settled">Settlement Completed</option>
+          </select>
+        </div> -->
+      </div>
+      <div class="col-md-6 col-6">
+        <div class="form-group">
+          <input type="text" name="search_bar" placeholder="Search" class="form-control" [(ngModel)]="search_bar" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- DATA LIST -->
+  <div *ngIf="list?.length" class="list-horizontal">
+
+    <div class="data-list-card-wrapper">
+      <div class="data-list-card-inner">
+        <div class="row m-0">
+
+          <!-- SINGLE LIST ITEM -->
+          <div
+            *ngFor="let x of list | gridSearch: { order_number: search_bar, vendor_name: search_bar } | paginate: { itemsPerPage: pageSize, currentPage: page }; let i=index;"
+            class="col-md-12 list-item data-list-card p-0"
+            [@animate]="{value:'*',params:{delay: (i*100)+'ms', y:'50px'}}">
+
+            <div class="d-flex flex-row">
+              <div class="flex-grow-1 pl-2 d-flex">
+                <div
+                  class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                  <p class="w-30 w-sm-100 m-b-0">#{{x.order_number}}</p>
+                  <p class="w-30 w-sm-100 m-b-0">{{ (x.vendor_name)? x.vendor_name: 'NA' }}</p>
+                  <p class="w-30 w-sm-100 m-b-0">{{x.delivered_on | date: "dd MMM y"}}</p>
+                  <p class="w-30 w-sm-100 m-b-0">{{x.final_price | currency: commonService.store_currency?.country_code}}</p>
+                  <p class="m-0 text-muted text-small w-15 w-sm-100 d-lg-block item-actions">
+                    <a class="btn btn-wide black-outline-btn w-100 mr-3" (click)="capturePageData();"
+                      routerLink="/orders/settlement/{{x._id}}/{{x.vendor_id}}">
+                      <span class="black-outline-txt">View</span>
+                    </a>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
+    <!-- PAGINATION CONTROL -->
+    <div class="row">
+      <div class="col-md-12 mt-3">
+        <pagination-controls (pageChange)="page=$event; commonService.pageTop(0);" autoHide="true" responsive="true"
+          maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+      </div>
+    </div>
+
+
+  </div>
+
+  <div *ngIf="!list?.length" class="row">
+    <div class="col-md-12 d-flex flex-column align-items-center justify-content-center no-rec-found-wrapper">
+      <img class="no-rec-found" src="assets/images/no_records_found.png" alt="no-records">
+      <p align="center">No data to display.</p>
+    </div>
+  </div>
+
+</div>

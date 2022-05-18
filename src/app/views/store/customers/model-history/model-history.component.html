@@ -1,0 +1,84 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-8">
+        <h1>{{customerDetails.email}}<span *ngIf="customerDetails?.unique_id"> - {{customerDetails.unique_id}}</span>
+        </h1>
+        <ul>
+          <li>View the customization update history</li>
+        </ul>
+      </div>
+      <div class="col-4 z-i-0" align="right">
+        <button type="button" class="btn btn-wide btn-outline-secondary" (click)="commonService.goBack();">Back</button>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div *ngIf="list?.length" class="list-horizontal">
+
+    <div class="data-list-card-wrapper">
+      <div class="data-list-card-inner">
+        <div class="row m-0">
+
+          <div
+            *ngFor="let x of list | orderDesc:'_id' | paginate: { itemsPerPage: pageSize, currentPage: page }; let i=index;"
+            class="col-md-12 list-item data-list-card" [@animate]="{value:'*',params:{delay: (i*100)+'ms', y:'50px'}}">
+            <div class="d-flex flex-row">
+              <div class="flex-grow-1 d-flex">
+                <div
+                  class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row">
+                  <p class="w-30 w-sm-100 m-b-0">{{x.name}}</p>
+                  <p class="w-30 w-sm-100 m-b-0">{{x.created_on | date : "dd MMM y hh:mm a"}}</p>
+                  <p class="w-30 w-sm-100 m-b-0">{{x.updatedBy}}</p>
+                  <p class="m-0 text-muted text-small w-15 w-sm-100 d-lg-block item-actions order-md-2">
+                    <a (click)="commonService.custom_model=x; modalService.open(customizationModal, { size: 'lg'});"
+                      class="btn btn-wide black-outline-btn w-md-100 mr-3">
+                      <span class="black-outline-txt">View</span>
+                    </a>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
+    <!-- PAGINATION CONTROL -->
+    <div class="col-md-12 mt-3">
+      <pagination-controls (pageChange)="page=$event; commonService.pageTop(0);" autoHide="true" responsive="true"
+        maxSize="5" previousLabel="" nextLabel=""></pagination-controls>
+    </div>
+
+  </div>
+
+  <div *ngIf="!list?.length" class="row">
+    <div class="col-md-12 d-flex flex-column align-items-center justify-content-center no-rec-found-wrapper">
+      <img class="no-rec-found" src="assets/images/no_records_found.png" alt="no-records">
+      <p align="center">No data to display.</p>
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOMIZATION MODAL -->
+<ng-template #customizationModal let-modal>
+  <div class="modal-header pb-0">
+    <div>
+      <h4 class="modal-title" id="modal-basic-title">{{commonService.custom_model?.name}}</h4>
+      <p>These are the details of this customization</p>
+    </div>
+    <div class="d-flex">
+      <i class="material-icons" (click)="modal.dismiss('Cross click');">close</i>
+    </div>
+  </div>
+  <div class="modal-body modal-scroll slim-scroll ml-3 mr-3">
+    <app-customization-details></app-customization-details>
+  </div>
+</ng-template>

@@ -1,0 +1,986 @@
+<div>
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-md-12 p-0">
+        <div class="row">
+          <div class="col-md-8 d-flex justify-content-end align-items-start flex-column">
+            <h1>Store Setting</h1>
+            <ul>
+              <li>Manage your website settings</li>
+            </ul>
+          </div>
+          <div class="col-md-4 mt-2 d-flex align-items-end justify-content-end mt-sm-15">
+            <button type="button" (click)="onEnableAdvProdOptions();"
+            [disabled]="btnLoader" [ladda]="btnLoader" class="btn btn-primary ladda-button m-0">
+              {{ (commonService.store_details?.additional_features?.adv_product_options)? 'Disable': 'Enable' }} Advanced Product Options
+            </button>
+            <!-- <button *ngIf="commonService.host_name=='localhost' && commonService.master_token" type="button" (click)="createSSL();"
+            [disabled]="btnLoader" [ladda]="btnLoader" class="btn btn-primary ladda-button m-0">
+              Create SSL
+            </button> -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <div class="row">
+    <div class="col-md-6 col-lg-4 d-flex">
+      <div (click)="onOpenStoreOpenDaysModal(openingDaysModal);" class="card setting-card w-100 p-3 mb-4 cursor">
+        <div class="d-flex align-items-center justify-content-center flex-column mt-2">
+          <label class="text-title cursor">Opening Hours</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4 d-flex">
+      <div (click)="onOpenMailModal(mailConfigModal);" class="card setting-card w-100 p-3 mb-4 cursor">
+        <div class="d-flex align-items-center justify-content-center flex-column mt-2">
+          <label class="text-title cursor">Mail Configuration</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4 d-flex">
+      <div routerLink="/store-setting/logo-management" class="card setting-card w-100 p-3 mb-4 cursor">
+        <div class="d-flex align-items-center justify-content-center flex-column mt-2">
+          <label class="text-title cursor">Logo Management</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4 d-flex">
+      <div (click)="onOpenSettingModal(storeModal);" class="card setting-card w-100 p-3 mb-4 cursor">
+        <div class="d-flex align-items-center justify-content-center flex-column mt-2">
+          <label class="text-title cursor">Store Management</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4 d-flex">
+      <div (click)="onOpenSettingModal(checkoutModal);" class="card setting-card w-100 p-3 mb-4 cursor">
+        <div class="d-flex align-items-center justify-content-center flex-column mt-2">
+          <label class="text-title cursor">Checkout Setting</label>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="commonService.ys_features.indexOf('product_search')!=-1" class="col-md-6 col-lg-4 d-flex">
+      <div (click)="onOpenSettingModal(keywordModal);" class="card setting-card w-100 p-3 mb-4 cursor">
+        <div class="d-flex align-items-center justify-content-center flex-column mt-2">
+          <label class="text-title cursor">Search Keywords</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4 d-flex">
+      <div (click)="onOpenInvoiceModal(invoiceModal);" class="card setting-card w-100 p-3 mb-4 cursor">
+        <div class="d-flex align-items-center justify-content-center flex-column mt-2">
+          <label class="text-title cursor">Invoice Setting</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4 d-flex">
+      <div (click)="onOpenAnnounceModal(announcebarModal);" class="card setting-card w-100 p-3 mb-4 cursor">
+        <div class="d-flex align-items-center justify-content-center flex-column mt-2">
+          <label class="text-title cursor">Announcement Bar</label>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="commonService.ys_features.indexOf('social_login')!=-1" class="col-md-6 col-lg-4 d-flex">
+      <div (click)="onOpenSettingModal(socialModal);" class="card setting-card w-100 p-3 mb-4 cursor">
+        <div class="d-flex align-items-center justify-content-center flex-column mt-2">
+          <label class="text-title cursor">Social Logins</label>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="commonService.ys_features.indexOf('whatsapp_chat')!=-1 || commonService.ys_features.indexOf('messenger')!=-1" class="col-md-6 col-lg-4 d-flex">
+      <div (click)="onOpenSettingModal(chatModal);" class="card setting-card w-100 p-3 mb-4 cursor">
+        <div class="d-flex align-items-center justify-content-center flex-column mt-2">
+          <label class="text-title cursor">Chat Configuration</label>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="commonService.ys_features.indexOf('newsletter')!=-1" class="col-md-6 col-lg-4 d-flex">
+      <div (click)="onOpenSettingModal(newsletterModal);" class="card setting-card w-100 p-3 mb-4 cursor">
+        <div class="d-flex align-items-center justify-content-center flex-column mt-2">
+          <label class="text-title cursor">Store Popup</label>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="commonService.ys_features.indexOf('time_based_delivery')!=-1" class="col-md-6 col-lg-4 d-flex">
+      <div (click)="onOpenPackChargeModal(packageChargeModal);" class="card setting-card w-100 p-3 mb-4 cursor">
+        <div class="d-flex align-items-center justify-content-center flex-column mt-2">
+          <label class="text-title cursor">Packaging Charges</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4 d-flex">
+      <div (click)="commonService.getCoustomDomain();" class="card setting-card w-100 p-3 mb-4 cursor">
+        <div class="d-flex align-items-center justify-content-center flex-column mt-2">
+          <label class="text-title cursor">Domain Setup</label>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</div>
+
+<!-- opening hours -->
+<ng-template #openingDaysModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Store Opening Hours</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdateOpenDays();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12 mb-3">
+            <b>AVAILABLE DAYS</b>
+          </div>
+          <div class="col-md-12 mt-2 mb-2" *ngFor="let x of settingForm.opening_days; let i=index;">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="active{{i}}" [(ngModel)]="x.active" (change)="(x.active && !x.opening_hrs.length)? x.opening_hrs=[{}]: x.opening_hrs=[];" #active="ngModel">
+              <strong>{{x.day}}</strong>
+              <span class="checkmark"></span>
+            </label>
+            <div *ngIf="x.active" class="row ml-4 mt-3">
+              <div *ngFor="let y of x.opening_hrs; let j=index;" class="col-md-11 card card-in-card p-3 mb-3">
+                <ng-container *ngIf="x.opening_hrs.length>1">
+                  <span (click)="x.opening_hrs.splice(j, 1);" class="material-icons item-close absolute-item-close float-right " aria-hidden="true">close</span>
+                </ng-container>
+                <div class="row">
+                  <div class="col-md-6">
+                    <label>From</label>
+                    <input type="text" name="from{{i+1}}{{j}}" class="form-control" [(ngModel)]="y.from" (click)="openingHrsTimePicker(i, j, 'from');" #from="ngModel" required />
+                  </div>
+                  <div class="col-md-6">
+                    <label>To</label>
+                    <input type="text" name="to{{i+1}}{{j}}" class="form-control" [(ngModel)]="y.to" (click)="openingHrsTimePicker(i, j, 'to');" #to="ngModel" required />
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="x.opening_hrs.length<2" class="row">
+                <div class="col-md-12">
+                  <strong (click)="x.opening_hrs.push({});" class="add-another x-close">ADD HOURS</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ng-container *ngIf="commonService.ys_features.indexOf('store_pickup')!=-1">
+            <div class="col-md-12 mb-3 border-top"></div>
+            <div class="col-md-12 mb-3">
+              <b>STORE PICKUP SETUP</b>
+            </div>
+            <div class="col-md-4 form-group mb-3">
+              <label class="radio radio-primary">
+                <input type="radio" name="sp_delay_type" value="hour" (change)="settingForm.sp_delay_duration=0;" [(ngModel)]="settingForm.sp_delay_type" />
+                <span>Delay by hours</span>
+                <span class="checkmark"></span>
+              </label>
+            </div>
+            <div class="col-md-4 form-group mb-3">
+              <label class="radio radio-primary">
+                <input type="radio" name="sp_delay_type" value="day" (change)="settingForm.sp_delay_duration=0;" [(ngModel)]="settingForm.sp_delay_type" />
+                <span>Delay by day</span>
+                <span class="checkmark"></span>
+              </label>
+            </div>
+            <div class="col-md-6">
+              <label>Slot Duration</label>
+              <input type="text" name="sp_slot_duration" class="form-control" [(ngModel)]="settingForm.sp_slot_duration" #from="ngModel" required />
+            </div>
+            <div class="col-md-6">
+              <label>Delay in {{settingForm.sp_delay_type}}s</label>
+              <input type="text" name="sp_delay_duration" class="form-control" [(ngModel)]="settingForm.sp_delay_duration" #to="ngModel" required />
+            </div>
+          </ng-container>
+        </div>
+      </div>
+      <div *ngIf="settingForm.errorMsg"><p class="text-danger">{{ settingForm.errorMsg }}</p></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+       <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" [disabled]="settingForm.submit" [ladda]="settingForm.submit" class="btn btn-wide btn-primary ladda-button">Submit</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- mail configuration -->
+<ng-template #mailConfigModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Mail Configuration</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdateMailConfig();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div *ngIf="commonService.store_details?.package_info?.category!='genie'" class="row">
+          <div *ngIf="!settingForm.transporter" class="form-group mb-3 col-md-12">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="enable_config" [(ngModel)]="settingForm.enable_config">
+              <span>Config own mail</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <ng-container *ngIf="settingForm.enable_config || settingForm.transporter">
+            <div class="col-md-12 form-group" [ngClass]="settingForm.host_type=='gmail'? 'mb-0': 'mb-3'">
+              <label>Host Type</label>
+              <select name="host_type" class="form-control select-arrow" [(ngModel)]="settingForm.host_type" required>
+                <option [ngValue]="x.value" *ngFor="let x of mailTypes">{{x.name}}</option>
+              </select>
+              <p *ngIf="settingForm.host_type=='gmail'">
+                <b>Note:</b> Please make sure <strong>Allow less secure apps</strong> was enabled
+                <a href="https://myaccount.google.com/lesssecureapps?pli=1" target="_blank" style="position: relative; top: 8px;">
+                  <i class="material-icons">link</i>
+                </a><br>
+                <b style="visibility: hidden;">Note:</b> Please allow the access
+                <a href="https://accounts.google.com/b/0/DisplayUnlockCaptcha" target="_blank" style="position: relative; top: 8px;">
+                  <i class="material-icons">link</i>
+                </a>
+              </p>
+            </div>
+            <ng-container *ngIf="settingForm.host_type=='roundcube'">
+              <div class="col-md-6 form-group mb-3">
+                <label>Domain</label>
+                <input type="text" name="mail_domain" class="form-control" [(ngModel)]="settingForm.mail_domain" required />
+              </div>
+              <div class="col-md-6 form-group mb-3">
+                <label>Mail Host</label>
+                <input type="text" name="mail_host" class="form-control" [(ngModel)]="settingForm.mail_host" required />
+              </div>
+            </ng-container>
+            <div class="col-md-6 form-group mb-3">
+              <label>Login Email</label>
+              <input type="email" name="username" class="form-control" [(ngModel)]="settingForm.username" required />
+            </div>
+            <div class="col-md-6 form-group mb-3">
+              <label>{{ (settingForm.host_type=='zoho')? 'App': 'Login' }} Password</label>
+              <input [type]="settingForm.input_txt? 'text': 'password'" name="password" class="form-control" [(ngModel)]="settingForm.password" #password="ngModel" required />
+              <i class="material-icons visibility_icon" *ngIf="!settingForm.input_txt" (click)="settingForm.input_txt = !settingForm.input_txt" aria-hidden="true">visibility</i>
+              <i class="material-icons visibility_icon" *ngIf="settingForm.input_txt" (click)="settingForm.input_txt = !settingForm.input_txt" aria-hidden="true">visibility_off</i>
+            </div>
+          </ng-container>
+          <div class="col-md-6 form-group mb-3">
+            <label>From Name</label>
+            <input type="text" name="from_name" class="form-control" [(ngModel)]="settingForm.from_name" required />
+          </div>
+          <div class="col-md-6"></div>
+          <div class="col-md-6 form-group mb-3">
+            <label>Contact No</label>
+            <input type="text" name="contact_no" class="form-control" [(ngModel)]="settingForm.contact_no" />
+          </div>
+          <div class="col-md-6 form-group mb-3">
+            <label>Customer Enquiry Email</label>
+            <input type="email" name="enquiry_email" class="form-control" [(ngModel)]="settingForm.enquiry_email" />
+          </div>
+          <ng-container *ngIf="commonService.ys_features.indexOf('vendors')!=-1">
+            <div class="col-md-6 form-group mb-3">
+              <label>Vendor Contact No</label>
+              <input type="text" name="vendor_contact_no" class="form-control" [(ngModel)]="settingForm.vendor_contact_no" />
+            </div>
+            <div class="col-md-6 form-group mb-3">
+              <label>Vendor Enquiry Email</label>
+              <input type="email" name="vendor_enquiry_email" class="form-control" [(ngModel)]="settingForm.vendor_enquiry_email" />
+            </div>
+          </ng-container>
+        </div>
+        <div class="row">
+          <div class="col-md-12 form-group mb-3">
+            <label>CC Mails</label>
+            <tag-input class="w-100" name="cc_mail_list"[(ngModel)]="settingForm.cc_mail_list" #cc_mail_list="ngModel" placeholder=""
+            [secondaryPlaceholder]="'Enter options separated by commas'" [separatorKeyCodes]="[188]"></tag-input>
+          </div>
+          <div class="col-md-12 form-group mb-3">
+            <label>Billing Mails</label>
+            <tag-input class="w-100" name="billing_mail_list"[(ngModel)]="settingForm.billing_mail_list" #billing_mail_list="ngModel" placeholder=""
+            [secondaryPlaceholder]="'Enter options separated by commas'" [separatorKeyCodes]="[188]"></tag-input>
+          </div>
+        </div>
+        <div *ngIf="commonService.store_details?.package_info?.category!='genie'" class="row">
+          <div class="col-md-12 border-top"></div>
+          <div class="mb-3 mt-3 col-md-12">
+            <span class="access-inner-head">Template Settings</span>
+          </div>
+          <div class="col-md-6 form-group mb-3">
+            <label>Font URL</label>
+            <input type="text" name="font_url" class="form-control" [(ngModel)]="settingForm.template_config.font_url" required />
+          </div>
+          <div class="col-md-6 form-group mb-3">
+            <label>Font Family</label>
+            <input type="text" name="font_family" class="form-control" [(ngModel)]="settingForm.template_config.font_family" required />
+          </div>
+          <div class="col-md-6 form-group mb-3">
+            <label>Theme Color</label>
+            <input name="theme_color" class="form-control" [colorPicker]="settingForm.template_config.theme_color" (colorPickerChange)="settingForm.template_config.theme_color=$event;"
+            [style.background]="settingForm.template_config.theme_color" [cpOKButton]="true" [cpOKButtonText]="'Save'" [cpOKButtonClass]= "'btn btn-primary'"
+            [cpSaveClickOutside]="false" [cpCancelButton]="true" [cpCancelButtonClass]= "'btn black-outline-btn'" />
+          </div>
+          <div class="col-md-6 form-group mb-3">
+            <label>Text Mode</label>
+            <select name="txt_color" class="form-control select-arrow" [(ngModel)]="settingForm.template_config.txt_color" required>
+              <option [ngValue]="x.value" *ngFor="let x of textTypes">{{x.name}}</option>
+            </select>
+          </div>
+          <div class="col-md-12 border-top"></div>
+          <div class="mb-3 mt-3 col-md-12">
+            <span class="access-inner-head">Band Settings</span>
+          </div>
+          <div class="col-md-6 form-group mb-3">
+            <label>Background Color</label>
+            <input name="bg_color" class="form-control" [colorPicker]="settingForm.band_config.bg_color" (colorPickerChange)="settingForm.band_config.bg_color=$event;"
+            [style.background]="settingForm.band_config.bg_color" [cpOKButton]="true" [cpOKButtonText]="'Save'" [cpOKButtonClass]= "'btn btn-primary'"
+            [cpSaveClickOutside]="false" [cpCancelButton]="true" [cpCancelButtonClass]= "'btn black-outline-btn'" />
+          </div>
+          <div class="col-md-6 form-group mb-3">
+            <label>Text Mode</label>
+            <select name="band_txt_color" class="form-control select-arrow" [(ngModel)]="settingForm.band_config.txt_color" required>
+              <option [ngValue]="x.value" *ngFor="let x of textTypes">{{x.name}}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="settingForm.errorMsg"><p class="text-danger">{{ settingForm.errorMsg }}</p></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+       <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" [disabled]="settingForm.submit" [ladda]="settingForm.submit" class="btn btn-wide btn-primary ladda-button">Submit</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- store mgmt -->
+<ng-template #storeModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Store Management</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdateStore();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="form-group mb-3 col-md-4">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="guest_checkout" [(ngModel)]="app_setting.guest_checkout" #guest_checkout="ngModel">
+              <span>Guest Checkout</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div *ngIf="commonService.ys_features.indexOf('customer_feedback')!=-1" class="form-group mb-3 col-md-4">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="feedback" [(ngModel)]="app_setting.feedback" #feedback="ngModel">
+              <span>Feedback</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div *ngIf="commonService.ys_features.indexOf('addons')!=-1" class="form-group mb-3 col-md-4">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="product_addon" [(ngModel)]="app_setting.product_addon" #product_addon="ngModel">
+              <span>Product Addons</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div *ngIf="commonService.ys_features.indexOf('currency_variation')!=-1" class="form-group mb-3 col-md-4">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="hide_currency" [(ngModel)]="app_setting.hide_currency" #hide_currency="ngModel">
+              <span>Hide Currency Type</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div *ngIf="commonService.store_details?.type!='restaurant_based'" class="form-group mb-3 col-md-4">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="ship_only_in_domestic" [(ngModel)]="app_setting.ship_only_in_domestic" #ship_only_in_domestic="ngModel">
+              <span>Shipping Only in Domestic</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div class="form-group mb-3 col-md-4">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="disable_delivery" [(ngModel)]="app_setting.disable_delivery" #disable_delivery="ngModel">
+              <span>Disable Order Delivery</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div *ngIf="commonService.store_details?.type=='restaurant_based' && commonService.ys_features.indexOf('time_based_delivery')!=-1" class="form-group mb-3 col-md-4">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="disable_delivery_time_slots" [(ngModel)]="app_setting.disable_delivery_time_slots" #disable_delivery_time_slots="ngModel">
+              <span>Disable Delivery Time Slots</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div class="col-md-12 mb-3 border-top"></div>
+          <div class="col-md-12">
+            <div class="row">
+              <div class="form-group mb-3 col-md-6" [ngClass]="app_setting.disp_stock_left? 'mt-4': ''">
+                <label class="checkbox checkbox-primary">
+                  <input class="form-check-input" type="checkbox" name="disp_stock_left" (change)="app_setting.min_stock=0;" [(ngModel)]="app_setting.disp_stock_left" #disp_stock_left="ngModel">
+                  <span>Display Stock Left</span>
+                  <span class="checkmark"></span>
+                </label>
+              </div>
+              <div *ngIf="app_setting.disp_stock_left" class="form-group mb-3 col-md-6">
+                <label>Minimum Stock</label>
+                <input type="tel" name="min_stock" class="form-control" [(ngModel)]="app_setting.min_stock" #min_stock="ngModel" required appNumberOnly />
+              </div>
+            </div>
+          </div>
+          <div class="col-md-12 mb-3 border-top"></div>
+          <div class="col-md-6 form-group mb-3">
+            <label>Cancel Order Email</label>
+            <input type="email" name="cancel_order_email" class="form-control" [(ngModel)]="app_setting.cancel_order_email" #cancel_order_email="ngModel" required />
+          </div>
+          <div *ngIf="commonService.store_details?.package_details?.package_id==configData.premium_package_id" class="col-md-6 form-group mb-3">
+            <label>Maximum Shipping Weight</label>
+            <input type="tel" name="max_shipping_weight" class="form-control" [(ngModel)]="app_setting.max_shipping_weight" #max_shipping_weight="ngModel" appNumberOnly required />
+          </div>
+          <div class="col-md-6 form-group mb-3">
+            <label>Minimum Checkout Value</label>
+            <input type="tel" name="min_checkout_value" class="form-control" [(ngModel)]="app_setting.min_checkout_value" #min_checkout_value="ngModel" appNumberOnly required />
+          </div>
+          <div *ngIf="commonService.ys_features.indexOf('gift_order')!=-1" class="col-md-6 form-group mb-3">
+            <label>Gift Wrapping Charges</label>
+            <input type="tel" name="gift_wrapping_charges" class="form-control" [(ngModel)]="app_setting.gift_wrapping_charges" #gift_wrapping_charges="ngModel" appNumberOnly required />
+          </div>
+        </div>
+      </div>
+      <div *ngIf="app_setting.errorMsg"><p class="text-danger">{{ app_setting.errorMsg }}</p></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+       <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- checkout setting -->
+<ng-template #checkoutModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Checkout Setting</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdateCheckout();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="form-group mb-3 col-md-4">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="apply_coupon" [(ngModel)]="checkout_setting.apply_coupon" #apply_coupon="ngModel">
+              <span>Apply Coupon</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div *ngIf="checkout_setting.apply_coupon" class="form-group mb-3 col-md-4">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="offer_except_disc_products" [(ngModel)]="checkout_setting.offer_except_disc_products" #offer_except_disc_products="ngModel">
+              <span>Offer except discounted products</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div *ngIf="commonService.ys_features.indexOf('giftcard')!=-1 || commonService.ys_features.indexOf('manual_giftcard')!=-1" class="form-group mb-3 col-md-4">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="apply_gift_card" [(ngModel)]="checkout_setting.apply_gift_card" #apply_gift_card="ngModel">
+              <span>Apply Gift Card</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div *ngIf="commonService.ys_features.indexOf('gift_order')!=-1" class="form-group mb-3 col-md-4">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="gift_order" [(ngModel)]="checkout_setting.gift_order" #gift_order="ngModel">
+              <span>Gift Order</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div *ngIf="commonService.ys_features.indexOf('order_note')!=-1" class="form-group mb-3 col-md-4">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="order_note" [(ngModel)]="checkout_setting.order_note" #order_note="ngModel">
+              <span>Order Note</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div *ngIf="commonService.ys_features.indexOf('sample_request')!=-1" class="form-group mb-3 col-md-4">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="sample_request" [(ngModel)]="checkout_setting.sample_request" #sample_request="ngModel">
+              <span>Get Free Sample</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <!-- COD -->
+          <ng-container *ngIf="codExist">
+            <div class="col-md-12 border-top"></div>
+            <div class="mb-3 mt-3 col-md-12">
+              <span class="access-inner-head primary-color">COD</span>
+            </div>
+            <div *ngIf="checkout_setting.apply_coupon" class="form-group mb-3 col-md-4">
+              <label class="checkbox checkbox-primary">
+                <input class="form-check-input" type="checkbox" name="cod_apply_coupon" [(ngModel)]="checkout_setting.cod_apply_coupon" #cod_apply_coupon="ngModel">
+                <span>Apply Coupon for COD</span>
+                <span class="checkmark"></span>
+              </label>
+            </div>
+            <div *ngIf="app_setting.guest_checkout" class="form-group mb-3 col-md-4">
+              <label class="checkbox checkbox-primary">
+                <input class="form-check-input" type="checkbox" name="cod_guest_checkout" [(ngModel)]="checkout_setting.cod_guest_checkout" #cod_guest_checkout="ngModel">
+                <span>COD for Guest Checkout</span>
+                <span class="checkmark"></span>
+              </label>
+            </div>
+            <div class="form-group mb-3 col-md-4">
+              <label class="checkbox checkbox-primary">
+                <input class="form-check-input" type="checkbox" name="disable_cod_custom_items" [(ngModel)]="checkout_setting.disable_cod_custom_items" #disable_cod_custom_items="ngModel">
+                <span>Disable COD for Custom Products</span>
+                <span class="checkmark"></span>
+              </label>
+            </div>
+            <div *ngIf="commonService.ys_features.indexOf('store_pickup')!=-1" class="form-group mb-3 col-md-4">
+              <label class="checkbox checkbox-primary">
+                <input class="form-check-input" type="checkbox" name="cod_store_pickup" [(ngModel)]="checkout_setting.cod_store_pickup" #cod_store_pickup="ngModel">
+                <span>Enable COD for Store Pickup</span>
+                <span class="checkmark"></span>
+              </label>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+      <div *ngIf="checkout_setting.errorMsg"><p class="text-danger">{{ checkout_setting.errorMsg }}</p></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+       <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- search keywords -->
+<ng-template #keywordModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Search Keywords</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdateKeywords();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12 form-group mb-3">
+            <label>Search Keywords</label>
+            <tag-input class="w-100" name="search_keyword_list"[(ngModel)]="app_setting.search_keyword_list" #search_keyword_list="ngModel" placeholder=""
+            [secondaryPlaceholder]="'Enter options separated by commas'" [separatorKeyCodes]="[188]"></tag-input>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="app_setting.errorMsg"><p class="text-danger">{{ app_setting.errorMsg }}</p></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+       <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- invoice -->
+<ng-template #invoiceModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Invoice Setting</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdateInvoiceConfig();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="form-group mb-3 col-md-12">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="invoice_status" [(ngModel)]="app_setting.invoice_status" #invoice_status="ngModel">
+              <span>Enable Invoice</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <ng-container *ngIf="app_setting.invoice_status && app_setting.invoice_config">
+            <div class="col-md-4 form-group mb-3">
+              <label>Prefix</label>
+              <input type="text" name="inv_prefix" class="form-control" [(ngModel)]="app_setting.invoice_config.prefix" #inv_prefix="ngModel" />
+            </div>
+            <div class="col-md-4 form-group mb-3">
+              <label>Upcoming Invoice Number</label>
+              <input type="tel" name="next_invoice_no" class="form-control" [(ngModel)]="app_setting.invoice_config.next_invoice_no" #next_invoice_no="ngModel" required appNumberOnly />
+            </div>
+            <div class="col-md-4 form-group mb-3">
+              <label>Suffix</label>
+              <input type="text" name="inv_suffix" class="form-control" [(ngModel)]="app_setting.invoice_config.suffix" #inv_suffix="ngModel" />
+            </div>
+            <div class="col-md-4 form-group mb-3">
+              <label>Min digit</label>
+              <input type="tel" name="inv_min_digit" class="form-control" [(ngModel)]="app_setting.invoice_config.min_digit" #inv_min_digit="ngModel" required appNumberOnly />
+            </div>
+          </ng-container>
+        </div>
+      </div>
+      <div *ngIf="app_setting.errorMsg"><p class="text-danger">{{ app_setting.errorMsg }}</p></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+       <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- social login -->
+<ng-template #socialModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Social Logins</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdateSocial();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12 form-group mb-3">
+            <label>Google ID</label>
+            <input type="text" name="google_id" class="form-control" [(ngModel)]="app_setting.google_id" #google_id="ngModel" />
+          </div>
+          <p class="ml-3">
+            <b>Redirect URL:</b> {{commonService.store_details.base_url}}/account/google
+          </p>
+          <div class="col-md-12 form-group mb-3">
+            <label>Facebook ID</label>
+            <input type="tel" name="facebook_id" class="form-control" [(ngModel)]="app_setting.facebook_id" #facebook_id="ngModel" />
+          </div>
+          <p class="ml-3">
+            <b>Redirect URL:</b> {{commonService.store_details.base_url}}/account/facebook
+          </p>
+        </div>
+      </div>
+      <div *ngIf="app_setting.errorMsg"><p class="text-danger">{{ app_setting.errorMsg }}</p></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+       <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- newsletter -->
+<ng-template #newsletterModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Store Popup</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdateNewsletter();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="form-group mb-3 col-md-6">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="newsletter_status" [(ngModel)]="app_setting.newsletter_status" (change)="!app_setting.newsletter_config? app_setting.newsletter_config={}: '';">
+              <span>Enable Store Popup</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <ng-container *ngIf="app_setting.newsletter_status && app_setting.newsletter_config">
+            <div class="form-group mb-3 col-md-6">
+              <label class="checkbox checkbox-primary">
+                <input class="form-check-input" type="checkbox" name="subscription_status" [(ngModel)]="app_setting.newsletter_config.subscription_status">
+                <span>Enable Newsletter Subscription</span>
+                <span class="checkmark"></span>
+              </label>
+            </div>
+            <div class="col-md-12" align="center">
+              <!-- <p>Photo Resolution: 450x300</p> -->
+              <div *ngIf="app_setting.newsletter_config.image">
+                <span (click)="app_setting.newsletter_config.img_change=null; app_setting.newsletter_config.image=null" class="material-icons item-close float-right" aria-hidden="true">close</span>
+                <img *ngIf="app_setting.newsletter_config.img_change" [src]="app_setting.newsletter_config.image" height="100px;" width="auto;">
+                <img *ngIf="!app_setting.newsletter_config.img_change" [src]="imgBaseUrl+app_setting.newsletter_config.image" height="100px;" width="auto;">
+              </div>
+              <div *ngIf="!app_setting.newsletter_config.image">
+                <label>
+                  <div>
+                    <i class="material-icons add-img">add_photo_alternate</i>
+                    <p>Click to upload image</p>
+                  </div>
+                  <input type="file" name="image" style="display: none;" (change)="fileChangeListener($event);" accept="image/jpeg, image/png" />
+                </label>
+              </div>
+            </div>
+            <div class="col-md-12 form-group mb-3">
+              <label>Heading</label>
+              <input type="text" name="heading" class="form-control" [(ngModel)]="app_setting.newsletter_config.heading" #heading="ngModel" required />
+            </div>
+            <div class="col-md-12 form-group mb-3">
+              <label>Sub-heading</label>
+              <textarea class="form-control" aria-label="With textarea" name="sub_heading" [(ngModel)]="app_setting.newsletter_config.sub_heading" #sub_heading="ngModel" required></textarea>
+            </div>
+            <div class="col-md-6 form-group mb-3">
+              <label>Button text</label>
+              <input type="text" name="btn_text" class="form-control" [(ngModel)]="app_setting.newsletter_config.btn_text" #btn_text="ngModel" required />
+            </div>
+            <div *ngIf="commonService.store_details?.type!='restaurant_based' && app_setting.newsletter_config.subscription_status" class="form-group mb-3 mt-4 col-md-6">
+              <label class="checkbox checkbox-primary">
+                <input class="form-check-input" type="checkbox" name="open_onload" [(ngModel)]="app_setting.newsletter_config.open_onload" #open_onload="ngModel">
+                <span>Open popup on page load</span>
+                <span class="checkmark"></span>
+              </label>
+            </div>
+            <!-- link info -->
+            <ng-container *ngIf="!app_setting.newsletter_config?.subscription_status">
+              <div class="col-md-3 form-group mt-4 mb-3">
+                <label class="radio radio-primary">
+                  <input type="radio" name="link_type" [(ngModel)]="app_setting.newsletter_config.link_type" value="internal">
+                  <span>Link to Internal Link</span>
+                  <span class="checkmark"></span>
+                </label>
+              </div>
+              <div class="col-md-3 form-group mt-4 mb-3">
+                <label class="radio radio-primary">
+                  <input type="radio" name="link_type" [(ngModel)]="app_setting.newsletter_config.link_type" value="external">
+                  <span>Link to External Link</span>
+                  <span class="checkmark"></span>
+                </label>
+              </div>
+              <div class="col-md-6 form-group mb-3">
+                <label *ngIf="app_setting.newsletter_config.link_type=='internal'">{{commonService.store_details?.base_url}}{{app_setting.newsletter_config.link}}</label>
+                <label *ngIf="app_setting.newsletter_config.link_type=='external'">External Link</label>
+                <input type="text" name="link" class="form-control" [(ngModel)]="app_setting.newsletter_config.link" required />
+              </div>
+            </ng-container>
+          </ng-container>
+        </div>
+      </div>
+      <div *ngIf="app_setting.errorMsg"><p class="text-danger">{{ app_setting.errorMsg }}</p></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+       <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary ladda-button m-1" [disabled]="app_setting.submit" [ladda]="app_setting.submit">Update</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- chat -->
+<ng-template #chatModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Chat Configuration</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdateChat();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="form-group mb-3 col-md-6">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="chat_status" [(ngModel)]="app_setting.chat_status" (change)="!app_setting.chat_config? app_setting.chat_config={}: '';" #chat_status="ngModel">
+              <span>Enable Chat</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div *ngIf="app_setting.chat_status && app_setting.chat_config" class="form-group mb-3 col-md-6">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="only_on_home" [(ngModel)]="app_setting.chat_config.only_on_home" #only_on_home="ngModel">
+              <span>Display only on landing page</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <ng-container *ngIf="app_setting.chat_status && app_setting.chat_config">
+            <div *ngIf="app_setting.chat_config.type=='whatsapp'" class="col-md-12">
+              <p><b class="add-another">Note:</b> Please enter mobile no with country code</p>
+            </div>
+            <div class="col-md-6 form-group mb-3">
+              <label>Type</label>
+              <select name="host_type" class="form-control select-arrow" [(ngModel)]="app_setting.chat_config.type" required>
+                <option *ngIf="commonService.ys_features.indexOf('whatsapp_chat')!=-1" value="whatsapp">Whatsapp</option>
+                <option *ngIf="commonService.ys_features.indexOf('messenger')!=-1" value="third_party">Third Party</option>
+              </select>
+            </div>
+            <ng-container *ngIf="app_setting.chat_config.type=='whatsapp'">
+              <div class="col-md-6 form-group mb-3">
+                <label>Mobile</label>
+                <div class="fixed-unit-wrapper">
+                  <input type="tel" name="whatsapp_mob" class="form-control" [(ngModel)]="app_setting.chat_config.mobile" #whatsapp_mob="ngModel" required appNumberOnly />
+                  <span class="fixed-unit-text">+</span>
+                </div>
+              </div>
+              <div class="col-md-12 form-group mb-3">
+                <label>Message</label>
+                <input type="text" name="whatsapp_msg" class="form-control" [(ngModel)]="app_setting.chat_config.message" #whatsapp_msg="ngModel" />
+              </div>
+            </ng-container>
+            <div *ngIf="app_setting.chat_config.type=='third_party'" class="col-md-12 form-group mb-3">
+              <label>URL</label>
+              <input type="text" name="url" class="form-control" [(ngModel)]="app_setting.chat_config.url" #url="ngModel" required />
+            </div>
+          </ng-container>
+        </div>
+      </div>
+      <div *ngIf="app_setting.errorMsg"><p class="text-danger">{{ app_setting.errorMsg }}</p></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+       <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- announcement bar -->
+<ng-template #announcebarModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Announcement Bar</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdateAnnounceBar();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="form-group mb-3 col-md-12">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="announcebar_status" [(ngModel)]="app_setting.announcebar_status" (change)="!app_setting.announcebar_config? app_setting.announcebar_config={}: '';" #announcebar_status="ngModel">
+              <span>Enable Announcement Bar</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <ng-container *ngIf="app_setting.announcebar_status && app_setting.announcebar_config">
+            <div class="col-md-12 form-group mb-3">
+              <label>Content</label>
+              <input type="text" name="content" class="form-control" [(ngModel)]="app_setting.announcebar_config.content" #content="ngModel" required />
+            </div>
+            <!-- timer -->
+            <div class="col-md-12 mb-3 border-top"></div>
+            <div class="form-group mb-3 col-md-12 d-flex align-items-center">
+              <label class="checkbox checkbox-primary">
+                <input class="form-check-input" type="checkbox" name="timer" (change)="enableTimer();" [(ngModel)]="app_setting.announcebar_config.timer" #timer="ngModel">
+                <span>Enable Timer</span>
+                <span class="checkmark"></span>
+              </label>
+            </div>
+            <ng-container *ngIf="app_setting.announcebar_config.timer">
+              <div class="col-md-12">
+                <p><b class="add-another">Note:</b> Use <b>TIMER</b> keyword in the above content to display the countdown</p>
+              </div>
+              <div class="col-md-6 form-group mb-3">
+                <label>End Date</label>
+                <input type="text" class="form-control" name="end_date" autocomplete="off" [(ngModel)]="app_setting.announcebar_config.end_date" [minDate]="curr_date" bsDatepicker [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }" required />
+              </div>
+              <div class="col-md-6 form-group mb-3">
+                <label>End Time</label>
+                <input type="text" name="end_time" class="form-control" [(ngModel)]='app_setting.announcebar_config.end_time' (click)="timePicker();" required />
+              </div>
+            </ng-container>
+            <div class="col-md-12 mb-3 border-top"></div>
+            <!-- link -->
+            <div class="col-md-12 form-group mb-3">
+              <label class="checkbox checkbox-primary">
+                <input class="form-check-input" type="checkbox" name="link_status" [(ngModel)]="app_setting.announcebar_config.link_status" (change)="app_setting.announcebar_config.link_type='category';" #link_status="ngModel">
+                <span>Enable Link</span>
+                <span class="checkmark"></span>
+              </label>
+            </div>
+            <ng-container *ngIf="app_setting.announcebar_config.link_status">
+              <div class="col-md-6 form-group mb-3">
+                <label class="radio radio-primary">
+                  <input type="radio" name="link_type" [(ngModel)]="app_setting.announcebar_config.link_type" value="category">
+                  <span>Link to Catalog</span>
+                  <span class="checkmark"></span>
+                </label>
+              </div>
+              <div class="col-md-6 form-group mb-3">
+                <label class="radio radio-primary">
+                  <input type="radio" name="link_type" [(ngModel)]="app_setting.announcebar_config.link_type" value="product">
+                  <span>Link to Product</span>
+                  <span class="checkmark"></span>
+                </label>
+              </div>
+              <div class="col-md-6 form-group mb-3">
+                <label class="radio radio-primary">
+                  <input type="radio" name="link_type" [(ngModel)]="app_setting.announcebar_config.link_type" value="internal">
+                  <span>Link to Internal Link</span>
+                  <span class="checkmark"></span>
+                </label>
+              </div>
+              <div class="col-md-6 form-group mb-3">
+                <label class="radio radio-primary">
+                  <input type="radio" name="link_type" [(ngModel)]="app_setting.announcebar_config.link_type" value="external">
+                  <span>Link to External Link</span>
+                  <span class="checkmark"></span>
+                </label>
+              </div>
+              <div *ngIf="app_setting.announcebar_config.link_type=='category' || app_setting.announcebar_config.link_type=='product'" class="col-md-12 form-group mb-3">
+                <label>{{app_setting.announcebar_config.link_type=='category'? 'Link to Catalog': 'Catalogs'}}</label>
+                <select name="category_id" class="form-control select-arrow" [(ngModel)]="app_setting.announcebar_config.category_id" #category_id="ngModel" required>
+                  <option [ngValue]="y._id" *ngFor="let y of commonService.catalog_list">{{y.name}}</option>
+                </select>
+              </div>
+              <div *ngIf="app_setting.announcebar_config.link_type=='product'" class="col-md-12 form-group mb-3">
+                <label>Link to Product</label>
+                <select [disabled]="!app_setting.announcebar_config.category_id" name="product_id" class="form-control select-arrow" [(ngModel)]="app_setting.announcebar_config.product_id" #product_id="ngModel" required>
+                  <option [ngValue]="y._id" *ngFor="let y of productList | productFilter:'category_id':app_setting.announcebar_config.category_id;">{{y.name}}</option>
+                </select>
+              </div>
+              <div *ngIf="app_setting.announcebar_config.link_type=='internal' || app_setting.announcebar_config.link_type=='external'" class="col-md-12 form-group mb-3">
+                <label *ngIf="app_setting.announcebar_config.link_type=='internal'">{{commonService.store_details?.base_url}}{{app_setting.announcebar_config.link}}</label>
+                <label *ngIf="app_setting.announcebar_config.link_type=='external'">External Link</label>
+                <input type="text" name="link" class="form-control" [(ngModel)]="app_setting.announcebar_config.link" #int_link="ngModel" required />
+              </div>
+            </ng-container>
+          </ng-container>
+        </div>
+      </div>
+      <div *ngIf="app_setting.errorMsg"><p class="text-danger">{{ app_setting.errorMsg }}</p></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+       <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- packaging charges -->
+<ng-template #packageChargeModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Packaging Charges</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdatePackCharge();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-6 form-group mb-3">
+            <label>Charge By</label>
+            <select name="charge_type" class="form-control select-arrow" [(ngModel)]="app_setting.packaging_charges.type" required>
+              <option value="percentage">Percentage</option>
+              <option value="amount">Amount</option>
+            </select>
+          </div>
+          <div *ngIf="app_setting.packaging_charges.type=='percentage'" class="col-md-6 form-group mb-3"></div>
+          <div class="col-md-6 form-group mb-3">
+            <label>Charges {{ app_setting.packaging_charges.type=='amount'? '(incl. of Taxes)': ''}}</label>
+            <input type="text" name="charge" class="form-control" [(ngModel)]="app_setting.packaging_charges.value" appNumberOnly required />
+            <label class="delivery-days" [innerHTML]="app_setting.packaging_charges.type=='percentage'? '%': commonService.store_currency.html_code"></label>
+          </div>
+          <div *ngIf="app_setting.packaging_charges.type=='percentage'" class="col-md-6 form-group mb-3">
+            <label>Min Charge (incl. of Taxes)</label>
+            <input type="text" name="min_package_amt" class="form-control" [(ngModel)]="app_setting.packaging_charges.min_package_amt" appNumberOnly required />
+          </div>
+        </div>
+      </div>
+      <div *ngIf="app_setting.errorMsg"><p class="text-danger">{{ app_setting.errorMsg }}</p></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+       <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>

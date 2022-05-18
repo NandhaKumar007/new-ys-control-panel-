@@ -1,0 +1,444 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div *ngIf="!pageLoader">
+  <div class="breadcrumb">
+    <h1>{{ layoutDetails?.name }}</h1>
+    <ul>
+      <li>Update your segment images 
+        <img class="segment-grid-stuct ml-2" *ngIf="layoutDetails?.type=='section' && grid_details?.icon" [src]="grid_details.icon">
+      </li>
+    </ul>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <form autocomplete="off" (ngSubmit)="onUpdateLayout();" ngNativeValidate>
+
+    <ng-container *ngFor="let x of layoutDetails.image_list; let i=index;">
+      <div class="card p-3 mb-3">
+
+        <span *ngIf="layoutDetails.type!='primary_slider' && layoutDetails.type!='section' && layoutDetails.image_list?.length>1" (click)="layoutDetails.image_list.splice(i, 1);" class="material-icons item-close absolute-item-close float-right " aria-hidden="true">close</span>
+        <span *ngIf="layoutDetails.type=='primary_slider' && i>0" (click)="layoutDetails.image_list.splice(i, 1);" class="material-icons item-close absolute-item-close float-right " aria-hidden="true">close</span>
+        <div class="row pt-3 pb-3">
+          <div class="col-md-6">
+            <h3>{{layoutDetails?.name}} {{(layoutDetails?.image_list?.length > 1)? i+1: ''}}</h3>
+          </div>
+          <div *ngIf="layoutDetails.type!='primary_slider' && layoutDetails.type!='highlighted_section' && layoutDetails.type!='secondary'" class="col-md-6 form-group">
+            <label>Rank</label>
+            <input type="number" name="rank{{i}}" class="form-control" [(ngModel)]="x.rank" #rank="ngModel" appNumberOnly required />
+          </div>
+        </div>
+
+        <div class="row">
+
+          <!-- Desktop Image -->
+          <div class="col-md-12 col-lg-6 d-flex">
+            <div class="card card-in-card w-100 p-3 mb-3">
+              <div class="desktop-banner" align="center">
+                <p *ngIf="layoutDetails?.type=='testimonial' || layoutDetails?.type=='highlighted_section' || layoutDetails?.type=='secondary' || layoutDetails?.type=='featured_section'">
+                  {{ (layoutDetails?.type=='testimonial')? '72 x 72': (layoutDetails?.type=='highlighted_section')? '1025 x 575': (layoutDetails?.type=='secondary')? '1110 x 400': '600 x 600' }} pixels @72ppi
+                </p>
+                <p *ngIf="layoutDetails?.type=='primary_slider' || layoutDetails?.type=='slider'">(Desktop) - 1850 x 690 pixels @72ppi</p>
+                <p *ngIf="layoutDetails?.type=='section' && grid_details.resolutions && grid_details.resolutions[i]?.value">{{grid_details.resolutions[i].value}}</p>
+                <i *ngIf="!x.desktop_img" class="material-icons">add_photo_alternate</i>
+                <figure *ngIf="x.desktop_img" class="desktop-layout-image-sec">
+                  <img *ngIf="x?.desktop_img_change" [src]="x.temp_desktop_img">
+                  <ng-container *ngIf="!x?.desktop_img_change">
+                    <!-- except primary slider -->
+                    <img *ngIf="layoutDetails?.type!='primary_slider'" [src]="imgBaseUrl+x.desktop_img">
+                    <!-- primary slider -->
+                    <img *ngIf="layoutDetails?.type=='primary_slider' && i===0" [src]="imgBaseUrl+x.desktop_img+'?ver='+layoutDetails?.updated_on">
+                    <img *ngIf="layoutDetails?.type=='primary_slider' && i>0" [src]="imgBaseUrl+x.desktop_img">
+                  </ng-container>
+                  <!-- shop the look points -->
+                  <div *ngIf="x.points_list?.length" class="related-picker-wrapper">
+                    <ng-container *ngFor="let pt of x.points_list;">
+                      <span class="material-icons related-picker" [ngStyle]="{'left': pt.x_pos+'%', 'top': pt.y_pos+'%'}">add</span>
+                    </ng-container>
+                  </div>
+                </figure>
+              </div>
+              <div class="h-100 d-flex align-items-end">
+                <div class="custom-file mt-2">
+                  <input type="file" name="layout_img" class="custom-file-input" [required]="!x.desktop_img" (change)="fileChangeListener('desktop', i, $event)"
+                  [accept]="(layoutDetails?.type=='primary_slider' && i===0)? 'image/jpeg': 'image/gif, image/jpeg, image/png'">
+                  <label class="custom-file-label">Choose file</label>
+                </div>
+              </div>
+              <div *ngIf="x.d_err_msg" class="mt-2">
+                <p class="mb-0 error-msg">Accept file size upto 1 MB</p>
+              </div>
+              <div *ngIf="commonService.ys_features.indexOf('advanced_seo')!=-1" class="mt-3">
+                <label>Image Alt Name</label>
+                <input type="text" name="img_alt{{i}}" class="form-control" [(ngModel)]="x.img_alt" #img_alt="ngModel" />
+              </div>
+            </div>
+          </div>
+          <!-- #Desktop Image -->
+
+          <!-- Mobile Image -->
+          <div class="col-md-12 col-lg-6 d-flex" *ngIf="layoutDetails?.type=='primary_slider' || layoutDetails?.type=='slider'">
+            <div class="card card-in-card w-100 p-3 mb-3">
+              <div class="desktop-banner" align="center">
+                <p>(Mobile) - 1140 x 1400 pixels @72ppi</p>
+                <i *ngIf="!x.mobile_img" class="material-icons">add_photo_alternate</i>
+                <figure *ngIf="x.mobile_img" class="desktop-layout-image-sec">
+                  <img *ngIf="x?.mobile_img_change" [src]="x.temp_mobile_img">
+                  <ng-container *ngIf="!x?.mobile_img_change">
+                    <!-- except primary slider -->
+                    <img *ngIf="layoutDetails?.type!='primary_slider'" [src]="imgBaseUrl+x.mobile_img">
+                    <!-- primary slider -->
+                    <img *ngIf="layoutDetails?.type=='primary_slider' && i===0" [src]="imgBaseUrl+x.mobile_img+'?ver='+layoutDetails?.updated_on">
+                    <img *ngIf="layoutDetails?.type=='primary_slider' && i>0" [src]="imgBaseUrl+x.mobile_img">
+                  </ng-container>
+                </figure>
+              </div>
+              <div class="h-100 d-flex align-items-end">
+                <div class="custom-file mt-2">
+                  <input type="file" name="layout_img" class="custom-file-input" [required]="!x.mobile_img" (change)="fileChangeListener('mobile', i, $event)"
+                  [accept]="(layoutDetails?.type=='primary_slider' && i===0)? 'image/jpeg': 'image/gif, image/jpeg, image/png'">
+                  <label class="custom-file-label">Choose file</label>
+                </div>
+              </div>
+              <div *ngIf="x.m_err_msg" class="mt-2">
+                <p class="mb-0 error-msg">Accept file size upto 1 MB</p>
+              </div>
+            </div>
+          </div>
+          <!-- #Mobile Image -->
+
+          <!-- Testimonial Content -->
+          <div *ngIf="layoutDetails?.type=='testimonial' && x.content_details" class="col-md-12 col-lg-6 d-flex justify-content-center align-items-center form-group mb-3">
+            <div class="card w-100 p-3 mb-3">
+              <div class="row">
+                <div class="col-md-12 form-group mb-3">
+                  <label>Name</label>
+                  <input type="text" name="heading{{i}}" class="form-control" [(ngModel)]="x.content_details.heading" #heading="ngModel" required />
+                </div>
+                <div class="col-md-12 form-group mb-3">
+                  <label>Profile</label>
+                  <input type="text" name="sub_heading{{i}}" class="form-control" [(ngModel)]="x.content_details.sub_heading" #sub_heading="ngModel" required />
+                </div>
+                <div class="col-md-12 form-group mb-3">
+                  <label>Content</label>
+                  <textarea class="form-control" aria-label="With textarea" name="description{{i}}" [(ngModel)]="x.content_details.description" #description="ngModel" required></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- #Testimonial Content -->
+
+          <!-- Content -->
+          <div *ngIf="layoutDetails?.type=='secondary' || layoutDetails?.type=='primary_slider' || layoutDetails?.type=='slider' || layoutDetails?.type=='section' || layoutDetails?.type=='featured_section' || layoutDetails?.type=='multiple_highlighted_section'" class="col-md-12 col-lg-6 d-flex justify-content-center align-items-center form-group mb-3">
+            <div class="card w-100 p-3 mb-3">
+              <div *ngIf="layoutDetails?.type!='multiple_highlighted_section'" class="row">
+                <div class="col-md-12 form-group mb-3">
+                  <label class="checkbox checkbox-primary">
+                    <input class="form-check-input" type="checkbox" name="content_status{{i}}" [(ngModel)]="x.content_status" (change)="x.content_details={};" #content_status="ngModel">
+                    <span>Enable Content</span>
+                    <span class="checkmark"></span>
+                  </label>
+                </div>
+              </div>
+              <div *ngIf="x.content_status" class="row">
+                <ng-container *ngIf="layoutDetails?.type=='secondary' || layoutDetails?.type=='primary_slider' || layoutDetails?.type=='slider' || layoutDetails?.type=='multiple_highlighted_section'">
+                  <div class="col-md-12 form-group mb-3">
+                    <label>Heading</label>
+                    <input type="text" name="heading{{i}}" class="form-control" [(ngModel)]="x.content_details.heading" #heading="ngModel" required />
+                  </div>
+                  <div class="col-md-12 form-group mb-3">
+                    <label>Sub-heading</label>
+                    <textarea class="form-control" aria-label="With textarea" name="sub_heading{{i}}" [(ngModel)]="x.content_details.sub_heading" #sub_heading="ngModel"></textarea>
+                  </div>
+                  <div *ngIf="layoutDetails?.type=='secondary'" class="col-md-12 form-group mb-3">
+                    <label>Text Color</label>
+                    <select name="text_color{{i}}" class="form-control select-arrow" [(ngModel)]="x.content_details.text_color" #text_color="ngModel" required>
+                      <option value="light">Light</option>
+                      <option value="dark">Dark</option>
+                    </select>
+                  </div>
+                  <div *ngIf="layoutDetails?.type=='multiple_highlighted_section'" class="col-md-12 form-group mb-3">
+                    <label>Description</label>
+                    <textarea class="form-control" aria-label="With textarea" name="description{{i}}" [(ngModel)]="x.content_details.description" #description="ngModel"></textarea>
+                  </div>
+                </ng-container>
+                <ng-container *ngIf="layoutDetails?.type!='secondary' && layoutDetails?.type!='multiple_highlighted_section'">
+                  <div *ngIf="layoutDetails?.type!='primary_slider' && layoutDetails?.type!='slider'" class="col-md-12 form-group mb-3">
+                    <label>Title</label>
+                    <input type="text" name="heading{{i}}" class="form-control" [(ngModel)]="x.content_details.heading" maxlength="16" #heading="ngModel" required />
+                  </div>
+                  <div class="col-md-12 form-group mb-3">
+                    <label>Text Color</label>
+                    <select name="text_color{{i}}" class="form-control select-arrow" [(ngModel)]="x.content_details.text_color" #text_color="ngModel" required>
+                      <option value="light">Light</option>
+                      <option value="dark">Dark</option>
+                    </select>
+                  </div>
+                  <div class="col-md-12 form-group mb-3">
+                    <label>Position</label>
+                    <select name="position{{i}}" class="form-control select-arrow" [(ngModel)]="x.position" #position="ngModel" required>
+                      <option [ngValue]="x.value" *ngFor="let x of positionList">{{x.name}}</option>
+                    </select>
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+          <!-- #Content -->
+
+          <!-- Link -->
+          <div *ngIf="layoutDetails?.type!='testimonial' && layoutDetails?.type!='shop_the_look'" class="col-md-12 col-lg-6 d-flex justify-content-center align-items-center form-group mb-3">
+            <div class="card w-100 p-3 mb-3">
+              <div class="row">
+                <div *ngIf="layoutDetails.type=='highlighted_section' || layoutDetails.type=='multiple_highlighted_section'" class="col-md-12 form-group mb-3">
+                  <label>Image Position</label>
+                  <select name="position{{i}}" class="form-control select-arrow" [(ngModel)]="x.position" #position="ngModel" required>
+                    <option value="left">Left</option>
+                    <option value="right">Right</option>
+                  </select>
+                </div>
+                <div class="col-md-12 form-group mb-3">
+                  <label class="checkbox checkbox-primary">
+                    <input class="form-check-input" type="checkbox" name="link_status{{i}}" [(ngModel)]="x.link_status" (change)="x.link_type='category'; x.btn_status=false; x.btn_text='';" #link_status="ngModel">
+                    <span>Enable Image Link</span>
+                    <span class="checkmark"></span>
+                  </label>
+                </div>
+              </div>
+              <div *ngIf="x.link_status" class="row">
+                <div class="col-md-6 form-group mb-3">
+                  <label class="radio radio-primary">
+                    <input type="radio" name="link_type{{i}}" [(ngModel)]="x.link_type" value="category">
+                    <span>Link to Catalog</span>
+                    <span class="checkmark"></span>
+                  </label>
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                  <label class="radio radio-primary">
+                    <input type="radio" name="link_type{{i}}" [(ngModel)]="x.link_type" value="product">
+                    <span>Link to Product</span>
+                    <span class="checkmark"></span>
+                  </label>
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                  <label class="radio radio-primary">
+                    <input type="radio" name="link_type{{i}}" [(ngModel)]="x.link_type" value="internal">
+                    <span>Link to Internal Link</span>
+                    <span class="checkmark"></span>
+                  </label>
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                  <label class="radio radio-primary">
+                    <input type="radio" name="link_type{{i}}" [(ngModel)]="x.link_type" value="external">
+                    <span>Link to External Link</span>
+                    <span class="checkmark"></span>
+                  </label>
+                </div>
+                <div *ngIf="x.link_type=='category' || x.link_type=='product'" class="col-md-12 form-group mb-3">
+                  <label>{{x.link_type=='category'? 'Link to Catalog': 'Catalogs'}}</label>
+                  <select name="category_id{{i}}" class="form-control select-arrow" [(ngModel)]="x.category_id" #category_id="ngModel" required>
+                    <option [ngValue]="y._id" *ngFor="let y of commonService.catalog_list">{{y.name}}</option>
+                  </select>
+                </div>
+                <div *ngIf="x.link_type=='product'" class="col-md-12 form-group mb-3">
+                  <label>Link to Product</label>
+                  <select [disabled]="!x.category_id" name="product_id{{i}}" class="form-control select-arrow" [(ngModel)]="x.product_id" #product_id="ngModel" required>
+                    <option [ngValue]="y._id" *ngFor="let y of productList | productFilter:'category_id':x.category_id;">{{y.name}}</option>
+                  </select>
+                </div>
+                <div *ngIf="x.link_type=='internal' || x.link_type=='external'" class="col-md-12 form-group mb-3">
+                  <label *ngIf="x.link_type=='internal'">{{commonService.store_details?.base_url}}{{x.link}}</label>
+                  <label *ngIf="x.link_type=='external'">External Link</label>
+                  <input type="text" name="link{{i}}" class="form-control" [(ngModel)]="x.link" #int_link="ngModel" required />
+                </div>
+
+                <!-- Btn -->
+                <div *ngIf="layoutDetails?.type=='primary_slider' || layoutDetails?.type=='slider' || layoutDetails.type=='highlighted_section' || layoutDetails.type=='multiple_highlighted_section'" class="col-md-12 form-group mb-3">
+                  <label class="checkbox checkbox-primary">
+                    <input class="form-check-input" type="checkbox" name="btn_status{{i}}" [(ngModel)]="x.btn_status" (change)="x.btn_text='';" #btn_status="ngModel">
+                    <span>Enable Button</span>
+                    <span class="checkmark"></span>
+                  </label>
+                </div>
+                <ng-container *ngIf="x.btn_status">
+                  <div class="col-md-12 form-group mb-3">
+                    <label>Button Text</label>
+                    <input type="text" name="btn_text{{i}}" class="form-control" [(ngModel)]="x.btn_text" maxlength="15" #btn_text="ngModel" />
+                  </div>
+                  <div *ngIf="layoutDetails?.type=='primary_slider' && !x.content_status || layoutDetails?.type=='slider' && !x.content_status" class="col-md-12 form-group mb-3">
+                    <label>Position</label>
+                    <select name="position{{i}}" class="form-control select-arrow" [(ngModel)]="x.position" #position="ngModel" required>
+                      <option [ngValue]="x.value" *ngFor="let x of positionList">{{x.name}}</option>
+                    </select>
+                  </div>
+                </ng-container>
+                <!-- #Btn -->
+              </div>
+            </div>
+          </div>
+          <!-- #Link -->
+
+          <!-- Points list -->
+          <div *ngIf="layoutDetails?.type=='shop_the_look'" class="col-md-6">
+            <div *ngFor="let y of x.points_list; let j=index;" class="card w-100 p-3 mb-3">
+              <span (click)="x.points_list.splice(j, 1);" class="material-icons item-close absolute-item-close float-right" aria-hidden="true">close</span>
+              <div *ngIf="y.link_status" class="row">
+                <div class="col-md-6 form-group mb-3">
+                  <label>X Position</label>
+                  <input type="number" name="x_pos{{i}}{{j}}" class="form-control" [(ngModel)]="y.x_pos" #x_pos="ngModel" appNumberOnly min="0" max="100" required />
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                  <label>Y Position</label>
+                  <input type="number" name="y_pos{{i}}{{j}}" class="form-control" [(ngModel)]="y.y_pos" #y_pos="ngModel" appNumberOnly min="0" max="100" required />
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                  <label class="radio radio-primary">
+                    <input type="radio" name="link_type{{i}}{{j}}" [(ngModel)]="y.link_type" value="category">
+                    <span>Link to Catalog</span>
+                    <span class="checkmark"></span>
+                  </label>
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                  <label class="radio radio-primary">
+                    <input type="radio" name="link_type{{i}}{{j}}" [(ngModel)]="y.link_type" value="product">
+                    <span>Link to Product</span>
+                    <span class="checkmark"></span>
+                  </label>
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                  <label class="radio radio-primary">
+                    <input type="radio" name="link_type{{i}}{{j}}" [(ngModel)]="y.link_type" value="internal">
+                    <span>Link to Internal Link</span>
+                    <span class="checkmark"></span>
+                  </label>
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                  <label class="radio radio-primary">
+                    <input type="radio" name="link_type{{i}}{{j}}" [(ngModel)]="y.link_type" value="external">
+                    <span>Link to External Link</span>
+                    <span class="checkmark"></span>
+                  </label>
+                </div>
+                <div *ngIf="y.link_type=='category' || y.link_type=='product'" class="col-md-12 form-group mb-3">
+                  <label>{{y.link_type=='category'? 'Link to Catalog': 'Catalogs'}}</label>
+                  <select name="category_id{{i}}{{j}}" class="form-control select-arrow" [(ngModel)]="y.category_id" #category_id="ngModel" required>
+                    <option [ngValue]="y._id" *ngFor="let y of commonService.catalog_list">{{y.name}}</option>
+                  </select>
+                </div>
+                <div *ngIf="y.link_type=='product'" class="col-md-12 form-group mb-3">
+                  <label>Link to Product</label>
+                  <select [disabled]="!y.category_id" name="product_id{{i}}{{j}}" class="form-control select-arrow" [(ngModel)]="y.product_id" #product_id="ngModel" required>
+                    <option [ngValue]="y._id" *ngFor="let y of productList | productFilter:'category_id':y.category_id;">{{y.name}}</option>
+                  </select>
+                </div>
+                <div *ngIf="y.link_type=='internal' || y.link_type=='external'" class="col-md-12 form-group mb-3">
+                  <label *ngIf="y.link_type=='internal'">{{commonService.store_details?.base_url}}{{y.link}}</label>
+                  <label *ngIf="y.link_type=='external'">External Link</label>
+                  <input type="text" name="link{{i}}{{j}}" class="form-control" [(ngModel)]="y.link" #int_link="ngModel" required />
+                </div>
+              </div>
+            </div>
+            <p *ngIf="x.points_list.length<5" (click)="x.points_list.push({ link_status: true, link_type:'category' });">
+              <b class="add-another">ADD NEW POSITION</b>
+            </p>
+          </div>
+          <!-- #Points list -->
+
+        </div>
+
+      </div>
+    </ng-container>
+
+    <div *ngIf="layoutDetails?.image_list?.length<10 && layoutDetails.type!='section' && layoutDetails.type!='highlighted_section' && layoutDetails.type!='secondary' && layoutDetails.type!='shopping_assistant'" style="margin-top: 50px;" class="row">
+      <div class="col-md-4">
+        <p (click)="addNewImg();"><b class="add-another">ADD NEW</b></p>
+      </div>
+    </div>
+
+    <!-- shopping assistant -->
+    <ng-container *ngIf="layoutDetails.type=='shopping_assistant'">
+      <div class="card p-3 mb-3">
+        <div class="row">
+          <!-- Image -->
+          <div class="col-md-6 col-lg-6 d-flex">
+            <div class="card card-in-card w-100 p-3 mb-3">
+              <div class="desktop-banner" align="center">
+                <p>780 x 780 @ 72ppi</p>
+                <i *ngIf="!shopping_assist_config.image" class="material-icons">add_photo_alternate</i>
+                <img *ngIf="shopping_assist_config.image && shopping_assist_config.img_change" [src]="shopping_assist_config.temp_image">
+                <ng-container *ngIf="shopping_assist_config.image && !shopping_assist_config.img_change">
+                  <img [src]="imgBaseUrl+shopping_assist_config.image">
+                </ng-container>
+              </div>
+              <div class="h-100 d-flex align-items-end">
+                <div class="custom-file mt-2">
+                  <input type="file" name="layout_img" class="custom-file-input" [required]="!shopping_assist_config.image" (change)="shopAssistFileChangeListener($event);" accept="image/gif, image/jpeg, image/png">
+                  <label class="custom-file-label">Choose file</label>
+                </div>
+              </div>
+              <div *ngIf="shopping_assist_config.err_msg" class="mt-2">
+                <p class="mb-0 error-msg">Accept file size upto 1 MB</p>
+              </div>
+              <div *ngIf="commonService.ys_features.indexOf('advanced_seo')!=-1" class="mt-3">
+                <label>Image Alt Name</label>
+                <input type="text" name="sa_img_alt" class="form-control" [(ngModel)]="shopping_assist_config.img_alt" #img_alt="ngModel" />
+              </div>
+            </div>
+          </div>
+          <!-- #Image -->
+
+          <!-- Content -->
+          <div class="col-md-6 col-lg-6 d-flex justify-content-center align-items-center form-group mb-3">
+            <div class="card w-100 p-3 mb-3">
+              <div class="row">
+                <div class="col-md-12 form-group mb-3">
+                  <label>Prompt</label>
+                  <input type="text" name="prompt" class="form-control" [(ngModel)]="shopping_assist_config.prompt" #prompt="ngModel" required />
+                </div>
+                <div class="col-md-12 form-group mb-3">
+                  <label>Sub-text</label>
+                  <textarea class="form-control" aria-label="With textarea" name="sub_text" [(ngModel)]="shopping_assist_config.sub_text" #sub_text="ngModel" required></textarea>
+                </div>
+                <div class="col-md-12 form-group mb-3">
+                  <label>Button Text</label>
+                  <input type="text" name="btn_text" class="form-control" [(ngModel)]="shopping_assist_config.btn_text" #btn_text="ngModel" required />
+                </div>
+                <div class="col-md-12">
+                  <p class="add-another">Changing Text</p>
+                </div>
+                <div *ngFor="let x of shopping_assist_config.changing_text; let i=index;" class="col-md-12 form-group mb-3">
+                  <div class="card p-2">
+                    <label>Text {{i+1}}</label>
+                    <span *ngIf="shopping_assist_config.changing_text.length > 1" (click)="shopping_assist_config.changing_text.splice(i, 1);" class="material-icons item-close absolute-item-close float-right " aria-hidden="true">close</span>
+                    <input type="text" name="value{{i}}" class="form-control" [(ngModel)]="x.value" #value="ngModel" required />
+                  </div>
+                </div>
+                <div *ngIf="shopping_assist_config.changing_text.length<3" class="col-md-12">
+                  <p class="add-another pull-right" (click)="shopping_assist_config.changing_text.push({});">ADD NEW</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- #Content -->
+        </div>
+      </div>
+    </ng-container>
+    <!-- end shopping assistant -->
+
+    <div class="separator-breadcrumb border-top mt-5"></div>
+    <div class="row">
+      <div class="col-md-12 mt-3 mb-3" *ngIf="layoutDetails.errorMsg">
+        <p class="text-danger" align="center">{{ layoutDetails.errorMsg }}</p>
+      </div>
+      <div align="center" class="col-md-12 z-i-0">
+        <button type="button" routerLink="/layouts/home" class="btn btn-wide black-outline-btn">
+         <span class="black-outline-txt">Cancel</span>
+        </button>&nbsp; &nbsp; &nbsp;
+        <button type="submit" class="btn btn-wide btn-primary ladda-button m-1" [disabled]="btnLoader" [ladda]="btnLoader">Update</button>
+      </div>
+    </div>
+
+  </form>
+
+</div>

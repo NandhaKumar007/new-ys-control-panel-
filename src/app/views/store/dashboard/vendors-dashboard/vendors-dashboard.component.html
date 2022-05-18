@@ -1,0 +1,250 @@
+<div class="breadcrumb">
+  <div>
+    <h1>Dashboard</h1>
+  </div>
+
+</div>
+<div class="separator-breadcrumb border-top"></div>
+
+<div class="row">
+
+  <div class="col-md-12">
+    <div class="card p-3 mb-4">
+      <h5 class="card-title">Filter</h5>
+      <div class="top-filter-sec">
+      <div class="row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <input type="text" placeholder="Select From Date" class="form-control" name="from_date" autocomplete="off" [(ngModel)]="filterForm.from_date"
+              (ngModelChange)="filterForm.type='custom'; getDashboardData();" bsDatepicker [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }"
+            />
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <input type="text" placeholder="Select To Date" class="form-control" name="to_date" autocomplete="off" [(ngModel)]="filterForm.to_date"
+              (ngModelChange)="filterForm.type='custom'; getDashboardData();" bsDatepicker [minDate]="filterForm.from_date"
+              [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }" />
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <select name="type" class="form-control select-arrow" [(ngModel)]="filterForm.type" (change)="filterForm.type!='custom' ? onFilterChange(filterForm.type): ''">
+              <option value="today">Today</option>
+              <option value="yesterday">Yesterday</option>
+              <option value="last_7_days">Last 7 days</option>
+              <option value="last_30_days">Last 30 days</option>
+              <option value="current_month">Current month</option>
+              <option value="last_month">Last month</option>
+              <option value="current_year">Current year</option>
+              <option value="last_year">Last year</option>
+              <option value="current_fin_year">Current financial year</option>
+              <option value="last_fin_year">Last financial year</option>
+              <option value="all_time">All time</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="col-lg-6 col-md-12">
+    <!-- CARD ICON -->
+    <div class="row m-0">
+      <div class="col-lg-4 col-md-6 col-sm-6 d-flex">
+        <div class="card card-icon w-100 mb-4">
+          <div class="card-body text-center">
+            <i class="material-icons">monetization_on</i>
+            <p class="text-muted text-gradient mt-2 mb-2">Total Sales</p>
+            <p class="text-primary text-18 line-height-1 m-0">
+              <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+              <span *ngIf="!preLoader">{{order_details?.total_sales | number : '1.0-0'}}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6 col-sm-6 d-flex">
+        <div class="card card-icon w-100 mb-4">
+          <div class="card-body text-center">
+            <i class="material-icons">settings_backup_restore</i>
+            <p class="text-muted text-gradient mt-2 mb-2">Total Orders</p>
+            <p class="text-primary text-18 line-height-1 m-0">
+              <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+              <span *ngIf="!preLoader">{{order_details?.order_list?.length}}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6 col-sm-6 d-flex">
+        <div class="card card-icon w-100 mb-4">
+          <div class="card-body text-center">
+            <i class="material-icons">all_out</i>
+            <p class="text-muted text-gradient mt-2 mb-2">Average Order Value</p>
+            <p class="text-primary text-18 line-height-1 m-0">
+              <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+              <span *ngIf="!preLoader && order_details?.total_sales">
+                {{ (order_details?.total_sales / order_details?.order_list?.length).toFixed(0) | number : '1.0-0' }}
+              </span>
+              <span *ngIf="!preLoader && !order_details?.total_sales">0</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="col-lg-4 col-md-6 col-sm-6 d-flex">
+        <div class="card card-icon w-100 mb-4">
+          <div class="card-body text-center">
+            <i class="material-icons">settings_backup_restore</i>
+            <p class="text-muted text-gradient mt-2 mb-2">Items Sold</p>
+            <p class="line-height-1 text-title text-18 mt-2 mb-0">
+              <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+              <span *ngIf="!preLoader">{{ order_details?.vendor_items?.length }}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6 col-sm-6 d-flex">
+        <div class="card card-icon w-100 mb-4">
+          <div class="card-body text-center">
+            <i class="material-icons">all_out</i>
+            <p class="text-muted text-gradient mt-2 mb-2">Average Item Value</p>
+            <p class="line-height-1 text-title text-18 mt-2 mb-0">
+              <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+              <span *ngIf="!preLoader && order_details?.order_list?.length">
+                {{ (order_details?.item_grand_total / order_details.vendor_items.length).toFixed(0) | number : '1.0-0' }}
+              </span>
+              <span *ngIf="!preLoader && !order_details?.order_list?.length">0</span>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6 col-sm-6 d-flex">
+        <div class="card card-icon w-100 mb-4">
+          <div class="card-body text-center">
+            <i class="material-icons">cloud_upload</i>
+            <p class="text-muted text-gradient mt-2 mb-2">Listed Products</p>
+            <p class="line-height-1 text-title text-18 mt-2 mb-0">
+              <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+              <span *ngIf="!preLoader">{{order_details?.vendor_products}}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6 col-sm-6 d-flex">
+        <div class="card card-icon w-100 mb-4">
+          <div class="card-body text-center">
+            <i class="material-icons">cloud_upload</i>
+            <p class="text-muted text-gradient mt-2 mb-2">Uploads</p>
+            <p class="line-height-1 text-title text-18 mt-2 mb-0">
+              <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+              <span *ngIf="!preLoader">{{order_details?.products}}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6 col-sm-6 d-flex">
+        <div class="card card-icon w-100 mb-4">
+          <div class="card-body text-center">
+            <i class="material-icons">cloud_upload</i>
+            <p class="text-muted text-gradient mt-2 mb-2">Amount Banked</p>
+            <p class="line-height-1 text-title text-18 mt-2 mb-0">
+              <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+              <span *ngIf="!preLoader">50,000</span>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6 col-sm-6 d-flex">
+        <div class="card card-icon w-100 mb-4">
+          <div class="card-body text-center">
+            <i class="material-icons">paid</i>
+            <p class="text-muted text-gradient mt-2 mb-2">Next Settlement</p>
+            <p class="text-muted mt-2">28 Feb 2022</p>
+            <p class="line-height-1 text-title text-18 mt-2 mb-0">
+              <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+              <span *ngIf="!preLoader">2,700</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6 col-md-12 d-flex">
+    <div class="card w-100 mb-4">
+      <div class="card-body">
+        <h5 class="card-title">Order Volume</h5>
+        <div *ngIf="preLoader" class="d-flex justify-content-center">
+          <i class="fa fa-circle-o-notch fa-spin load-spin"></i>
+        </div>
+        <div *ngIf="!preLoader && order_details?.order_list?.length" echarts [options]="chartLine" style="height: 300px"></div>
+        <div class="d-flex align-items-center justify-content-center" *ngIf="!preLoader && !order_details?.order_list?.length">
+          <p>No orders found</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- <div class="col-lg-6 col-md-12 d-flex">
+    <div class="card w-100 mb-4">
+      <div class="card-body">
+        <div class="card-title">Orders</div>
+        <div class="row">
+          <div class="col-md-12">
+            <table class="table">
+              <thead class="thead-light">
+                <tr>
+                  <th scope="col">Status</th>
+                  <th scope="col">Quantity</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Awaiting Confirmation</td>
+                  <td class="text-warning font-weight-bold">
+                    <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+                    <span *ngIf="!preLoader">{{order_details?.placed_orders}}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Confirmed</td>
+                  <td class="font-weight-bold" style="color: #42bcf5;">
+                    <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+                    <span *ngIf="!preLoader">{{order_details?.confirmed_orders}}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Completed</td>
+                  <td class="font-weight-bold" style="color: #d83967;">
+                    <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+                    <span *ngIf="!preLoader">{{order_details?.completed_orders}}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Cancelled</td>
+                  <td class="font-weight-bold" style="color: #a9a9a9;">
+                    <i *ngIf="preLoader" class="fa fa-circle-o-notch fa-spin load-spin"></i>
+                    <span *ngIf="!preLoader">{{order_details?.cancelled_orders}}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="col-md-12">
+            <div *ngIf="preLoader">
+              <i class="fa fa-circle-o-notch fa-spin load-spin"></i>
+            </div>
+            <div id="dashboard-piechart" *ngIf="!preLoader" echarts [options]="chartPie" [autoResize]="true" style="height: 200px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> -->
+
+</div>

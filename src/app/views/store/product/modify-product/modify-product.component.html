@@ -1,0 +1,1085 @@
+<div *ngIf="pageLoader" class="row">
+  <app-spinner></app-spinner>
+</div>
+
+<div class="modify-product-page" *ngIf="!pageLoader">
+  <div class="breadcrumb with-back-btn">
+    <div class="row">
+      <div class="col-md-8">
+        <h1>{{productForm.name}}</h1>
+        <ul>
+          <li *ngIf="step_num==1">Edit your product details</li>
+          <li *ngIf="step_num==2">Edit your product's appearance</li>
+          <li *ngIf="step_num==3">Link your product to catalogs</li>
+        </ul>
+      </div>
+      <div class="col-md-4 d-flex align-items-center justify-content-end mt-sm-15">
+        <button *ngIf="step_num==3 && commonService.store_details?.login_type=='admin'" type="button" (click)="intForm = {}; modalService.open(catalogModal);" class="btn btn-primary">Add New Catalog</button>
+      </div>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+
+  <ng-container *ngIf="commonService.store_details?.login_type!='vendor' || commonService.vendor_features.indexOf('update_product')!=-1">
+    <!-- STEP 1 -->
+    <form *ngIf="step_num==1" autocomplete="off" (ngSubmit)="onUpdateDetails();" ngNativeValidate>
+
+      <!-- vendor update stock only -->
+      <ng-container *ngIf="commonService.vendor_features.indexOf('update_product_stock_only')!=-1">
+        <div class="row">
+          <div class="col-md-6 form-group mb-3">
+            <label>Product Name</label>
+            <input type="text" name="name" class="form-control" [(ngModel)]="productForm.name" #name="ngModel" readonly required />
+          </div>
+          <div class="col-md-6 form-group mb-3">
+            <ng-container *ngIf="!productForm.variant_types.length">
+              <label>Stock</label>
+              <input type="text" name="stock" class="form-control" [(ngModel)]="productForm.stock" #stock="ngModel" appNumberOnly required />
+            </ng-container>
+          </div>
+          <!-- variants -->
+          <ng-container *ngIf="productForm.variant_status">
+            <div *ngFor="let x of productForm.variant_list; let i=index;" class="col-md-6 mb-3">
+              <div class="card card-in-card p-3">
+                <div class="row">
+                  <div class="col-md-12">
+                    <p>
+                      <span *ngIf="x.variants[0]">
+                        <span style="color:#29bc94;">{{ x.variants[0] }}</span>
+                      </span>
+                      <span *ngIf="x.variants[1]"> |
+                        <span style="color:#763eaf;">{{ x.variants[1] }}</span>
+                      </span>
+                      <span *ngIf="x.variants[2]"> |
+                        <span style="color:#ff9517;">{{ x.variants[2] }}</span>
+                      </span>
+                    </p>
+                  </div>
+                  <div class="col-md-6 form-group mb-3 d-flex flex-column justify-content-between">
+                    <label>SKU</label>
+                    <input type="text" name="sku{{i}}" class="form-control" [(ngModel)]="x.sku" #sku="ngModel" readonly required />
+                  </div>
+                  <div class="col-md-6 form-group mb-3 d-flex flex-column justify-content-between">
+                    <label>Stock</label>
+                    <input type="text" name="stock{{i}}" class="form-control" [(ngModel)]="x.stock" #stock="ngModel" appNumberOnly required />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="commonService.vendor_features.indexOf('update_product_stock_only')==-1">
+        <div class="row">
+          <div class="col-md-6 form-group mb-3">
+            <label>Product Name</label>
+            <input type="text" name="name" class="form-control" [(ngModel)]="productForm.name" #name="ngModel" required />
+          </div>
+          <div *ngIf="!productForm.variant_types.length" class="col-md-3 form-group mb-3">
+            <label>Product SKU</label>
+            <input type="text" name="sku" class="form-control" [(ngModel)]="productForm.sku" #sku="ngModel" appUppercase required />
+          </div>
+          <div *ngIf="configData.stone_acres_id!=commonService.store_details._id" class="form-group mb-3" [ngClass]="productForm.variant_types.length? 'col-md-6': 'col-md-3'">
+            <label>Unit</label>
+            <select name="unit" class="form-control" [(ngModel)]="productForm.unit" #unit="ngModel" required>
+              <option value="Pcs">Unit (Pcs)</option>
+              <option value="Mts">Length (Mts)</option>
+              <option value="Kgs">Weight (Kgs)</option>
+            </select>
+          </div>
+          <ng-container *ngIf="configData.stone_acres_id==commonService.store_details._id">
+            <div class="col-md-3 form-group mb-3">
+              <label>RERA ID</label>
+              <input type="text" name="rera_id" class="form-control" [(ngModel)]="productForm.rera_id" required />
+            </div>
+            <div class="form-group col-md-3 mb-3">
+              <label>Property Type</label>
+              <select name="product_type" class="form-control" [(ngModel)]="productForm.product_type" required>
+                <option value="apartment">Apartment</option>
+                <option value="plot">Plot</option>
+                <option value="villa">Villa</option>
+              </select>
+            </div>
+          </ng-container>
+          <div *ngIf="commonService.store_details?.login_type!='vendor' && commonService.ys_features.indexOf('vendors')!=-1" class="col-md-3 form-group mb-3">
+            <label>Vendor</label>
+            <select name="vendor_id" class="form-control" [(ngModel)]="productForm.vendor_id" #vendor_id="ngModel" required>
+              <option *ngFor="let x of commonService.vendor_list;" [ngValue]="x._id">{{x.company_details?.brand}}</option>
+            </select>
+          </div>
+          <div class="col-md-12 form-group mb-3 quill-mb-5">
+            <label>Description (optional)</label>
+            <quill-editor class="rounded" [placeholder]="null" [(ngModel)]="productForm.description" [ngModelOptions]="{standalone: true}"></quill-editor>
+          </div>
+          <div *ngIf="productForm?.seo_details?.modified" class="col-md-12 form-group mb-3">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="update_seo" [(ngModel)]="productForm.update_seo" #update_seo="ngModel">
+              <span>Update SEO Details</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <ng-container *ngIf="!productForm.variant_types.length">
+            <div class="col-md-6 form-group mb-3">
+              <label>Selling Price</label>
+              <input type="text" name="selling_price" class="form-control" [(ngModel)]="productForm.selling_price" #selling_price="ngModel"
+                (input)="discountCalc(productForm)" appNumberOnly required />
+            </div>
+            <div class="col-md-6 form-group mb-3">
+              <label>Stock</label>
+              <input type="text" name="stock" class="form-control" [(ngModel)]="productForm.stock" #stock="ngModel" appNumberOnly required />
+            </div>
+          </ng-container>
+        </div>
+        
+        <!-- advanced options -->
+        <div class="whats-new-acc card">
+          <div id="accordionOne">
+            <div class="acc-card">
+              <div class="card-header p-3" id="headingOne">
+                <h5 class="mb-0">
+                  <button type="button" class="btn btn-link collapsed w-100 p-0 m-0" data-toggle="collapse" data-target="#collapseOne" [attr.aria-expanded]="commonService.store_details?.additional_features?.adv_product_options" aria-controls="collapseOne">
+                    <div class="breadcrumb home-breadcrumb mb-0">
+                      <div class="home-headlines mt-2">
+                        <h4>Advanced Options</h4>
+                        <h6>Create variants, select tax, apply discounts and more</h6>
+                      </div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                      <span class="learn-more-text"></span>
+                      <span class="gray-icon-btn ml-3">
+                        <i class="material-icons">expand_more</i>
+                      </span>
+                    </div>
+                  </button>
+                </h5>
+              </div>
+              <div id="collapseOne" class="collapse" [ngClass]="(commonService.store_details?.additional_features?.adv_product_options)? 'show': ''" aria-labelledby="headingOne" data-parent="#accordionOne">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-3 form-group mb-3">
+                      <label>{{ (configData.stone_acres_id==commonService.store_details._id)? 'Location': 'Brand (optional)' }}</label>
+                      <input type="text" name="brand" class="form-control" [(ngModel)]="productForm.brand" #brand="ngModel" />
+                    </div>
+                    <div class="col-md-3 form-group mb-3">
+                      <label>HSN Code (optional)</label>
+                      <input type="text" name="hsn_code" class="form-control" [(ngModel)]="productForm.hsn_code" #hsn_code="ngModel" />
+                    </div>
+                    <div *ngIf="commonService.store_details?.package_details?.package_id==configData.premium_package_id" class="col-md-3 form-group mb-3">
+                      <label>Shipping Weight for 1 {{productForm.unit}} (in Kg optional)</label>
+                      <input type="text" name="weight" class="form-control" [(ngModel)]="productForm.weight" #weight="ngModel" appNumberOnly />
+                    </div>
+                    <div class="col-md-3 form-group mb-3">
+                      <label>Rank</label>
+                      <input type="number" name="rank" class="form-control" [(ngModel)]="productForm.rank" #rank="ngModel" min="1" max="{{maxRank}}"
+                        appNumberOnly required />
+                    </div>
+                    <div *ngIf="taxonomyList.length" class="col-md-3 form-group mb-3">
+                      <label>Product Taxonomy</label>
+                      <select name="taxonomy_id" class="form-control" [(ngModel)]="productForm.taxonomy_id" #taxonomy_id="ngModel">
+                        <option *ngFor="let x of taxonomyList;" [ngValue]="x._id">{{x.name}}</option>
+                      </select>
+                    </div>
+                    <div *ngIf="!productForm.variant_types.length && taxRates.length" class="col-md-3 form-group mb-3">
+                      <label>Tax Rates</label>
+                      <select name="taxrate_id" class="form-control" [(ngModel)]="productForm.taxrate_id" #taxrate_id="ngModel" required>
+                        <option *ngFor="let x of taxRates;" [ngValue]="x._id">{{x.name}}</option>
+                      </select>
+                    </div>
+                    <div *ngIf="configData.dinamic_order_id.indexOf(commonService.store_details._id)!=-1" class="col-md-3 form-group mb-3">
+                      <label>External Link</label>
+                      <input type="text" name="external_link" class="form-control" [(ngModel)]="productForm.external_link" #external_link="ngModel" />
+                    </div>
+                    <ng-container *ngIf="configData.stone_acres_id==commonService.store_details._id">
+                      <div class="col-md-12 form-group mb-3">
+                        <label>Embedded iframe Location URL</label>
+                        <input type="text" name="location_url" class="form-control" [(ngModel)]="productForm.location_url" />
+                      </div>
+                      <div class="col-md-3 form-group mb-3">
+                        <label>Handover Date</label>
+                        <input type="text" placeholder="Select Date" class="form-control" name="handover_on" autocomplete="off" bsDatepicker
+                        [(ngModel)]="productForm.handover_on" [bsConfig]="{ showWeekNumbers: false, dateInputFormat: 'DD-MM-YYYY' }" />
+                      </div>
+                    </ng-container>
+                  </div>
+                  
+                  <div class="row mt-2">
+                    <!--  featured product -->
+                    <div *ngIf="commonService.store_details?.login_type!='vendor'" class="col-md-6 form-group mb-3">
+                      <label class="checkbox checkbox-primary">
+                        <input class="form-check-input" type="checkbox" name="featured" [(ngModel)]="productForm.featured" #featured="ngModel">
+                        <span>This is a featured product</span>
+                        <span class="checkmark"></span>
+                      </label>
+                    </div>
+                
+                    <!-- allow cod -->
+                    <div *ngIf="configData.stone_acres_id!=commonService.store_details._id" class="col-md-6 form-group mb-3">
+                      <label class="checkbox checkbox-primary">
+                        <input class="form-check-input" type="checkbox" name="allow_cod" [(ngModel)]="productForm.allow_cod" #allow_cod="ngModel">
+                        <span>Allow COD</span>
+                        <span class="checkmark"></span>
+                      </label>
+                    </div>
+                
+                    <!-- Apply Discount -->
+                    <div class="col-md-12 form-group">
+                      <div [ngClass]="productForm.disc_status? 'card p-3 mb-3': ''">
+                        <div class="row">
+                          <div class="col-md-12 form-group">
+                            <label class="checkbox checkbox-primary">
+                              <input class="form-check-input" type="checkbox" name="disc_status" [(ngModel)]="productForm.disc_status" #disc_status="ngModel"
+                                (change)="productForm.disc_percentage='';">
+                              <span>Apply Discount</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div *ngIf="productForm.disc_status" class="col-md-12">
+                            <div class="row ml-3">
+                              <div class="col-md-6 form-group mb-3">
+                                <div class="card card-in-card p-3">
+                                  <label>Discount (in %)</label>
+                                  <input type="text" name="disc_percentage" class="form-control" [(ngModel)]="productForm.disc_percentage"
+                                    #disc_percentage="ngModel" (input)="discountCalc(productForm)" appNumberOnly />
+                                </div>
+                              </div>
+                              <div *ngIf="!productForm.variant_types.length" class="col-md-6 form-group mb-3">
+                                <div class="card card-in-card p-3">
+                                  <label>Price after Discount</label>
+                                  <input type="text" name="discounted_price" class="form-control" [(ngModel)]="productForm.discounted_price"
+                                    #discounted_price="ngModel" appNumberOnly required />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                
+                  <!-- variants -->
+                  <div [ngClass]="productForm.variant_status? 'card p-3 mb-3': ''">
+                    <div class="row">
+                      <div class="form-group mb-3 col-md-12">
+                        <label class="checkbox checkbox-primary">
+                          <input class="form-check-input" type="checkbox" name="variant_status" [(ngModel)]="productForm.variant_status" (change)="onChangeVariant(productForm.variant_status);"
+                            #variant_status="ngModel">
+                          <span>Apply Variants</span>
+                          <span class="checkmark"></span>
+                        </label>
+                      </div>
+                    </div>
+                
+                    <div class="row ml-3" *ngFor="let x of productForm.variant_types; let i=index">
+                      <div class="col-md-12 mb-3">
+                        <div class="card card-in-card p-3">
+                          <ng-container>
+                            <span (click)="onRemoveVariantType(productForm, i);" class="material-icons item-close absolute-item-close float-right " aria-hidden="true">close</span>
+                          </ng-container>
+                          <div class="row">
+                            <div class="col-md-4 form-group mb-3">
+                              <label>Name</label>
+                              <input type="text" name="name{{i}}" class="form-control" [(ngModel)]="x.name" #name="ngModel" (focusout)="onCreateVariantList(productForm.variant_types)" required />
+                            </div>
+                            <div *ngIf="commonService.ys_features.indexOf('variant_colors')==-1 || commonService.colorNames.indexOf(x.name)==-1" class="col-md-8 form-group mb-3">
+                              <tag-input class="w-100" name="options{{i}}" id="options" [(ngModel)]="x.options" #options="ngModel" placeholder="" [secondaryPlaceholder]="'Enter options separated by commas'"
+                                [separatorKeyCodes]="[188]" (onRemove)="onCreateVariantList(productForm.variant_types);" (onTextChange)="onCreateVariantList(productForm.variant_types);"
+                                required></tag-input>
+                            </div>
+                            <div *ngIf="commonService.ys_features.indexOf('variant_colors')!=-1 && commonService.colorNames.indexOf(x.name)!=-1" class="col-md-8 form-group mb-3">
+                              <div class="custom-tag-list-wrapper">
+                                <span *ngFor="let opt of x.options; let m=index;" class="custom-tag-list mr-1">
+                                  <span class="color-chips">
+                                    {{opt.display}}
+                                    <span (click)="x.options.splice(m, 1); onCreateVariantList(productForm.variant_types);" class="chip-close material-icons">close</span>
+                                  </span>
+                                </span>
+                              </div>
+                              <div class="pt-3">
+                                <button type="button" (click)="selectedVariantIndex=i; onAddColorOptions(colorModal);" class="btn btn-wide btn-primary">
+                                  Add Options
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                
+                    <div class="rrow ml-3 mt-3" *ngIf="productForm.variant_status && productForm.variant_types.length < 3">
+                      <div class="col-md-12">
+                        <p class="primary-color" (click)="productForm.variant_types.push({ options: [] });">
+                          <b>ADD ANOTHER VARIANT</b>
+                        </p>
+                      </div>
+                    </div>
+                
+                    <div class="row ml-3" *ngIf="productForm.variant_status">
+                      <div *ngFor="let x of productForm.variant_list; let i=index;" class="col-md-6 mb-3">
+                        <div class="card card-in-card p-3">
+                          <div class="row">
+                            <div class="col-md-12">
+                              <p>
+                                <span *ngIf="x.variants[0]">
+                                  <span style="color:#29bc94;">{{ x.variants[0] }}</span>
+                                </span>
+                                <span *ngIf="x.variants[1]"> |
+                                  <span style="color:#763eaf;">{{ x.variants[1] }}</span>
+                                </span>
+                                <span *ngIf="x.variants[2]"> |
+                                  <span style="color:#ff9517;">{{ x.variants[2] }}</span>
+                                </span>
+                              </p>
+                            </div>
+                            <div class="form-group mb-3 d-flex flex-column justify-content-between" [ngClass]="productForm.disc_status? 'col-md-2': 'col-md-3'">
+                              <label>Tax Rates</label>
+                              <select name="taxrate_id{{i}}" class="form-control" [(ngModel)]="x.taxrate_id" #taxrate_id="ngModel" required>
+                                <option *ngFor="let tax of taxRates;" [ngValue]="tax._id">{{tax.name}}</option>
+                              </select>
+                            </div>
+                            <div class="col-md-3 form-group mb-3 d-flex flex-column justify-content-between">
+                              <label>SKU</label>
+                              <input type="text" name="sku{{i}}" class="form-control" [(ngModel)]="x.sku" #sku="ngModel" required />
+                            </div>
+                            <div class="form-group mb-3 d-flex flex-column justify-content-between" [ngClass]="productForm.disc_status? 'col-md-2': 'col-md-3'">
+                              <label>Selling Price</label>
+                              <input type="text" name="selling_price{{i}}" class="form-control" [(ngModel)]="x.selling_price" #selling_price="ngModel"
+                                (input)="discountCalc(productForm)" appNumberOnly required />
+                            </div>
+                            <div *ngIf="productForm.disc_status" class="col-md-3 form-group mb-3 d-flex flex-column justify-content-between">
+                              <label>Price after Discount</label>
+                              <input type="text" name="discounted_price{{i}}" class="form-control" [(ngModel)]="x.discounted_price"
+                                #discounted_price="ngModel" appNumberOnly required />
+                            </div>
+                            <div class="form-group mb-3 d-flex flex-column justify-content-between" [ngClass]="productForm.disc_status? 'col-md-2': 'col-md-3'">
+                              <label>Stock</label>
+                              <input type="text" name="stock{{i}}" class="form-control" [(ngModel)]="x.stock" #stock="ngModel" appNumberOnly
+                                required />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- #Variants -->
+                
+                  <!-- Addons -->
+                  <div *ngIf="commonService.ys_features.indexOf('addons')!=-1" [ngClass]="productForm.addon_status? 'card p-3 mb-3': ''">
+                    <div class="row">
+                      <div class="col-md-12 form-group mb-3">
+                        <label class="checkbox checkbox-primary">
+                          <input class="form-check-input" type="checkbox" name="addon_status" [(ngModel)]="productForm.addon_status" #addon_status="ngModel">
+                          <span>Apply Add-Ons</span>
+                          <span class="checkmark"></span>
+                        </label>
+                      </div>
+                    </div>
+                    <div class="row ml-3" *ngIf="productForm.addon_status">
+                      <div class="col-md-12 form-group mb-3">
+                        <div class="mb-3">
+                          <label class="checkbox checkbox-primary">
+                            <input class="form-check-input" type="checkbox" name="addon_must" [(ngModel)]="productForm.addon_must" #addon_must="ngModel">
+                            <span>Choose Add-On Mandatory</span>
+                            <span class="checkmark"></span>
+                          </label>
+                        </div>
+                        <div class="card card-in-card p-3">
+                          <label class="checkbox checkbox-success">
+                            <input class="form-check-input" type="checkbox" name="select_all" [(ngModel)]="productForm.select_all" (change)="selectAllAddons(productForm.select_all);"
+                              #select_all="ngModel">
+                            <span>Select All</span>
+                            <span class="checkmark"></span>
+                          </label>
+                          <div class="row ml-3 mt-3">
+                            <div class="col-lg-3 col-md-4 form-group mb-3" *ngFor="let x of addonList | orderAsc:'rank'; let i=index;">
+                              <label class="checkbox checkbox-success">
+                                <input class="form-check-input" type="checkbox" name="addon_checked{{i}}" [(ngModel)]="x.addon_checked" #addon_checked="ngModel">
+                                <span>{{x.name}}</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- #Addons -->
+                
+                  <!-- Size Chart -->
+                  <div *ngIf="commonService.ys_features.indexOf('size_chart')!=-1 && sizeCharts?.length" [ngClass]="productForm.chart_status? 'card p-3 mb-3': ''">
+                    <div class="row">
+                      <div class="form-group mb-3 col-md-12">
+                        <label class="checkbox checkbox-primary">
+                          <input class="form-check-input" type="checkbox" name="chart_status" [(ngModel)]="productForm.chart_status" (change)="!productForm.chart_id? productForm.chart_id=sizeCharts[0]._id: ''"
+                            #chart_status="ngModel">
+                          <span>Apply Size Chart</span>
+                          <span class="checkmark"></span>
+                        </label>
+                      </div>
+                    </div>
+                    <div class="row ml-3" *ngIf="productForm.chart_status">
+                      <div class="col-md-12 form-group mb-3">
+                        <div class="card card-in-card p-3">
+                          <div class="row ml-3 mt-3">
+                            <div class="col-lg-3 col-md-4 form-group mb-3" *ngFor="let x of sizeCharts; let i=index;">
+                              <label class="radio radio-success">
+                                <input type="radio" name="chart_id" [value]="x._id" [checked]="x._id==productForm.chart_id" (change)="productForm.chart_id=x._id;">
+                                <span>{{x.name}}</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- #Size Chart -->
+                
+                  <!-- Tags -->
+                  <div *ngIf="commonService.ys_features.indexOf('product_filters')!=-1 && tagList?.length" [ngClass]="productForm.tag_status? 'card p-3 mb-3': ''">
+                    <div class="row">
+                      <div class="col-md-12 form-group mb-3">
+                        <label class="checkbox checkbox-primary">
+                          <input class="form-check-input" type="checkbox" name="tag_status" [(ngModel)]="productForm.tag_status" #tag_status="ngModel">
+                          <span>Apply Tags</span>
+                          <span class="checkmark"></span>
+                        </label>
+                      </div>
+                    </div>
+                    <div class="row ml-3" *ngIf="productForm.tag_status">
+                      <div class="col-md-12 form-group mb-3" *ngFor="let x of tagList | orderAsc:'rank'; let i=index;">
+                        <div class="card card-in-card p-3">
+                          <div class="row">
+                            <div class="col-md-6">
+                              <label class="checkbox checkbox-success">
+                                <input class="form-check-input" type="checkbox" name="tag_checked{{i}}" [(ngModel)]="x.tag_checked" #tag_checked="ngModel">
+                                <span>{{x.name}}</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div *ngIf="x.tag_checked && commonService.store_details?.login_type=='admin'" class="col-md-6">
+                              <span (click)="intForm = { selected_tag: x, name: x.name, option_list: [{}] }; modalService.open(tagModal);"
+                              class="badge badge-warning badge-green w-30 m-0 pull-right cursor">Add More Options</span>
+                            </div>
+                          </div>
+                          <div *ngIf="x.tag_checked" class="row ml-3 mt-3">
+                            <div class="col-lg-3 col-md-4 form-group mb-3" *ngFor="let y of x.option_list | orderAsc:'name'; let j=index;">
+                              <label class="checkbox checkbox-warning">
+                                <input class="form-check-input" type="checkbox" name="tag_option_checked{{i+1}}{{j}}" [(ngModel)]="y.tag_option_checked"
+                                  #tag_option_checked="ngModel">
+                                <span>{{y.name}}</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- #Tags -->
+                
+                  <!-- Foot Note -->
+                  <div *ngIf="commonService.ys_features.indexOf('foot_note')!=-1 && noteList?.length" [ngClass]="productForm.note_status? 'card p-3 mb-3': ''">
+                    <div class="row">
+                      <div class="col-md-12 form-group mb-3">
+                        <label class="checkbox checkbox-primary">
+                          <input class="form-check-input" type="checkbox" name="note_status" [(ngModel)]="productForm.note_status" #note_status="ngModel">
+                          <span>Apply Foot Note</span>
+                          <span class="checkmark"></span>
+                        </label>
+                      </div>
+                    </div>
+                    <div class="row ml-3" *ngIf="productForm.note_status">
+                      <div class="col-md-12 form-group mb-3" *ngFor="let x of noteList | orderAsc:'rank'; let i=index;">
+                        <div class="card card-in-card p-3">
+                          <div class="row">
+                            <div class="col-md-6">
+                              <label class="checkbox checkbox-success">
+                                <input class="form-check-input" type="checkbox" name="note_checked{{i}}" [(ngModel)]="x.note_checked" (change)="x.selected_option=x.option_list[0].description"
+                                  #note_checked="ngModel">
+                                <span>{{x.name}}</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div *ngIf="x.note_checked && commonService.store_details?.login_type=='admin'" class="col-md-6">
+                              <span (click)="intForm = { selected_note: x, name: x.name, option_list: [{}] }; modalService.open(noteModal);"
+                              class="badge badge-warning badge-green w-30 m-0 pull-right cursor">Add More Options</span>
+                            </div>
+                          </div>
+                          <div *ngIf="x.note_checked" class="row ml-3 mt-3">
+                            <div class="col-lg-3 col-md-4 form-group mb-3" *ngFor="let y of x.option_list | orderAsc:'description'; let j=index;">
+                              <label class="radio radio-warning d-inline-block">
+                                <input type="radio" name="{{x.name}}" value="{{y.description}}" [checked]="x.selected_option==y.description" (change)="x.selected_option=y.description;">
+                                <span>{{y.description}}</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- #Foot Note -->
+                
+                  <!-- FAQ -->
+                  <div *ngIf="commonService.ys_features.indexOf('faq')!=-1 && faqList?.length" [ngClass]="productForm.faq_status? 'card p-3 mb-3': ''">
+                    <div class="row">
+                      <div class="col-md-12 form-group mb-3">
+                        <label class="checkbox checkbox-primary">
+                          <input class="form-check-input" type="checkbox" name="faq_status" [(ngModel)]="productForm.faq_status" #faq_status="ngModel">
+                          <span>Apply FAQ</span>
+                          <span class="checkmark"></span>
+                        </label>
+                      </div>
+                    </div>
+                    <div class="row ml-3" *ngIf="productForm.faq_status">
+                      <div class="col-md-12 form-group mb-3" *ngFor="let x of faqList | orderAsc:'rank'; let i=index;">
+                        <div class="card card-in-card p-3">
+                          <label class="checkbox checkbox-success">
+                            <input class="form-check-input" type="checkbox" name="faq_checked{{i}}" [(ngModel)]="x.faq_checked" (change)="!x.selected_answer? x.selected_answer=x.answer_list[0]._id: ''"
+                              #faq_checked="ngModel">
+                            <span>{{x.name}}</span>
+                            <span class="checkmark"></span>
+                          </label>
+                          <div *ngIf="x.faq_checked" class="row ml-3 mt-3">
+                            <div class="col-lg-3 col-md-4 form-group mb-3" *ngFor="let y of x.answer_list; let j=index;">
+                              <label class="radio radio-warning d-inline-block">
+                                <input type="radio" name="{{x.name}}" value="{{y._id}}" [checked]="x.selected_answer==y._id" (change)="x.selected_answer=y._id;">
+                                <span>{{y.answer}}</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- #FAQ -->
+
+                  <!-- AMENITIES -->
+                  <div *ngIf="commonService.ys_features.indexOf('amenities')!=-1 && amenityList?.length" [ngClass]="productForm.amenity_status? 'card p-3 mb-3': ''">
+                    <div class="row">
+                      <div class="col-md-12 form-group mb-3">
+                        <label class="checkbox checkbox-primary">
+                          <input class="form-check-input" type="checkbox" name="amenity_status" [(ngModel)]="productForm.amenity_status">
+                          <span>Apply Amenities</span>
+                          <span class="checkmark"></span>
+                        </label>
+                      </div>
+                    </div>
+                    <div class="row ml-3" *ngIf="productForm.amenity_status">
+                      <div class="col-md-12 form-group mb-3">
+                        <div class="card card-in-card p-3">
+                          <div class="row ml-3 mt-3">
+                            <div class="col-lg-3 col-md-4 form-group mb-3" *ngFor="let x of amenityList | orderAsc:'rank'; let i=index;">
+                              <label class="checkbox checkbox-success">
+                                <input class="form-check-input" type="checkbox" name="amen_checked{{i}}" [(ngModel)]="x.amen_checked">
+                                <span>{{x.name}}</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- #AMENITIES -->
+                
+                  <!-- AI Style Assistant -->
+                  <div *ngIf="commonService.ys_features.indexOf('shopping_assistant')!=-1 && aiStyleList?.length" [ngClass]="productForm.aistyle_status? 'card p-3 mb-3': ''">
+                    <div class="row">
+                      <div class="col-md-12 form-group mb-3">
+                        <label class="checkbox checkbox-primary">
+                          <input class="form-check-input" type="checkbox" name="aistyle_status" [(ngModel)]="productForm.aistyle_status" #aistyle_status="ngModel">
+                          <span>Link to AI Style Assistant</span>
+                          <span class="checkmark"></span>
+                        </label>
+                      </div>
+                    </div>
+                    <div class="row ml-3" *ngIf="productForm.aistyle_status">
+                      <div class="col-md-12 form-group mb-3" *ngFor="let x of aiStyleList; let i=index;">
+                        <div class="card card-in-card p-3">
+                          <label class="checkbox checkbox-success">
+                            <input class="form-check-input" type="checkbox" name="aistyle_checked{{i}}" [(ngModel)]="x.aistyle_checked" (change)="(x.aistyle_checked && x.type=='either_or' && x.option_list.length && !x.selected_option)? x.selected_option=x.option_list[0]._id: ''" #aistyle_checked="ngModel">
+                            <span>{{x.heading}}</span>
+                            <span class="checkmark"></span>
+                          </label>
+                          <div *ngIf="x.aistyle_checked" class="row ml-3 mt-3">
+                            <div class="col-lg-3 col-md-4 form-group mb-3" *ngFor="let y of x.option_list; let j=index;">
+                              <!-- radio -->
+                              <label *ngIf="x.type=='either_or'" class="radio radio-warning d-inline-block">
+                                <input type="radio" name="aistyle_{{x.heading}}" value="{{y._id}}" [checked]="x.selected_option==y._id" (change)="x.selected_option=y._id;">
+                                <span>{{y.heading}}</span>
+                                <span class="checkmark"></span>
+                              </label>
+                              <!-- checkbox -->
+                              <label *ngIf="x.type!='either_or'" class="checkbox checkbox-warning">
+                                <input class="form-check-input" type="checkbox" name="aistyle_option_checked{{i+1}}{{j}}" [(ngModel)]="y.aistyle_option_checked"
+                                  #aistyle_option_checked="ngModel">
+                                <span>{{y.heading}}</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- #AI Style Assistant -->
+                
+                  <!-- Availability -->
+                  <div *ngIf="commonService.ys_features.indexOf('product_availability')!=-1" [ngClass]="productForm.availability_status? 'card p-3 mb-3': ''">
+                    <div class="row">
+                      <div class="col-md-12 form-group mb-3">
+                        <label class="checkbox checkbox-primary">
+                          <input class="form-check-input" type="checkbox" name="availability_status" [(ngModel)]="productForm.availability_status" #availability_status="ngModel">
+                          <span>Apply Availability</span>
+                          <span class="checkmark"></span>
+                        </label>
+                      </div>
+                    </div>
+                    <div class="row ml-3" *ngIf="productForm.availability_status">
+                      <div class="form-group col-md-12 mt-2 mb-2" *ngFor="let x of productForm.available_days; let i=index;">
+                        <label class="checkbox checkbox-primary">
+                          <input class="form-check-input" type="checkbox" name="active{{i}}" [(ngModel)]="x.active" (change)="(x.active && !x.opening_hrs.length)? x.opening_hrs=[{}]: x.opening_hrs=[];" #active="ngModel">
+                          <strong>{{x.day}}</strong>
+                          <span class="checkmark"></span>
+                        </label>
+                        <div *ngIf="x.active" class="row ml-4 mt-3">
+                          <div *ngFor="let y of x.opening_hrs; let j=index;" class="col-md-10 card card-in-card p-3 mb-3">
+                            <ng-container *ngIf="x.opening_hrs.length>1">
+                              <span (click)="x.opening_hrs.splice(j, 1);" class="material-icons item-close absolute-item-close float-right " aria-hidden="true">close</span>
+                            </ng-container>
+                            <div class="row">
+                              <div class="col-md-6">
+                                <label>From</label>
+                                <input type="text" name="from{{i+1}}{{j}}" class="form-control" [(ngModel)]="y.from" (click)="timePicker(i, j, 'from');" #from="ngModel" required />
+                              </div>
+                              <div class="col-md-6">
+                                <label>To</label>
+                                <input type="text" name="to{{i+1}}{{j}}" class="form-control" [(ngModel)]="y.to" (click)="timePicker(i, j, 'to');" #to="ngModel" required />
+                              </div>
+                            </div>
+                          </div>
+                          <div *ngIf="x.opening_hrs.length<2" class="col-md-2 ml-1">
+                            <strong (click)="x.opening_hrs.push({});" class="add-another x-close">ADD HOURS</strong>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- #Availability -->
+
+                  <!-- Apply Image Tags -->
+                  <div [ngClass]="productForm.badges_status? 'card p-3 mb-3': ''">
+                    <div class="row">
+                      <div class="col-md-12 form-group mb-3">
+                        <label class="checkbox checkbox-primary">
+                          <input class="form-check-input" type="checkbox" name="badges_status" [(ngModel)]="productForm.badges_status" #badges_status="ngModel">
+                          <span>Apply Image Tags</span>
+                          <span class="checkmark"></span>
+                        </label>
+                      </div>
+                    </div>
+                    <div class="row ml-3" *ngIf="productForm.badges_status">
+                      <div class="col-md-12 form-group mb-3">
+                          <tag-input class="w-100" name="badges" id="badges" [(ngModel)]="productForm.badges_list" #badges="ngModel" placeholder="" [secondaryPlaceholder]="'Enter badges separated by commas'"
+                            [separatorKeyCodes]="[188]" 
+                            required></tag-input>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- #Apply Image Tags -->
+                  
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <div class="separator-breadcrumb border-top mt-5"></div>
+      <div class="row">
+        <div class="col-md-12 mt-3 mb-3" *ngIf="productForm.errorMsg">
+          <p class="text-danger" align="center">{{ productForm.errorMsg }}</p>
+        </div>
+        <div align="center" class="col-md-12 z-i-0">
+          <button type="button" routerLink="/products" class="btn btn-wide black-outline-btn">
+          <span class="black-outline-txt">Cancel</span> 
+          </button>&nbsp; &nbsp; &nbsp;
+          <button type="submit" class="btn btn-wide btn-primary ladda-button m-1" [disabled]="btnLoader" [ladda]="btnLoader">Update</button>
+        </div>
+      </div>
+
+    </form>
+    <!-- #STEP 1 -->
+
+    <!-- STEP 2 -->
+    <form *ngIf="commonService.vendor_features.indexOf('update_product_stock_only')==-1 && step_num==2" autocomplete="off" (ngSubmit)="onUpdateImages();" ngNativeValidate>
+      <!-- Cropper -->
+      <div class="row">
+        <div align="center" class="col-md-12">
+          <p>{{imgWidth}} x {{imgHeight}} pixels @72ppi</p>
+          <img-cropper class="image-cropper" #cropper [image]="productForm.image_list[imageIndex]" [settings]="cropperSettings"></img-cropper>
+        </div>
+      </div>
+      <div class="separator-breadcrumb border-top mt-3"></div>
+      <!-- Image Tag -->
+      <ng-container *ngIf="commonService.ys_features.indexOf('variant_image_tag')!=-1 && productForm.variant_types?.length">
+        <div class="row">
+          <div class="col-md-12 form-group">
+            <label class="checkbox checkbox-primary">
+              <input class="form-check-input" type="checkbox" name="image_tag_status" [(ngModel)]="productForm.image_tag_status" #image_tag_status="ngModel">
+              <span>Tag image to variants</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div *ngIf="productForm.image_tag_status" class="col-md-4 form-group mb-3">
+            <div class="card p-3">
+              <label>Variants</label>
+              <select name="tag_variant" class="form-control" [(ngModel)]="productForm.tag_variant" #tag_variant="ngModel" required>
+                <option *ngFor="let x of productForm.variant_types;" [ngValue]="x.options">{{x.name}}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="separator-breadcrumb border-top mt-3"></div>
+      </ng-container>
+      <!-- Image List -->
+      <div class="row">
+        <div align="center" class="col-md-6 col-lg-4 form-group mb-3" *ngFor="let x of productForm.image_list; let i=index;">
+          <div class="card p-3 mt-3 mb-3">
+            <ng-container *ngIf="productForm.image_list.length>1">
+              <span (click)="productForm.image_list.splice(i, 1);" class="material-icons item-close absolute-item-close float-right " aria-hidden="true">close</span>
+            </ng-container>
+            <label>
+              <div *ngIf="!x.image">
+                <i class="material-icons add-img"> add_photo_alternate</i>
+                <p>Click to upload image (Resolution: {{imgWidth}}x{{imgHeight}})</p>
+              </div>
+              <img *ngIf="x.image && x.img_change" [src]="x.image" height="150" width="auto">
+              <img *ngIf="x.image && !x.img_change" [src]="imgBaseUrl+x.image" height="150" width="auto">
+              <input type="file" name="image{{i}}" style="display: none;" (change)="fileChangeListener(i, $event, cropper)" accept="image/jpeg, image/png" />
+            </label>
+            <div class="mt-1" align="left">
+              <label>Image Label</label>
+              <input type="text" name="title{{i}}" class="form-control" [(ngModel)]="x.title" #title="ngModel" />
+            </div>
+            <div *ngIf="commonService.ys_features.indexOf('advanced_seo')!=-1" class="mt-1" align="left">
+              <label>Image Alt Name</label>
+              <input type="text" name="img_alt{{i}}" class="form-control" [(ngModel)]="x.img_alt" #img_alt="ngModel" />
+            </div>
+            <div class="mt-1" *ngIf="commonService.ys_features.indexOf('variant_image_tag')!=-1 && productForm.image_tag_status" align="left">
+              <label>Image Tag</label>
+              <select name="img_tag{{i}}" class="form-control" [(ngModel)]="x.tag" #tag="ngModel">
+                <option *ngFor="let x of productForm.tag_variant;" [ngValue]="x.value">{{x.value}}</option>
+              </select>
+            </div>
+            <div *ngIf="commonService.ys_features.indexOf('variant_image_tag_pro')!=-1 && productForm.variant_list?.length" class="mt-2" align="left">
+              <label class="checkbox checkbox-primary">
+                <input class="form-check-input" type="checkbox" name="hide_on_variants{{i}}" [(ngModel)]="x.hide_on_variants" #hide_on_variants="ngModel">
+                <span>Hide on variants</span>
+                <span class="checkmark"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="image_count > productForm.image_list.length" align="center" class="col-md-6 col-lg-4 d-flex align-items-center form-group mb-3 z-i-0">
+          <div class="add-another-opt w-100" (click)="productForm.image_list.push({});">
+            <p>ADD ANOTHER IMAGE</p>
+          </div>
+        </div>
+      </div>
+      <!-- Image Tag Pro -->
+      <ng-container *ngIf="commonService.ys_features.indexOf('variant_image_tag_pro')!=-1 && productForm.variant_list?.length">
+        <div class="separator-breadcrumb border-top mt-3"></div>
+        <div class="row">
+          <div *ngFor="let x of productForm.variant_list; let i=index;" class="col-md-12 mb-3">
+            <h6 class="add-another">{{ x.variants.join(' | ') }}</h6>
+            <div class="card p-3 mb-3">
+              <div class="row">
+                <ng-container *ngIf="x.image_list?.length">
+                  <div align="center" class="col-md-6 col-lg-4 d-flex" *ngFor="let y of x.image_list; let j=index;">
+                    <div class="card card-in-card w-100 p-3 mt-3 mb-3">
+                      <span (click)="x.image_list.splice(j, 1);" class="material-icons item-close absolute-item-close float-right" aria-hidden="true">close</span>
+                      <label>
+                        <div *ngIf="!y.image">
+                          <i class="material-icons add-img"> add_photo_alternate</i>
+                          <p>Click to upload image (Resolution: {{imgWidth}}x{{imgHeight}})</p>
+                        </div>
+                        <img *ngIf="y.image && y.img_change" [src]="y.image" height="150" width="auto">
+                        <img *ngIf="y.image && !y.img_change" [src]="imgBaseUrl+y.image" height="150" width="auto">
+                        <input type="file" name="image{{i+1}}{{j+1}}" style="display: none;" (change)="variantFileChangeListener(i, j, $event);" accept="image/jpeg, image/png" />
+                      </label>
+                      <div class="mt-1" align="left">
+                        <label>Image Label</label>
+                        <input type="text" name="title{{i+1}}{{j+1}}" class="form-control" [(ngModel)]="y.title" #title="ngModel" />
+                      </div>
+                      <div *ngIf="commonService.ys_features.indexOf('advanced_seo')!=-1" class="mt-1" align="left">
+                        <label>Image Alt Name</label>
+                        <input type="text" name="v_img_alt{{i+1}}{{j+1}}" class="form-control" [(ngModel)]="y.img_alt" #img_alt="ngModel" />
+                      </div>
+                    </div>
+                  </div>
+                </ng-container>
+                <div *ngIf="!x.image_list?.length || x.image_list?.length<3" align="center" class="col-md-6 col-lg-4 d-flex align-items-center form-group mt-3 mb-3 z-i-0">
+                  <div class="add-another-opt w-100" (click)="x.image_list.length? x.image_list.push({}): x.image_list=[{}];">
+                    <p>ADD {{ x.image_list?.length? 'ANOTHER': 'NEW' }} IMAGE</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+      <!-- Video -->
+      <ng-container *ngIf="commonService.ys_features.indexOf('product_video')!=-1">
+        <div class="separator-breadcrumb border-top mt-3"></div>
+        <div class="row">
+          <div align="center" class="col-md-6 col-lg-4 d-flex form-group mb-3">
+            <div class="card w-100 p-3 mt-3 mb-3">
+              <ng-container *ngIf="productForm?.video_details?.image">
+                <span (click)="productForm.video_details={}; clearIdValue('videoSrc');" class="material-icons item-close absolute-item-close float-right"
+                  aria-hidden="true">close</span>
+              </ng-container>
+              <label>
+                <div *ngIf="!productForm?.video_details?.image">
+                  <i class="material-icons add-img">video_camera_back</i>
+                  <p>Click to upload video thumbnail image</p>
+                </div>
+                <img *ngIf="productForm?.video_details?.image && productForm?.video_details?.img_change" [src]="productForm.video_details.image" height="150" width="auto">
+                <img *ngIf="productForm?.video_details?.image && !productForm?.video_details?.img_change" [src]="imgBaseUrl+productForm.video_details.image" height="150" width="auto">
+                <input type="file" id="videoSrc" name="video_img" style="display: none;" (change)="videoFileChangeListener($event)" accept="image/jpeg, image/png"
+                />
+              </label>
+              <div class="mt-1" align="left">
+                <label>Product Video Source Link</label>
+                <input type="text" name="video_src" class="form-control" [(ngModel)]="productForm.video_details.src" #video_src="ngModel" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+      <!-- Brochure -->
+      <ng-container *ngIf="commonService.ys_features.indexOf('brochure')!=-1">
+        <div class="separator-breadcrumb border-top mt-3"></div>
+        <div class="row">
+          <div align="center" class="col-md-6 col-lg-4 d-flex form-group mb-3">
+            <div class="card w-100 p-3 mt-3 mb-3">
+              <ng-container *ngIf="brochForm.src || productForm.brochure">
+                <span (click)="productForm.brochure=null; brochForm={};" class="material-icons item-close absolute-item-close float-right" aria-hidden="true">close</span>
+              </ng-container>
+              <div *ngIf="productForm.brochure">
+                <a [href]="imgBaseUrl+productForm.brochure" target="_blank">
+                  <i class="material-icons add-img">file_open</i>
+                </a>
+              </div>
+              <label *ngIf="!productForm.brochure || brochForm.src">
+                <div>
+                  <i class="material-icons add-img">picture_as_pdf</i>
+                </div>
+                <input #brochure type="file" name="brochure" [(ngModel)]="brochForm.brochure_input" (change)="handleFileInput($event.target.files);" accept="application/pdf">
+              </label>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <div class="separator-breadcrumb border-top mt-3"></div>
+      <div class="row">
+        <div class="col-md-12 mt-3 mb-3">
+          <div *ngIf="productForm.errorMsg">
+            <p class="text-danger" align="center">{{ productForm.errorMsg }}</p>
+          </div>
+        </div>
+        <div align="center" class="col-md-12 z-i-0">
+          <button type="button" routerLink="/products" class="btn btn-wide black-outline-btn">
+            <span class="black-outline-txt">Cancel</span> 
+          </button>&nbsp; &nbsp; &nbsp;
+          <button type="submit" class="btn btn-wide btn-primary ladda-button m-1" [disabled]="btnLoader" [ladda]="btnLoader">Update</button>
+        </div>
+      </div>
+    </form>
+    <!-- #STEP 2 -->
+
+    <!-- STEP 3 -->
+    <form *ngIf="step_num==3" autocomplete="off" (ngSubmit)="onUpdateLink();" ngNativeValidate>
+      <!-- categories -->
+      <div class="row" *ngFor="let x of categoryList; let i=index;">
+        <div class="form-group mb-3 col-md-12">
+          <label class="checkbox checkbox-primary">
+            <input class="form-check-input" type="checkbox" name="selected" [(ngModel)]="x.selected" [checked]="x.selected" [ngModelOptions]="{standalone: true}"
+            #selected="ngModel" [disabled]="commonService.store_details?.login_type=='vendor' && commonService.vendor_features.indexOf('link_product')==-1">
+            <span>{{x.name}}</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+      <div *ngIf="!categoryList?.length" class="row">
+        <div class="col-md-12 d-flex flex-column align-items-center justify-content-center no-rec-found-wrapper">
+          <img class="no-rec-found" src="assets/images/no_records_found.png" alt="no-records">
+          <p align="center">No data to display. Catalogs help you segregate your products better.</p>
+        </div>
+      </div>
+      <!-- #categories -->
+      <div class="separator-breadcrumb border-top mt-5"></div>
+      <div class="row">
+        <div class="col-md-12 mt-3 mb-3" *ngIf="productForm.errorMsg">
+          <p class="text-danger" align="center">{{ productForm.errorMsg }}</p>
+        </div>
+        <div align="center" class="col-md-12 z-i-0">
+          <button type="button" routerLink="/products" class="btn btn-wide black-outline-btn">
+            <span class="black-outline-txt">Cancel</span>
+          </button>&nbsp; &nbsp; &nbsp;
+          <button type="submit" class="btn btn-wide btn-primary ladda-button m-1" [disabled]="btnLoader" [ladda]="btnLoader">Update</button>
+        </div>
+      </div>
+    </form>
+    <!-- #STEP 3 -->
+  </ng-container>
+
+</div>
+
+<!-- COLOR MODAL -->
+<ng-template #colorModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Colors</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onSetVariantColors();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div *ngFor="let x of selectedVariantOptions; let i=index;" class="col-md-4 form-group mb-3">
+            <div class="card p-2">
+              <span *ngIf="selectedVariantOptions.length > 1" (click)="selectedVariantOptions.splice(i, 1);"
+              class="material-icons item-close absolute-item-close float-right " aria-hidden="true">close</span>
+              <select name="variant_color{{i}}" class="form-control" [(ngModel)]="x.display" required>
+                <option *ngFor="let color of colorList;" [ngValue]="color.name">{{color.name}}</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-12">
+            <button type="button" (click)="selectedVariantOptions.push({});" class="btn btn-wide btn-primary">
+              Add New
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click')">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">Submit</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- CATALOG MODAL -->
+<ng-template #catalogModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">New Catalog</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onAddCatalog();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12 form-group mb-3">
+            <label>Name</label>
+            <input type="text" name="name" class="form-control" [(ngModel)]="intForm.name" #name="ngModel" required />
+          </div>
+        </div>
+      </div>
+      <div *ngIf="intForm.errorMsg">
+        <p class="text-danger">{{ intForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click')">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">Add</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- TAG MODAL -->
+<ng-template #tagModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{ intForm.name }}</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdateTag();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-6" *ngFor="let x of intForm.option_list; let i=index;">
+            <div class="row">
+              <div class="col-md-12 form-group mb-3">
+                <div class="card p-2">
+                  <label>Option {{i+1}}</label>
+                  <span *ngIf="intForm.option_list.length > 1" (click)="intForm.option_list.splice(i, 1);"
+                  class="material-icons item-close absolute-item-close float-right " aria-hidden="true">close</span>
+                  <input type="text" name="name{{i}}" id="name" class="form-control" [(ngModel)]="x.name" #name="ngModel" required />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-12 form-group">
+            <p class="add-another  x-close" (click)="intForm.option_list.push({});">
+              <b>ADD ANOTHER OPTION</b>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="intForm.errorMsg">
+        <p class="text-danger">{{ intForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>
+
+<!-- NOTE MODAL -->
+<ng-template #noteModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{ intForm.name }}</h4>
+  </div>
+  <form autocomplete="off" (ngSubmit)="onUpdateNote();" ngNativeValidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-12" *ngFor="let x of intForm.option_list; let i=index;">
+            <div class="row">
+              <div class="col-md-12 form-group mb-3">
+                <div class="card p-2">
+                  <label>Description {{i+1}}</label>
+                  <span *ngIf="intForm.option_list.length > 1" (click)="intForm.option_list.splice(i, 1);"
+                    class="material-icons item-close absolute-item-close float-right " aria-hidden="true">close</span>
+                  <textarea class="form-control" aria-label="With textarea" name="description{{i}}"
+                    [(ngModel)]="x.description" #description="ngModel" required></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-12 form-group">
+            <span class="add-another  x-close" (click)="intForm.option_list.push({});"><b>ADD ANOTHER OPTION</b></span>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="intForm.errorMsg">
+        <p class="text-danger">{{ intForm.errorMsg }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="closeModal" class="btn btn-wide black-outline-btn" (click)="modal.dismiss('Cross click');">
+        <span class="black-outline-txt">Cancel</span>
+      </button>
+      <button type="submit" class="btn btn-wide btn-primary">Update</button>
+    </div>
+  </form>
+</ng-template>
